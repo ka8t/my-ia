@@ -287,6 +287,8 @@ async function sendMessage() {
 }
 
 async function streamMessage(message, typingId) {
+    console.log('[STREAM] Starting stream request');
+
     const response = await fetch(`${CONFIG.apiUrl}/chat/stream`, {
         method: 'POST',
         headers: {
@@ -300,6 +302,8 @@ async function streamMessage(message, typingId) {
         signal: abortController.signal
     });
 
+    console.log('[STREAM] Response status:', response.status);
+
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -310,33 +314,56 @@ async function streamMessage(message, typingId) {
     const decoder = new TextDecoder();
     let assistantMessageDiv = null;
     let fullResponse = '';
+    let buffer = ''; // Buffer pour gérer les chunks partiels
+
+    console.log('[STREAM] Starting to read chunks');
 
     while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
+        if (done) {
+            console.log('[STREAM] Stream completed');
+            break;
+        }
 
         const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(line => line.trim());
+        buffer += chunk;
+
+        // Séparer par lignes complètes
+        const lines = buffer.split('\n');
+        // Garder la dernière partie (potentiellement incomplète) dans le buffer
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
+            if (!line.trim()) continue;
+
             try {
                 const data = JSON.parse(line);
+                console.log('[STREAM] Parsed data:', { response: data.response, done: data.done });
 
                 if (data.response) {
                     fullResponse += data.response;
 
                     if (!assistantMessageDiv) {
                         assistantMessageDiv = createMessageElement('assistant', '', new Date().toISOString());
+                        // IMPORTANT: Ajouter l'élément au DOM!
+                        document.getElementById('messagesContainer').appendChild(assistantMessageDiv);
+                        console.log('[STREAM] Created and appended message element');
                     }
 
                     // Mettre à jour le contenu avec le markdown rendu
                     const contentDiv = assistantMessageDiv.querySelector('.message-text');
-                    contentDiv.innerHTML = marked.parse(fullResponse);
+                    if (typeof marked !== 'undefined' && marked.parse) {
+                        contentDiv.innerHTML = marked.parse(fullResponse);
+                    } else {
+                        // Fallback si marked n'est pas disponible
+                        contentDiv.textContent = fullResponse;
+                    }
                     scrollToBottom();
                 }
 
                 if (data.done) {
+                    console.log('[STREAM] Message completed');
                     // Message terminé
                     const conversation = conversations.find(c => c.id === currentConversationId);
                     conversation.messages.push({
@@ -348,8 +375,31 @@ async function streamMessage(message, typingId) {
                     saveConversationsToStorage();
                 }
             } catch (e) {
-                console.error('Error parsing JSON:', e, line);
+                console.error('[STREAM] Error parsing JSON:', e.message);
+                console.error('[STREAM] Problematic line (first 200 chars):', line.substring(0, 200));
             }
+        }
+    }
+
+    // Traiter le dernier morceau du buffer s'il reste quelque chose
+    if (buffer.trim()) {
+        try {
+            const data = JSON.parse(buffer);
+            if (data.done) {
+                console.log('[STREAM] Final message completed');
+                const conversation = conversations.find(c => c.id === currentConversationId);
+                if (!conversation.messages.find(m => m.content === fullResponse)) {
+                    conversation.messages.push({
+                        role: 'assistant',
+                        content: fullResponse,
+                        timestamp: new Date().toISOString()
+                    });
+                    conversation.updatedAt = new Date().toISOString();
+                    saveConversationsToStorage();
+                }
+            }
+        } catch (e) {
+            console.error('[STREAM] Error parsing final buffer:', e.message);
         }
     }
 }

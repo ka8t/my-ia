@@ -365,8 +365,10 @@ async def chat_stream(
                         "stream": True
                     }
                 ) as response:
-                    async for chunk in response.aiter_bytes():
-                        yield chunk
+                    async for line in response.aiter_lines():
+                        if line.strip():
+                            # Ollama renvoie déjà du JSON par ligne, on le transmet tel quel
+                            yield line + "\n"
 
         REQUEST_COUNT.labels(endpoint="/chat/stream", method="POST", status="200").inc()
 
