@@ -1,37 +1,60 @@
-# Python
+# MY-IA .gitignore
+
+# === Docker Volumes et Données ===
+chroma-data/
+ollama-data/
+postgres-data/
+n8n-data/
+
+# === Python ===
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
+build/
+dist/
 *.egg-info/
+*.egg
+venv/
+env/
+ENV/
+.venv
 
-# Docker
-*.log
-
-# Backups
-backups/
-
-# IDE
+# === IDEs ===
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# === OS ===
 .DS_Store
 Thumbs.db
 
-# Environment
+# === Secrets ===
 .env
 .env.local
+*.key
+*.pem
+secrets/
 
-# Data
-datasets/*.pdf
-datasets/*.docx
-!datasets/examples/
+# === Backups ===
+*.backup
+*.bak
+*.old
+backup/
+backups/
 
-# N8N (ne pas commit les credentials)
-n8n/.n8n/
+# === Logs ===
+*.log
+logs/
+
+# === Tests ===
+.pytest_cache/
+.coverage
+htmlcov/
+
+# === Temporaires ===
+tmp/
+temp/
+*.cache
