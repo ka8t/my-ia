@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY-IA - Interface de Chat</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>MY-IA</h1>
+                <button class="btn-new-chat" id="newChatBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Nouvelle conversation
+                </button>
+            </div>
+
+            <div class="conversations-list" id="conversationsList">
+                <!-- Les conversations seront ajoutées ici dynamiquement -->
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn-settings" id="settingsBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6M3 12h6m6 0h6"/>
+                    </svg>
+                    Paramètres
+                </button>
+                <button class="btn-theme" id="themeToggle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <div class="chat-header">
+                <button class="btn-toggle-sidebar" id="toggleSidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                </button>
+                <div class="chat-info">
+                    <h2 id="chatTitle">Nouvelle conversation</h2>
+                    <span class="chat-mode" id="chatMode">ChatBot</span>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="welcome-message">
+                    <h2>👋 Bienvenue sur MY-IA</h2>
+                    <p>Posez-moi vos questions, je suis là pour vous aider avec vos documents et données indexées.</p>
+                    <div class="suggestions">
+                        <button class="suggestion-btn" data-query="Explique-moi comment fonctionne le RAG">Comment fonctionne le RAG ?</button>
+                        <button class="suggestion-btn" data-query="Quels sont les fichiers disponibles dans la base de connaissances ?">Quels fichiers sont disponibles ?</button>
+                        <button class="suggestion-btn" data-query="Comment puis-je ajouter de nouveaux documents ?">Ajouter des documents</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <form id="chatForm" class="chat-form">
+                    <textarea
+                        id="messageInput"
+                        placeholder="Écrivez votre message... (Shift + Entrée pour nouvelle ligne)"
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" class="btn-send" id="sendBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-stop" id="stopBtn" style="display: none;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2"/>
+                        </svg>
+                    </button>
+                </form>
+                <div class="input-options">
+                    <label class="mode-toggle">
+                        <input type="checkbox" id="modeToggle">
+                        <span>Mode Assistant</span>
+                    </label>
+                    <span class="char-count" id="charCount">0 caractères</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel" style="display: none;">
+            <div class="settings-content">
+                <div class="settings-header">
+                    <h2>Paramètres</h2>
+                    <button class="btn-close" id="closeSettings">×</button>
+                </div>
+                <div class="settings-body">
+                    <div class="setting-group">
+                        <label for="apiUrl">URL de l'API</label>
+                        <input type="text" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8080">
+                    </div>
+                    <div class="setting-group">
+                        <label for="apiKey">Clé API (optionnelle)</label>
+                        <input type="password" id="apiKey" placeholder="change-me-in-production">
+                    </div>
+                    <div class="setting-group">
+                        <label for="topK">Nombre de sources (TOP_K)</label>
+                        <input type="number" id="topK" value="4" min="1" max="10">
+                        <small>Nombre de documents à récupérer pour le contexte</small>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="showSources">
+                            Afficher les sources utilisées
+                        </label>
+                    </div>
+                    <div class="setting-group">
+                        <button class="btn-primary" id="saveSettings">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

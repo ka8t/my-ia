@@ -103,6 +103,21 @@ services:
       - internal
       - external
 
+  # Frontend - Interface de chat web
+  frontend:
+    build: ./frontend
+    container_name: my-ia-frontend
+    depends_on:
+      - app
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - external
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=80
+
 networks:
   internal:
     driver: bridge

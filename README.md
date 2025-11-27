@@ -1,6 +1,7 @@
 # MY-IA - IA Personnelle avec Ollama + N8N
 
-Stack complète d'IA conversationnelle avec automatisation de workflows :
+Stack complète d'IA conversationnelle avec interface web et automatisation de workflows :
+- 💬 **Interface Web** : Chat moderne type ChatGPT/Claude
 - 🤖 **Ollama** : Serveur LLM local
 - 🗄️ **ChromaDB** : Base vectorielle pour RAG
 - ⚡ **FastAPI** : API REST pour l'IA
@@ -14,8 +15,9 @@ Stack complète d'IA conversationnelle avec automatisation de workflows :
 ./scripts/setup.sh
 
 # 2. Accéder aux interfaces
-# API IA:  http://localhost:8080
-# N8N:     http://localhost:5678
+# Interface Chat:  http://localhost:3000  ⭐ NOUVEAU!
+# API IA:          http://localhost:8080
+# N8N:             http://localhost:5678
 ```
 
 ## 📋 Prérequis
@@ -28,7 +30,12 @@ Stack complète d'IA conversationnelle avec automatisation de workflows :
 ## 🏗️ Architecture
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+┌─────────────┐
+│  Frontend   │ (Interface Web Chat)
+│   Nginx     │
+└──────┬──────┘
+       │
+┌──────▼──────┐     ┌──────────────┐     ┌─────────────┐
 │   FastAPI   │────▶│   ChromaDB   │     │   Ollama    │
 │     App     │     │ (Vector DB)  │     │    (LLM)    │
 └─────────────┘     └──────────────┘     └─────────────┘
@@ -47,6 +54,7 @@ Stack complète d'IA conversationnelle avec automatisation de workflows :
 
 | Service | Port | Description | URL |
 |---------|------|-------------|-----|
+| **Interface Chat** | 3000 | Interface web moderne type ChatGPT | http://localhost:3000 |
 | **API** | 8080 | Interface IA avec RAG | http://localhost:8080 |
 | **N8N** | 5678 | Automatisation de workflows | http://localhost:5678 |
 | **Ollama** | 11434 | Serveur LLM | http://localhost:11434 |
