@@ -1,0 +1,11 @@
+FROM chromadb/chroma:latest
+
+# Installer curl pour le healthcheck
+USER root
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# IMPORTANT : Revenir à l'utilisateur non-root par défaut de l'image
+USER 1001

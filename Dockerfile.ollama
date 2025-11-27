@@ -1,0 +1,13 @@
+# Partir de l'image de base d'Ollama
+FROM ollama/ollama:latest
+
+# Installer curl pour le healthcheck
+# On utilise 'apt-get' car l'image est basée sur Ubuntu/Debian
+USER root
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Revenir à l'utilisateur d'origine d'ollama
+# USER ollama
