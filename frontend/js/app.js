@@ -527,12 +527,78 @@ function createMessageElement(role, content, timestamp, sources = null) {
     const regenerateBtn = messageDiv.querySelector('.btn-regenerate');
     if (regenerateBtn) {
         regenerateBtn.addEventListener('click', () => {
-            // TODO: Implémenter la régénération
-            alert('Fonctionnalité de régénération à venir');
+            regenerateResponse(messageDiv);
         });
     }
 
     return messageDiv;
+}
+
+async function regenerateResponse(assistantMessageDiv) {
+    if (isStreaming) {
+        return; // Ne pas régénérer pendant un streaming en cours
+    }
+
+    const conversation = conversations.find(c => c.id === currentConversationId);
+    if (!conversation || conversation.messages.length < 2) {
+        return; // Pas assez de messages
+    }
+
+    // Trouver l'index du message assistant dans la conversation
+    const messages = conversation.messages;
+    let assistantIndex = -1;
+
+    // Parcourir les messages pour trouver celui qui correspond
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'assistant') {
+            assistantIndex = i;
+            break;
+        }
+    }
+
+    if (assistantIndex === -1 || assistantIndex === 0) {
+        return; // Pas de message assistant ou pas de question avant
+    }
+
+    // Récupérer le message utilisateur précédent
+    const userMessage = messages[assistantIndex - 1];
+    if (!userMessage || userMessage.role !== 'user') {
+        return;
+    }
+
+    // Supprimer visuellement l'ancienne réponse
+    assistantMessageDiv.remove();
+
+    // Supprimer le message assistant de la conversation
+    conversation.messages.splice(assistantIndex, 1);
+    saveConversationsToStorage();
+
+    // Afficher l'indicateur de frappe
+    const typingId = showTypingIndicator();
+
+    try {
+        isStreaming = true;
+        document.getElementById('sendBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'flex';
+
+        abortController = new AbortController();
+
+        // Régénérer la réponse avec streaming
+        await streamMessage(userMessage.content, typingId);
+
+    } catch (error) {
+        console.error('Error regenerating response:', error);
+        removeTypingIndicator(typingId);
+
+        if (error.name !== 'AbortError') {
+            appendMessage('assistant', '❌ Erreur lors de la régénération. Veuillez réessayer.', new Date().toISOString());
+        }
+    } finally {
+        isStreaming = false;
+        document.getElementById('sendBtn').style.display = 'flex';
+        document.getElementById('stopBtn').style.display = 'none';
+        abortController = null;
+    }
 }
 
 function showTypingIndicator() {
