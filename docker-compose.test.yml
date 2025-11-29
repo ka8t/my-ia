@@ -1,0 +1,78 @@
+# Docker Compose pour exécuter les tests MY-IA
+version: '3.8'
+
+services:
+  # ============================================================================
+  # SERVICE DE TESTS
+  # ============================================================================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: my-ia-test
+    networks:
+      - my-ia-network
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=ERROR
+      - API_KEY=test-api-key-12345
+      - OLLAMA_HOST=http://ollama:11434
+      - CHROMA_HOST=http://chroma:8000
+      - MODEL_NAME=mistral:7b
+      - EMBED_MODEL=nomic-embed-text
+      - TOP_K=4
+    depends_on:
+      ollama:
+        condition: service_started
+      chroma:
+        condition: service_started
+    volumes:
+      # Monter les fichiers de test pour développement
+      - ./tests:/app/tests:ro
+      - ./app:/app/app:ro
+      # Volume pour les rapports de coverage
+      - ./htmlcov:/app/htmlcov
+      - ./coverage.xml:/app/coverage.xml
+    # Commande par défaut (peut être overridden)
+    command: pytest -m unit -v --tb=short
+
+  # ============================================================================
+  # SERVICES REQUIS POUR LES TESTS
+  # ============================================================================
+
+  # ChromaDB pour les tests d'intégration
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: my-ia-test-chroma
+    networks:
+      - my-ia-network
+    ports:
+      - "8001:8000"  # Port différent pour ne pas conflicter
+    volumes:
+      - test-chroma-data:/chroma/chroma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama pour les tests d'intégration
+  ollama:
+    image: ollama/ollama:latest
+    container_name: my-ia-test-ollama
+    networks:
+      - my-ia-network
+    ports:
+      - "11435:11434"  # Port différent pour ne pas conflicter
+    volumes:
+      - test-ollama-data:/root/.ollama
+    # Note: Les modèles doivent être pullés séparément
+    # docker compose -f docker-compose.test.yml exec ollama ollama pull mistral:7b
+
+networks:
+  my-ia-network:
+    driver: bridge
+
+volumes:
+  test-chroma-data:
+  test-ollama-data:

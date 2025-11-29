@@ -90,7 +90,34 @@
                     <label class="mode-toggle">
                         <input type="checkbox" id="modeToggle">
                         <span>Mode Assistant</span>
+                        <button type="button" class="btn-help" id="modeHelpBtn" title="En savoir plus">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </button>
                     </label>
+
+                    <!-- Tooltip d'aide -->
+                    <div class="mode-help-tooltip" id="modeHelpTooltip" style="display: none;">
+                        <div class="tooltip-content">
+                            <h4>📚 Modes disponibles</h4>
+                            <div class="mode-comparison">
+                                <div class="mode-info">
+                                    <strong>💬 ChatBot</strong>
+                                    <p>Conversationnel, explications détaillées</p>
+                                    <small>Ex: "Qu'est-ce que le RAG ?"</small>
+                                </div>
+                                <div class="mode-info">
+                                    <strong>🎯 Assistant</strong>
+                                    <p>Plans d'action, tâches structurées</p>
+                                    <small>Ex: "Crée un runbook de déploiement"</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <span class="char-count" id="charCount">0 caractères</span>
                 </div>
             </div>

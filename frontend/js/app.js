@@ -119,6 +119,25 @@ function initializeEventListeners() {
 
     // Stop generation
     document.getElementById('stopBtn').addEventListener('click', stopGeneration);
+
+    // Aide sur les modes
+    const modeHelpBtn = document.getElementById('modeHelpBtn');
+    const modeHelpTooltip = document.getElementById('modeHelpTooltip');
+
+    modeHelpBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isVisible = modeHelpTooltip.style.display === 'block';
+        modeHelpTooltip.style.display = isVisible ? 'none' : 'block';
+    });
+
+    // Fermer le tooltip en cliquant ailleurs
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.mode-toggle') && !e.target.closest('.mode-help-tooltip')) {
+            modeHelpTooltip.style.display = 'none';
+        }
+    });
 }
 
 // Gestion des conversations

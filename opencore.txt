@@ -1,0 +1,2725 @@
+/Volumes/OPENCORE
+├── EFI
+│   ├── BOOT
+│   │   └── BOOTx64.efi
+│   └── OC
+│       ├── Drivers
+│       │   ├── ArpDxe.efi
+│       │   ├── AudioDxe.efi
+│       │   ├── BiosVideo.efi
+│       │   ├── CrScreenshotDxe.efi
+│       │   ├── Dhcp4Dxe.efi
+│       │   ├── Dhcp6Dxe.efi
+│       │   ├── DnsDxe.efi
+│       │   ├── DpcDxe.efi
+│       │   ├── Ext4Dxe.efi
+│       │   ├── FirmwareSettingsEntry.efi
+│       │   ├── Hash2DxeCrypto.efi
+│       │   ├── HiiDatabase.efi
+│       │   ├── HttpBootDxe.efi
+│       │   ├── HttpDxe.efi
+│       │   ├── HttpUtilitiesDxe.efi
+│       │   ├── Ip4Dxe.efi
+│       │   ├── Ip6Dxe.efi
+│       │   ├── MnpDxe.efi
+│       │   ├── Mtftp4Dxe.efi
+│       │   ├── Mtftp6Dxe.efi
+│       │   ├── NvmExpressDxe.efi
+│       │   ├── OpenCanopy.efi
+│       │   ├── OpenHfsPlus.efi
+│       │   ├── OpenLegacyBoot.efi
+│       │   ├── OpenLinuxBoot.efi
+│       │   ├── OpenNetworkBoot.efi
+│       │   ├── OpenNtfsDxe.efi
+│       │   ├── OpenPartitionDxe.efi
+│       │   ├── OpenRuntime.efi
+│       │   ├── OpenUsbKbDxe.efi
+│       │   ├── OpenVariableRuntimeDxe.efi
+│       │   ├── Ps2KeyboardDxe.efi
+│       │   ├── Ps2MouseDxe.efi
+│       │   ├── RamDiskDxe.efi
+│       │   ├── ResetNvramEntry.efi
+│       │   ├── RngDxe.efi
+│       │   ├── SnpDxe.efi
+│       │   ├── TcpDxe.efi
+│       │   ├── TlsDxe.efi
+│       │   ├── ToggleSipEntry.efi
+│       │   ├── Udp4Dxe.efi
+│       │   ├── Udp6Dxe.efi
+│       │   ├── UefiPxeBcDxe.efi
+│       │   ├── UsbMouseDxe.efi
+│       │   ├── Virtio10.efi
+│       │   ├── VirtioBlkDxe.efi
+│       │   ├── VirtioGpuDxe.efi
+│       │   ├── VirtioNetDxe.efi
+│       │   ├── VirtioPciDeviceDxe.efi
+│       │   ├── VirtioScsiDxe.efi
+│       │   ├── VirtioSerialDxe.efi
+│       │   └── XhciDxe.efi
+│       ├── OpenCore.efi
+│       ├── Resources
+│       │   ├── Audio
+│       │   ├── Font
+│       │   ├── Image
+│       │   └── Label
+│       ├── Tools
+│       │   ├── BootKicker.efi
+│       │   ├── ChipTune.efi
+│       │   ├── CleanNvram.efi
+│       │   ├── ControlMsrE2.efi
+│       │   ├── CsrUtil.efi
+│       │   ├── FontTester.efi
+│       │   ├── GopStop.efi
+│       │   ├── KeyTester.efi
+│       │   ├── ListPartitions.efi
+│       │   ├── MmapDump.efi
+│       │   ├── OpenControl.efi
+│       │   ├── OpenShell.efi
+│       │   ├── ResetSystem.efi
+│       │   ├── RtcRw.efi
+│       │   └── TpmInfo.efi
+│       └── config.plist
+├── FDOS
+│   ├── CHANGES.LOG
+│   ├── COMMAND.COM
+│   ├── FDOS-x86
+│   │   ├── FDAUTO.BAT
+│   │   ├── FDCONFIG.SYS
+│   │   ├── FREEDOS
+│   │   │   ├── BIN
+│   │   │   │   ├── ATTRIB.COM
+│   │   │   │   ├── COMMAND.COM
+│   │   │   │   ├── COUNTRY.SYS
+│   │   │   │   ├── CP850.V8F
+│   │   │   │   ├── CP857.V8F
+│   │   │   │   ├── CP858.V8F
+│   │   │   │   ├── CP866.V8F
+│   │   │   │   ├── DELTREE.COM
+│   │   │   │   ├── FASTHELP.BAT
+│   │   │   │   ├── FC.EXE
+│   │   │   │   ├── FDAPM.COM
+│   │   │   │   ├── FDBANNER.COM
+│   │   │   │   ├── FDISK.EXE
+│   │   │   │   ├── FDISK.INI
+│   │   │   │   ├── FDWRAPUP.BAT
+│   │   │   │   ├── FORMAT.EXE
+│   │   │   │   ├── KERNL386.SYS
+│   │   │   │   ├── MEM.EXE
+│   │   │   │   ├── MORE.EXE
+│   │   │   │   ├── SETLANG.BAT
+│   │   │   │   ├── SETVER.SYS
+│   │   │   │   ├── SLICEREX.EXE
+│   │   │   │   ├── SYS.COM
+│   │   │   │   ├── VASK.COM
+│   │   │   │   ├── VCHOICE.COM
+│   │   │   │   ├── VCLS.COM
+│   │   │   │   ├── VCURSOR.COM
+│   │   │   │   ├── VDELAY.COM
+│   │   │   │   ├── VEACH.COM
+│   │   │   │   ├── VECHO.COM
+│   │   │   │   ├── VERRLVL.COM
+│   │   │   │   ├── VFDUTIL.COM
+│   │   │   │   ├── VFONT.COM
+│   │   │   │   ├── VFRAME.COM
+│   │   │   │   ├── VGOTOXY.COM
+│   │   │   │   ├── VINFO.COM
+│   │   │   │   ├── VLINE.COM
+│   │   │   │   ├── VPAUSE.COM
+│   │   │   │   ├── VPROGRES.COM
+│   │   │   │   ├── VSTR.COM
+│   │   │   │   ├── VTEST.COM
+│   │   │   │   ├── WELCOME.BAT
+│   │   │   │   └── XCOPY.EXE
+│   │   │   ├── CONFIGS
+│   │   │   │   ├── AUTOEXEC.086
+│   │   │   │   ├── AUTOEXEC.186
+│   │   │   │   ├── AUTOEXEC.286
+│   │   │   │   ├── AUTOEXEC.DBX
+│   │   │   │   ├── AUTOEXEC.DEF
+│   │   │   │   ├── AUTOEXEC.VBX
+│   │   │   │   ├── CONFIG.086
+│   │   │   │   ├── CONFIG.186
+│   │   │   │   ├── CONFIG.286
+│   │   │   │   ├── CONFIG.DBX
+│   │   │   │   ├── CONFIG.DEF
+│   │   │   │   └── CONFIG.VBX
+│   │   │   ├── NLS
+│   │   │   │   ├── SETUP.DE
+│   │   │   │   ├── SETUP.EN
+│   │   │   │   ├── SETUP.ES
+│   │   │   │   ├── SETUP.FR
+│   │   │   │   ├── SETUP.SV
+│   │   │   │   ├── SETUP.TR
+│   │   │   │   ├── SLICER.DE
+│   │   │   │   ├── SLICER.EN
+│   │   │   │   ├── SLICER.ES
+│   │   │   │   ├── SLICER.FR
+│   │   │   │   ├── SLICER.SV
+│   │   │   │   ├── SLICER.TR
+│   │   │   │   ├── WELCOME.DE
+│   │   │   │   ├── WELCOME.EN
+│   │   │   │   ├── WELCOME.EO
+│   │   │   │   ├── WELCOME.ES
+│   │   │   │   ├── WELCOME.FR
+│   │   │   │   ├── WELCOME.NL
+│   │   │   │   ├── WELCOME.SV
+│   │   │   │   └── WELCOME.TR
+│   │   │   └── VERSION.FDI
+│   │   ├── KERNEL.SYS
+│   │   ├── SETUP.BAT
+│   │   └── SLICED
+│   │       ├── freedos.001
+│   │       ├── freedos.002
+│   │       ├── freedos.003
+│   │       ├── freedos.004
+│   │       ├── freedos.005
+│   │       ├── freedos.006
+│   │       ├── freedos.007
+│   │       ├── freedos.008
+│   │       ├── freedos.009
+│   │       ├── freedos.010
+│   │       ├── freedos.011
+│   │       ├── freedos.012
+│   │       ├── freedos.013
+│   │       ├── freedos.014
+│   │       ├── freedos.015
+│   │       ├── freedos.016
+│   │       ├── freedos.017
+│   │       ├── freedos.018
+│   │       ├── freedos.019
+│   │       ├── freedos.020
+│   │       ├── freedos.021
+│   │       ├── freedos.022
+│   │       ├── freedos.023
+│   │       ├── freedos.024
+│   │       ├── freedos.025
+│   │       ├── freedos.026
+│   │       ├── freedos.027
+│   │       ├── freedos.028
+│   │       ├── freedos.029
+│   │       ├── freedos.030
+│   │       ├── freedos.031
+│   │       ├── freedos.032
+│   │       ├── freedos.033
+│   │       ├── freedos.034
+│   │       ├── freedos.035
+│   │       ├── freedos.036
+│   │       ├── freedos.037
+│   │       ├── freedos.038
+│   │       ├── freedos.039
+│   │       ├── freedos.040
+│   │       ├── freedos.041
+│   │       ├── freedos.042
+│   │       ├── freedos.043
+│   │       ├── freedos.044
+│   │       ├── freedos.045
+│   │       ├── freedos.046
+│   │       ├── freedos.047
+│   │       ├── freedos.048
+│   │       ├── freedos.049
+│   │       ├── freedos.050
+│   │       ├── freedos.051
+│   │       ├── freedos.052
+│   │       ├── freedos.053
+│   │       ├── freedos.054
+│   │       ├── freedos.055
+│   │       ├── freedos.056
+│   │       ├── freedos.057
+│   │       ├── freedos.058
+│   │       ├── freedos.059
+│   │       ├── freedos.060
+│   │       ├── freedos.061
+│   │       ├── freedos.062
+│   │       ├── freedos.063
+│   │       ├── freedos.064
+│   │       ├── freedos.065
+│   │       ├── freedos.066
+│   │       ├── freedos.067
+│   │       ├── freedos.068
+│   │       ├── freedos.069
+│   │       ├── freedos.070
+│   │       ├── freedos.071
+│   │       ├── freedos.072
+│   │       ├── freedos.073
+│   │       ├── freedos.074
+│   │       ├── freedos.075
+│   │       ├── freedos.076
+│   │       ├── freedos.077
+│   │       ├── freedos.078
+│   │       ├── freedos.079
+│   │       ├── freedos.080
+│   │       ├── freedos.081
+│   │       ├── freedos.082
+│   │       ├── freedos.083
+│   │       ├── freedos.084
+│   │       ├── freedos.085
+│   │       ├── freedos.086
+│   │       ├── freedos.087
+│   │       ├── freedos.088
+│   │       ├── freedos.089
+│   │       ├── freedos.090
+│   │       ├── freedos.091
+│   │       ├── freedos.092
+│   │       ├── freedos.093
+│   │       ├── freedos.094
+│   │       ├── freedos.095
+│   │       ├── freedos.096
+│   │       ├── freedos.097
+│   │       ├── freedos.098
+│   │       ├── freedos.099
+│   │       ├── freedos.100
+│   │       ├── freedos.101
+│   │       ├── freedos.102
+│   │       ├── freedos.103
+│   │       ├── freedos.104
+│   │       ├── freedos.105
+│   │       ├── freedos.106
+│   │       ├── freedos.107
+│   │       ├── freedos.108
+│   │       ├── freedos.109
+│   │       ├── freedos.110
+│   │       ├── freedos.111
+│   │       ├── freedos.112
+│   │       ├── freedos.113
+│   │       ├── freedos.114
+│   │       ├── freedos.115
+│   │       ├── freedos.116
+│   │       ├── freedos.117
+│   │       ├── freedos.118
+│   │       ├── freedos.119
+│   │       ├── freedos.120
+│   │       ├── freedos.121
+│   │       ├── freedos.122
+│   │       ├── freedos.123
+│   │       ├── freedos.124
+│   │       ├── freedos.125
+│   │       └── freedos.saf
+│   ├── KERNEL.SYS
+│   ├── fdauto.bat
+│   ├── fdconfig.sys
+│   ├── freedos
+│   │   ├── bin
+│   │   │   ├── apropos.bat
+│   │   │   ├── attrib.com
+│   │   │   ├── cdrcache.sys
+│   │   │   ├── cdrom.bat
+│   │   │   ├── command.com
+│   │   │   ├── cpuid.exe
+│   │   │   ├── deltree.com
+│   │   │   ├── devload.com
+│   │   │   ├── doslfn.com
+│   │   │   ├── edit.exe
+│   │   │   ├── fasthelp.bat
+│   │   │   ├── fc.exe
+│   │   │   ├── fdapm.com
+│   │   │   ├── fdhelp.bat
+│   │   │   ├── fdimples.exe
+│   │   │   ├── fdinst.exe
+│   │   │   ├── fdisk.exe
+│   │   │   ├── fdisk.ini
+│   │   │   ├── fdnpkg.cfg
+│   │   │   ├── fdnpkg.oem
+│   │   │   ├── fdramdrv.bat
+│   │   │   ├── format.exe
+│   │   │   ├── grep.exe
+│   │   │   ├── himemx.exe
+│   │   │   ├── jemm386.exe
+│   │   │   ├── jemmex.exe
+│   │   │   ├── lbacache.com
+│   │   │   ├── mbrzap.bat
+│   │   │   ├── mem.exe
+│   │   │   ├── more.exe
+│   │   │   ├── qpiemu.dll
+│   │   │   ├── setlang.bat
+│   │   │   ├── setver.sys
+│   │   │   ├── shsucdx.com
+│   │   │   ├── shsurdrv.exe
+│   │   │   ├── srdisk.exe
+│   │   │   ├── srdxms.sys
+│   │   │   ├── sys.com
+│   │   │   ├── tickle.com
+│   │   │   ├── udvd2.sys
+│   │   │   ├── vask.com
+│   │   │   ├── vchkbox.com
+│   │   │   ├── vchoice.com
+│   │   │   ├── vcls.com
+│   │   │   ├── vcpi.exe
+│   │   │   ├── vcursor.com
+│   │   │   ├── vdelay.com
+│   │   │   ├── vdelete.com
+│   │   │   ├── veach.com
+│   │   │   ├── vecho.com
+│   │   │   ├── verrlvl.com
+│   │   │   ├── vfdutil.com
+│   │   │   ├── vfont.com
+│   │   │   ├── vframe.com
+│   │   │   ├── vgotoxy.com
+│   │   │   ├── vinfo.com
+│   │   │   ├── vinsert.com
+│   │   │   ├── vline.com
+│   │   │   ├── vmath.com
+│   │   │   ├── vpause.com
+│   │   │   ├── vprogres.com
+│   │   │   ├── vreadkey.com
+│   │   │   ├── vstr.com
+│   │   │   ├── vtest.com
+│   │   │   ├── vview.com
+│   │   │   ├── welcome.bat
+│   │   │   ├── whatis.bat
+│   │   │   ├── xcopy.exe
+│   │   │   └── zip.exe
+│   │   ├── nls
+│   │   │   ├── cdrom.en
+│   │   │   ├── fdimples.de
+│   │   │   ├── fdimples.en
+│   │   │   ├── fdimples.eo
+│   │   │   ├── fdimples.es
+│   │   │   ├── fdimples.fr
+│   │   │   ├── fdimples.nl
+│   │   │   ├── fdimples.ru
+│   │   │   ├── fdimples.sv
+│   │   │   ├── fdimples.tr
+│   │   │   ├── fdnpkg.en
+│   │   │   ├── welcome.de
+│   │   │   ├── welcome.en
+│   │   │   ├── welcome.eo
+│   │   │   ├── welcome.es
+│   │   │   ├── welcome.fr
+│   │   │   ├── welcome.nl
+│   │   │   ├── welcome.sv
+│   │   │   └── welcome.tr
+│   │   └── setup
+│   │       ├── autoexec.086
+│   │       ├── autoexec.186
+│   │       ├── autoexec.286
+│   │       ├── autoexec.dbx
+│   │       ├── autoexec.def
+│   │       ├── autoexec.vbx
+│   │       ├── config.086
+│   │       ├── config.186
+│   │       ├── config.286
+│   │       ├── config.dbx
+│   │       ├── config.def
+│   │       ├── config.vbx
+│   │       ├── cp850.v8f
+│   │       ├── cp857.v8f
+│   │       ├── cp858.v8f
+│   │       ├── cp866.v8f
+│   │       ├── de
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── en
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── eo
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── es
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── fdask000.bat
+│   │       ├── fdask100.bat
+│   │       ├── fdask200.bat
+│   │       ├── fdask300.bat
+│   │       ├── fdask400.bat
+│   │       ├── fdask500.bat
+│   │       ├── fdask600.bat
+│   │       ├── fdask700.bat
+│   │       ├── fdbug.bat
+│   │       ├── fdcheck.bat
+│   │       ├── fderror.bat
+│   │       ├── fdiclean.bat
+│   │       ├── fdicls.bat
+│   │       ├── fdictrlc.bat
+│   │       ├── fdidrive.bat
+│   │       ├── fdifail.bat
+│   │       ├── fdilang.bat
+│   │       ├── fdimedia.bat
+│   │       ├── fdins000.bat
+│   │       ├── fdins100.bat
+│   │       ├── fdins200.bat
+│   │       ├── fdins300.bat
+│   │       ├── fdins400.bat
+│   │       ├── fdins500.bat
+│   │       ├── fdins600.bat
+│   │       ├── fdins700.bat
+│   │       ├── fdins800.bat
+│   │       ├── fdins900.bat
+│   │       ├── fdipkg.bat
+│   │       ├── fdiset.bat
+│   │       ├── fditemp.bat
+│   │       ├── fdnorun.bat
+│   │       ├── fdnotice.bat
+│   │       ├── fdnpkg.cfg
+│   │       ├── fdplbase.lst
+│   │       ├── fdplfull.lst
+│   │       ├── fdsetup.bat
+│   │       ├── fdsplash.bat
+│   │       ├── fdswpenv.bat
+│   │       ├── fdthank.bat
+│   │       ├── fr
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── nl
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── ru
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── setfont.bat
+│   │       ├── stage000.bat
+│   │       ├── stage100.bat
+│   │       ├── stage200.bat
+│   │       ├── stage300.bat
+│   │       ├── stage400.bat
+│   │       ├── stage500.bat
+│   │       ├── stage600.bat
+│   │       ├── stage700.bat
+│   │       ├── stage800.bat
+│   │       ├── stage900.bat
+│   │       ├── sv
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       ├── themeadv.bat
+│   │       ├── themedef.bat
+│   │       ├── tr
+│   │       │   ├── country.bat
+│   │       │   ├── fdsetup.def
+│   │       │   ├── keyboard.lst
+│   │       │   └── setlang.bat
+│   │       └── version.fdi
+│   ├── packages
+│   │   ├── apps
+│   │   │   ├── dn2.zip
+│   │   │   ├── doszip.zip
+│   │   │   ├── fdimples.zip
+│   │   │   ├── fdshell.zip
+│   │   │   ├── imgedit.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   └── pgme.zip
+│   │   ├── archiver
+│   │   │   ├── 7zip.zip
+│   │   │   ├── arj.zip
+│   │   │   ├── bz2.zip
+│   │   │   ├── cabext.zip
+│   │   │   ├── gzip.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── lpq1.zip
+│   │   │   ├── lzip.zip
+│   │   │   ├── lzma.zip
+│   │   │   ├── lzop.zip
+│   │   │   ├── p7zip.zip
+│   │   │   ├── slicer.zip
+│   │   │   ├── tar.zip
+│   │   │   ├── unzip.zip
+│   │   │   ├── zip.zip
+│   │   │   └── zoo.zip
+│   │   ├── base
+│   │   │   ├── ambhelp.zip
+│   │   │   ├── append.zip
+│   │   │   ├── assign.zip
+│   │   │   ├── attrib.zip
+│   │   │   ├── chkdsk.zip
+│   │   │   ├── choice.zip
+│   │   │   ├── comp.zip
+│   │   │   ├── cpidos.zip
+│   │   │   ├── ctmouse.zip
+│   │   │   ├── debug.zip
+│   │   │   ├── defrag.zip
+│   │   │   ├── deltree.zip
+│   │   │   ├── devload.zip
+│   │   │   ├── diskcomp.zip
+│   │   │   ├── diskcopy.zip
+│   │   │   ├── display.zip
+│   │   │   ├── edit.zip
+│   │   │   ├── edlin.zip
+│   │   │   ├── exe2bin.zip
+│   │   │   ├── fc.zip
+│   │   │   ├── fdapm.zip
+│   │   │   ├── fdhelper.zip
+│   │   │   ├── fdisk.zip
+│   │   │   ├── fdxms.zip
+│   │   │   ├── fdxms286.zip
+│   │   │   ├── find.zip
+│   │   │   ├── format.zip
+│   │   │   ├── freecom.zip
+│   │   │   ├── graphics.zip
+│   │   │   ├── himemx.zip
+│   │   │   ├── htmlhelp.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── jemm.zip
+│   │   │   ├── kernel.zip
+│   │   │   ├── keyb.zip
+│   │   │   ├── keyb_lay.zip
+│   │   │   ├── label.zip
+│   │   │   ├── lbacache.zip
+│   │   │   ├── mem.zip
+│   │   │   ├── mirror.zip
+│   │   │   ├── mkeyb.zip
+│   │   │   ├── mode.zip
+│   │   │   ├── more.zip
+│   │   │   ├── move.zip
+│   │   │   ├── nansi.zip
+│   │   │   ├── nlsfunc.zip
+│   │   │   ├── print.zip
+│   │   │   ├── recover.zip
+│   │   │   ├── replace.zip
+│   │   │   ├── samcfg.zip
+│   │   │   ├── share.zip
+│   │   │   ├── shsucdx.zip
+│   │   │   ├── sort.zip
+│   │   │   ├── swsubst.zip
+│   │   │   ├── tree.zip
+│   │   │   ├── undelete.zip
+│   │   │   ├── unformat.zip
+│   │   │   └── xcopy.zip
+│   │   ├── boot
+│   │   │   ├── bootfix.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   └── syslnx.zip
+│   │   ├── devel
+│   │   │   ├── bcc.zip
+│   │   │   ├── bwbasic.zip
+│   │   │   ├── cpp2ccmt.zip
+│   │   │   ├── dojs.zip
+│   │   │   ├── euphoria.zip
+│   │   │   ├── fasm.zip
+│   │   │   ├── fbc.zip
+│   │   │   ├── fbc_help.zip
+│   │   │   ├── fdisrc.zip
+│   │   │   ├── fpc.zip
+│   │   │   ├── i16budoc.zip
+│   │   │   ├── i16butil.zip
+│   │   │   ├── i16elklc.zip
+│   │   │   ├── i16env.zip
+│   │   │   ├── i16gcc.zip
+│   │   │   ├── i16gcdoc.zip
+│   │   │   ├── i16lbi86.zip
+│   │   │   ├── i16newli.zip
+│   │   │   ├── i16nlelk.zip
+│   │   │   ├── i16src.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── insight.zip
+│   │   │   ├── jwasm.zip
+│   │   │   ├── kittenc.zip
+│   │   │   ├── ldebug.zip
+│   │   │   ├── lua.zip
+│   │   │   ├── msa.zip
+│   │   │   ├── nasm.zip
+│   │   │   ├── perl.zip
+│   │   │   ├── regina.zip
+│   │   │   ├── runtime.zip
+│   │   │   ├── sqlite.zip
+│   │   │   ├── suppls.zip
+│   │   │   ├── tinyasm.zip
+│   │   │   ├── upx.zip
+│   │   │   ├── watcomc.zip
+│   │   │   └── watcomf.zip
+│   │   ├── disk
+│   │   │   ├── aefdisk.zip
+│   │   │   ├── dosfsck.zip
+│   │   │   ├── edict.zip
+│   │   │   ├── finddisk.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── ospimg.zip
+│   │   │   ├── part.zip
+│   │   │   ├── raread.zip
+│   │   │   ├── rawrite.zip
+│   │   │   ├── testdisk.zip
+│   │   │   ├── wde.zip
+│   │   │   ├── whichfat.zip
+│   │   │   ├── xfdisk.zip
+│   │   │   └── zerofill.zip
+│   │   ├── drivers
+│   │   │   ├── cdrcache.zip
+│   │   │   ├── doslfn.zip
+│   │   │   ├── eltorito.zip
+│   │   │   ├── gcdrom.zip
+│   │   │   ├── himemsx.zip
+│   │   │   ├── hiram.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── lfndos.zip
+│   │   │   ├── logger.zip
+│   │   │   ├── lptdrv.zip
+│   │   │   ├── ntfs.zip
+│   │   │   ├── rdisk.zip
+│   │   │   ├── sbemu.zip
+│   │   │   ├── shareext.zip
+│   │   │   ├── shsufdrv.zip
+│   │   │   ├── spool.zip
+│   │   │   ├── srdisk.zip
+│   │   │   ├── udvd2.zip
+│   │   │   ├── uhdd.zip
+│   │   │   ├── uide.zip
+│   │   │   ├── usbdos.zip
+│   │   │   ├── vsbhda.zip
+│   │   │   └── xkeyb.zip
+│   │   ├── edit
+│   │   │   ├── biew.zip
+│   │   │   ├── blocek.zip
+│   │   │   ├── doshexed.zip
+│   │   │   ├── e3.zip
+│   │   │   ├── elvis.zip
+│   │   │   ├── fed.zip
+│   │   │   ├── freemacs.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── mbedit.zip
+│   │   │   ├── mined.zip
+│   │   │   ├── msedit.zip
+│   │   │   ├── ospedit.zip
+│   │   │   ├── pico.zip
+│   │   │   ├── setedit.zip
+│   │   │   ├── tde.zip
+│   │   │   ├── uhex.zip
+│   │   │   └── vim.zip
+│   │   ├── games
+│   │   │   ├── blkdrop.zip
+│   │   │   ├── bolitare.zip
+│   │   │   ├── boom.zip
+│   │   │   ├── dosdef.zip
+│   │   │   ├── eliza.zip
+│   │   │   ├── empong.zip
+│   │   │   ├── ev4de.zip
+│   │   │   ├── ewsnake.zip
+│   │   │   ├── flpybird.zip
+│   │   │   ├── fmines.zip
+│   │   │   ├── freedoom.zip
+│   │   │   ├── gnuchess.zip
+│   │   │   ├── hangman.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── ivan.zip
+│   │   │   ├── kraptor.zip
+│   │   │   ├── liquiwar.zip
+│   │   │   ├── mirmagic.zip
+│   │   │   ├── mistral.zip
+│   │   │   ├── nethack.zip
+│   │   │   ├── nge_nibb.zip
+│   │   │   ├── noudar.zip
+│   │   │   ├── qtetris.zip
+│   │   │   ├── sayswho.zip
+│   │   │   ├── senet.zip
+│   │   │   ├── smiley.zip
+│   │   │   ├── sudoku86.zip
+│   │   │   ├── vertigo.zip
+│   │   │   ├── vitetris.zip
+│   │   │   ├── wing.zip
+│   │   │   └── zmiy.zip
+│   │   ├── gui
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   └── opengem.zip
+│   │   ├── net
+│   │   │   ├── arachne.zip
+│   │   │   ├── crynwr.zip
+│   │   │   ├── curl.zip
+│   │   │   ├── dillo.zip
+│   │   │   ├── dwol.zip
+│   │   │   ├── e1000pkt.zip
+│   │   │   ├── e100pkt.zip
+│   │   │   ├── etherdfs.zip
+│   │   │   ├── ethtools.zip
+│   │   │   ├── fdnet.zip
+│   │   │   ├── fdnpkg.zip
+│   │   │   ├── gopherus.zip
+│   │   │   ├── htget.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── links.zip
+│   │   │   ├── lsppp.zip
+│   │   │   ├── lynx.zip
+│   │   │   ├── m2wat.zip
+│   │   │   ├── mskermit.zip
+│   │   │   ├── mtcp.zip
+│   │   │   ├── newsnuz.zip
+│   │   │   ├── ntool.zip
+│   │   │   ├── picosntp.zip
+│   │   │   ├── picotcp.zip
+│   │   │   ├── ping.zip
+│   │   │   ├── rsync.zip
+│   │   │   ├── ssh2dos.zip
+│   │   │   ├── sshdos.zip
+│   │   │   ├── terminal.zip
+│   │   │   ├── vmsmount.zip
+│   │   │   ├── vncview.zip
+│   │   │   ├── wattcp.zip
+│   │   │   └── wget.zip
+│   │   ├── pkg-info
+│   │   │   ├── 7zip.lsm
+│   │   │   ├── 7zip.lst
+│   │   │   ├── adplay.de
+│   │   │   ├── adplay.fr
+│   │   │   ├── adplay.lsm
+│   │   │   ├── adplay.lst
+│   │   │   ├── adplay.sv
+│   │   │   ├── adplay.tr
+│   │   │   ├── aefdisk.de
+│   │   │   ├── aefdisk.fr
+│   │   │   ├── aefdisk.lsm
+│   │   │   ├── aefdisk.lst
+│   │   │   ├── aefdisk.sv
+│   │   │   ├── aefdisk.tr
+│   │   │   ├── ambhelp.de
+│   │   │   ├── ambhelp.fr
+│   │   │   ├── ambhelp.lsm
+│   │   │   ├── ambhelp.lst
+│   │   │   ├── ambhelp.sv
+│   │   │   ├── ambhelp.tr
+│   │   │   ├── ambread.de
+│   │   │   ├── ambread.fr
+│   │   │   ├── ambread.lsm
+│   │   │   ├── ambread.lst
+│   │   │   ├── ambread.sv
+│   │   │   ├── ambread.tr
+│   │   │   ├── ansimat.de
+│   │   │   ├── ansimat.fr
+│   │   │   ├── ansimat.lsm
+│   │   │   ├── ansimat.lst
+│   │   │   ├── ansimat.sv
+│   │   │   ├── ansimat.tr
+│   │   │   ├── append.de
+│   │   │   ├── append.fr
+│   │   │   ├── append.lsm
+│   │   │   ├── append.lst
+│   │   │   ├── append.sv
+│   │   │   ├── append.tr
+│   │   │   ├── arachne.de
+│   │   │   ├── arachne.fr
+│   │   │   ├── arachne.lsm
+│   │   │   ├── arachne.lst
+│   │   │   ├── arachne.sv
+│   │   │   ├── arachne.tr
+│   │   │   ├── arj.de
+│   │   │   ├── arj.fr
+│   │   │   ├── arj.lsm
+│   │   │   ├── arj.lst
+│   │   │   ├── arj.sv
+│   │   │   ├── arj.tr
+│   │   │   ├── assign.de
+│   │   │   ├── assign.fr
+│   │   │   ├── assign.lsm
+│   │   │   ├── assign.lst
+│   │   │   ├── assign.sv
+│   │   │   ├── assign.tr
+│   │   │   ├── attrib.de
+│   │   │   ├── attrib.fr
+│   │   │   ├── attrib.lsm
+│   │   │   ├── attrib.lst
+│   │   │   ├── attrib.sv
+│   │   │   ├── attrib.tr
+│   │   │   ├── b64.de
+│   │   │   ├── b64.fr
+│   │   │   ├── b64.lsm
+│   │   │   ├── b64.lst
+│   │   │   ├── b64.sv
+│   │   │   ├── b64.tr
+│   │   │   ├── bcc.de
+│   │   │   ├── bcc.fr
+│   │   │   ├── bcc.lsm
+│   │   │   ├── bcc.lst
+│   │   │   ├── bcc.sv
+│   │   │   ├── bcc.tr
+│   │   │   ├── biew.de
+│   │   │   ├── biew.fr
+│   │   │   ├── biew.lsm
+│   │   │   ├── biew.lst
+│   │   │   ├── biew.sv
+│   │   │   ├── biew.tr
+│   │   │   ├── bladeenc.de
+│   │   │   ├── bladeenc.fr
+│   │   │   ├── bladeenc.lsm
+│   │   │   ├── bladeenc.lst
+│   │   │   ├── bladeenc.sv
+│   │   │   ├── bladeenc.tr
+│   │   │   ├── blkdrop.de
+│   │   │   ├── blkdrop.fr
+│   │   │   ├── blkdrop.lsm
+│   │   │   ├── blkdrop.lst
+│   │   │   ├── blkdrop.tr
+│   │   │   ├── blocek.de
+│   │   │   ├── blocek.fr
+│   │   │   ├── blocek.lsm
+│   │   │   ├── blocek.lst
+│   │   │   ├── blocek.sv
+│   │   │   ├── blocek.tr
+│   │   │   ├── bolitare.de
+│   │   │   ├── bolitare.fr
+│   │   │   ├── bolitare.lsm
+│   │   │   ├── bolitare.lst
+│   │   │   ├── bolitare.sv
+│   │   │   ├── bolitare.tr
+│   │   │   ├── boom.de
+│   │   │   ├── boom.fr
+│   │   │   ├── boom.lsm
+│   │   │   ├── boom.lst
+│   │   │   ├── boom.sv
+│   │   │   ├── boom.tr
+│   │   │   ├── bootfix.de
+│   │   │   ├── bootfix.fr
+│   │   │   ├── bootfix.lsm
+│   │   │   ├── bootfix.lst
+│   │   │   ├── bootfix.sv
+│   │   │   ├── bootfix.tr
+│   │   │   ├── bsum.de
+│   │   │   ├── bsum.fr
+│   │   │   ├── bsum.lsm
+│   │   │   ├── bsum.lst
+│   │   │   ├── bsum.sv
+│   │   │   ├── bsum.tr
+│   │   │   ├── bwbasic.de
+│   │   │   ├── bwbasic.fr
+│   │   │   ├── bwbasic.lsm
+│   │   │   ├── bwbasic.lst
+│   │   │   ├── bwbasic.sv
+│   │   │   ├── bwbasic.tr
+│   │   │   ├── bz2.de
+│   │   │   ├── bz2.fr
+│   │   │   ├── bz2.lsm
+│   │   │   ├── bz2.lst
+│   │   │   ├── bz2.sv
+│   │   │   ├── bz2.tr
+│   │   │   ├── cabext.de
+│   │   │   ├── cabext.fr
+│   │   │   ├── cabext.lsm
+│   │   │   ├── cabext.lst
+│   │   │   ├── cabext.sv
+│   │   │   ├── cabext.tr
+│   │   │   ├── cal.de
+│   │   │   ├── cal.fr
+│   │   │   ├── cal.lsm
+│   │   │   ├── cal.lst
+│   │   │   ├── cal.sv
+│   │   │   ├── cal.tr
+│   │   │   ├── callver.de
+│   │   │   ├── callver.fr
+│   │   │   ├── callver.lsm
+│   │   │   ├── callver.lst
+│   │   │   ├── callver.sv
+│   │   │   ├── callver.tr
+│   │   │   ├── cdrcache.de
+│   │   │   ├── cdrcache.fr
+│   │   │   ├── cdrcache.lsm
+│   │   │   ├── cdrcache.lst
+│   │   │   ├── cdrcache.sv
+│   │   │   ├── cdrcache.tr
+│   │   │   ├── cdrom2ui.de
+│   │   │   ├── cdrom2ui.fr
+│   │   │   ├── cdrom2ui.lsm
+│   │   │   ├── cdrom2ui.lst
+│   │   │   ├── cdrom2ui.sv
+│   │   │   ├── cdrom2ui.tr
+│   │   │   ├── chkdsk.de
+│   │   │   ├── chkdsk.fr
+│   │   │   ├── chkdsk.lsm
+│   │   │   ├── chkdsk.lst
+│   │   │   ├── chkdsk.sv
+│   │   │   ├── chkdsk.tr
+│   │   │   ├── choice.de
+│   │   │   ├── choice.fr
+│   │   │   ├── choice.lsm
+│   │   │   ├── choice.lst
+│   │   │   ├── choice.sv
+│   │   │   ├── choice.tr
+│   │   │   ├── comp.de
+│   │   │   ├── comp.fr
+│   │   │   ├── comp.lsm
+│   │   │   ├── comp.lst
+│   │   │   ├── comp.sv
+│   │   │   ├── comp.tr
+│   │   │   ├── cpidos.de
+│   │   │   ├── cpidos.fr
+│   │   │   ├── cpidos.lsm
+│   │   │   ├── cpidos.lst
+│   │   │   ├── cpidos.sv
+│   │   │   ├── cpidos.tr
+│   │   │   ├── cpied.de
+│   │   │   ├── cpied.fr
+│   │   │   ├── cpied.lsm
+│   │   │   ├── cpied.lst
+│   │   │   ├── cpied.sv
+│   │   │   ├── cpied.tr
+│   │   │   ├── cpp2ccmt.de
+│   │   │   ├── cpp2ccmt.fr
+│   │   │   ├── cpp2ccmt.lsm
+│   │   │   ├── cpp2ccmt.lst
+│   │   │   ├── cpp2ccmt.sv
+│   │   │   ├── cpp2ccmt.tr
+│   │   │   ├── crynwr.de
+│   │   │   ├── crynwr.fr
+│   │   │   ├── crynwr.lsm
+│   │   │   ├── crynwr.lst
+│   │   │   ├── crynwr.sv
+│   │   │   ├── crynwr.tr
+│   │   │   ├── ctmouse.de
+│   │   │   ├── ctmouse.fr
+│   │   │   ├── ctmouse.lsm
+│   │   │   ├── ctmouse.lst
+│   │   │   ├── ctmouse.sv
+│   │   │   ├── ctmouse.tr
+│   │   │   ├── curl.de
+│   │   │   ├── curl.fr
+│   │   │   ├── curl.lsm
+│   │   │   ├── curl.lst
+│   │   │   ├── curl.sv
+│   │   │   ├── curl.tr
+│   │   │   ├── cwsdpmi.de
+│   │   │   ├── cwsdpmi.fr
+│   │   │   ├── cwsdpmi.lsm
+│   │   │   ├── cwsdpmi.lst
+│   │   │   ├── cwsdpmi.sv
+│   │   │   ├── cwsdpmi.tr
+│   │   │   ├── daa2iso.de
+│   │   │   ├── daa2iso.fr
+│   │   │   ├── daa2iso.lsm
+│   │   │   ├── daa2iso.lst
+│   │   │   ├── daa2iso.sv
+│   │   │   ├── daa2iso.tr
+│   │   │   ├── debug.de
+│   │   │   ├── debug.fr
+│   │   │   ├── debug.lsm
+│   │   │   ├── debug.lst
+│   │   │   ├── debug.sv
+│   │   │   ├── debug.tr
+│   │   │   ├── defrag.de
+│   │   │   ├── defrag.fr
+│   │   │   ├── defrag.lsm
+│   │   │   ├── defrag.lst
+│   │   │   ├── defrag.sv
+│   │   │   ├── defrag.tr
+│   │   │   ├── deltree.de
+│   │   │   ├── deltree.fr
+│   │   │   ├── deltree.lsm
+│   │   │   ├── deltree.lst
+│   │   │   ├── deltree.sv
+│   │   │   ├── deltree.tr
+│   │   │   ├── devload.de
+│   │   │   ├── devload.fr
+│   │   │   ├── devload.lsm
+│   │   │   ├── devload.lst
+│   │   │   ├── devload.sv
+│   │   │   ├── devload.tr
+│   │   │   ├── dialog.de
+│   │   │   ├── dialog.fr
+│   │   │   ├── dialog.lsm
+│   │   │   ├── dialog.lst
+│   │   │   ├── dialog.sv
+│   │   │   ├── dialog.tr
+│   │   │   ├── dillo.de
+│   │   │   ├── dillo.fr
+│   │   │   ├── dillo.lsm
+│   │   │   ├── dillo.lst
+│   │   │   ├── dillo.sv
+│   │   │   ├── dillo.tr
+│   │   │   ├── diskcomp.de
+│   │   │   ├── diskcomp.fr
+│   │   │   ├── diskcomp.lsm
+│   │   │   ├── diskcomp.lst
+│   │   │   ├── diskcomp.sv
+│   │   │   ├── diskcomp.tr
+│   │   │   ├── diskcopy.de
+│   │   │   ├── diskcopy.fr
+│   │   │   ├── diskcopy.lsm
+│   │   │   ├── diskcopy.lst
+│   │   │   ├── diskcopy.sv
+│   │   │   ├── diskcopy.tr
+│   │   │   ├── display.de
+│   │   │   ├── display.fr
+│   │   │   ├── display.lsm
+│   │   │   ├── display.lst
+│   │   │   ├── display.sv
+│   │   │   ├── display.tr
+│   │   │   ├── dn2.de
+│   │   │   ├── dn2.fr
+│   │   │   ├── dn2.lsm
+│   │   │   ├── dn2.lst
+│   │   │   ├── dn2.sv
+│   │   │   ├── dn2.tr
+│   │   │   ├── dog.de
+│   │   │   ├── dog.fr
+│   │   │   ├── dog.lsm
+│   │   │   ├── dog.lst
+│   │   │   ├── dog.sv
+│   │   │   ├── dog.tr
+│   │   │   ├── dojs.de
+│   │   │   ├── dojs.fr
+│   │   │   ├── dojs.lsm
+│   │   │   ├── dojs.lst
+│   │   │   ├── dojs.sv
+│   │   │   ├── dojs.tr
+│   │   │   ├── dos32a.de
+│   │   │   ├── dos32a.fr
+│   │   │   ├── dos32a.lsm
+│   │   │   ├── dos32a.lst
+│   │   │   ├── dos32a.sv
+│   │   │   ├── dos32a.tr
+│   │   │   ├── dosdef.de
+│   │   │   ├── dosdef.fr
+│   │   │   ├── dosdef.lsm
+│   │   │   ├── dosdef.lst
+│   │   │   ├── dosdef.sv
+│   │   │   ├── dosdef.tr
+│   │   │   ├── dosfsck.de
+│   │   │   ├── dosfsck.fr
+│   │   │   ├── dosfsck.lsm
+│   │   │   ├── dosfsck.lst
+│   │   │   ├── dosfsck.sv
+│   │   │   ├── dosfsck.tr
+│   │   │   ├── doshexed.de
+│   │   │   ├── doshexed.fr
+│   │   │   ├── doshexed.lsm
+│   │   │   ├── doshexed.lst
+│   │   │   ├── doshexed.sv
+│   │   │   ├── doshexed.tr
+│   │   │   ├── doslfn.de
+│   │   │   ├── doslfn.fr
+│   │   │   ├── doslfn.lsm
+│   │   │   ├── doslfn.lst
+│   │   │   ├── doslfn.sv
+│   │   │   ├── doslfn.tr
+│   │   │   ├── dosmid.de
+│   │   │   ├── dosmid.fr
+│   │   │   ├── dosmid.lsm
+│   │   │   ├── dosmid.lst
+│   │   │   ├── dosmid.sv
+│   │   │   ├── dosmid.tr
+│   │   │   ├── dosview.de
+│   │   │   ├── dosview.fr
+│   │   │   ├── dosview.lsm
+│   │   │   ├── dosview.lst
+│   │   │   ├── dosview.tr
+│   │   │   ├── doszip.de
+│   │   │   ├── doszip.fr
+│   │   │   ├── doszip.lsm
+│   │   │   ├── doszip.lst
+│   │   │   ├── doszip.sv
+│   │   │   ├── doszip.tr
+│   │   │   ├── du.de
+│   │   │   ├── du.fr
+│   │   │   ├── du.lsm
+│   │   │   ├── du.lst
+│   │   │   ├── du.sv
+│   │   │   ├── du.tr
+│   │   │   ├── dwol.de
+│   │   │   ├── dwol.fr
+│   │   │   ├── dwol.lsm
+│   │   │   ├── dwol.lst
+│   │   │   ├── dwol.sv
+│   │   │   ├── dwol.tr
+│   │   │   ├── dzemm.de
+│   │   │   ├── dzemm.fr
+│   │   │   ├── dzemm.lsm
+│   │   │   ├── dzemm.lst
+│   │   │   ├── dzemm.sv
+│   │   │   ├── dzemm.tr
+│   │   │   ├── e1000pkt.de
+│   │   │   ├── e1000pkt.fr
+│   │   │   ├── e1000pkt.lsm
+│   │   │   ├── e1000pkt.lst
+│   │   │   ├── e1000pkt.sv
+│   │   │   ├── e1000pkt.tr
+│   │   │   ├── e100pkt.de
+│   │   │   ├── e100pkt.fr
+│   │   │   ├── e100pkt.lsm
+│   │   │   ├── e100pkt.lst
+│   │   │   ├── e100pkt.sv
+│   │   │   ├── e100pkt.tr
+│   │   │   ├── e3.de
+│   │   │   ├── e3.fr
+│   │   │   ├── e3.lsm
+│   │   │   ├── e3.lst
+│   │   │   ├── e3.sv
+│   │   │   ├── e3.tr
+│   │   │   ├── edict.de
+│   │   │   ├── edict.fr
+│   │   │   ├── edict.lsm
+│   │   │   ├── edict.lst
+│   │   │   ├── edict.sv
+│   │   │   ├── edict.tr
+│   │   │   ├── edit.de
+│   │   │   ├── edit.fr
+│   │   │   ├── edit.lsm
+│   │   │   ├── edit.lst
+│   │   │   ├── edit.sv
+│   │   │   ├── edit.tr
+│   │   │   ├── edlin.de
+│   │   │   ├── edlin.fr
+│   │   │   ├── edlin.lsm
+│   │   │   ├── edlin.lst
+│   │   │   ├── edlin.sv
+│   │   │   ├── edlin.tr
+│   │   │   ├── eliza.de
+│   │   │   ├── eliza.fr
+│   │   │   ├── eliza.lsm
+│   │   │   ├── eliza.lst
+│   │   │   ├── eliza.sv
+│   │   │   ├── eliza.tr
+│   │   │   ├── eltorito.de
+│   │   │   ├── eltorito.fr
+│   │   │   ├── eltorito.lsm
+│   │   │   ├── eltorito.lst
+│   │   │   ├── eltorito.sv
+│   │   │   ├── eltorito.tr
+│   │   │   ├── elvis.de
+│   │   │   ├── elvis.fr
+│   │   │   ├── elvis.lsm
+│   │   │   ├── elvis.lst
+│   │   │   ├── elvis.sv
+│   │   │   ├── elvis.tr
+│   │   │   ├── empong.de
+│   │   │   ├── empong.fr
+│   │   │   ├── empong.lsm
+│   │   │   ├── empong.lst
+│   │   │   ├── empong.sv
+│   │   │   ├── empong.tr
+│   │   │   ├── etherdfs.de
+│   │   │   ├── etherdfs.fr
+│   │   │   ├── etherdfs.lsm
+│   │   │   ├── etherdfs.lst
+│   │   │   ├── etherdfs.sv
+│   │   │   ├── etherdfs.tr
+│   │   │   ├── ethtools.de
+│   │   │   ├── ethtools.fr
+│   │   │   ├── ethtools.lsm
+│   │   │   ├── ethtools.lst
+│   │   │   ├── ethtools.sv
+│   │   │   ├── ethtools.tr
+│   │   │   ├── euphoria.de
+│   │   │   ├── euphoria.fr
+│   │   │   ├── euphoria.lsm
+│   │   │   ├── euphoria.lst
+│   │   │   ├── euphoria.sv
+│   │   │   ├── euphoria.tr
+│   │   │   ├── ev4de.de
+│   │   │   ├── ev4de.fr
+│   │   │   ├── ev4de.lsm
+│   │   │   ├── ev4de.lst
+│   │   │   ├── ev4de.sv
+│   │   │   ├── ev4de.tr
+│   │   │   ├── ewsnake.de
+│   │   │   ├── ewsnake.fr
+│   │   │   ├── ewsnake.lsm
+│   │   │   ├── ewsnake.lst
+│   │   │   ├── ewsnake.sv
+│   │   │   ├── ewsnake.tr
+│   │   │   ├── exe2bin.de
+│   │   │   ├── exe2bin.fr
+│   │   │   ├── exe2bin.lsm
+│   │   │   ├── exe2bin.lst
+│   │   │   ├── exe2bin.sv
+│   │   │   ├── exe2bin.tr
+│   │   │   ├── fasm.de
+│   │   │   ├── fasm.fr
+│   │   │   ├── fasm.lsm
+│   │   │   ├── fasm.lst
+│   │   │   ├── fasm.sv
+│   │   │   ├── fasm.tr
+│   │   │   ├── fbc.de
+│   │   │   ├── fbc.fr
+│   │   │   ├── fbc.lsm
+│   │   │   ├── fbc.lst
+│   │   │   ├── fbc.sv
+│   │   │   ├── fbc.tr
+│   │   │   ├── fbc_help.de
+│   │   │   ├── fbc_help.fr
+│   │   │   ├── fbc_help.lsm
+│   │   │   ├── fbc_help.lst
+│   │   │   ├── fbc_help.sv
+│   │   │   ├── fbc_help.tr
+│   │   │   ├── fc.de
+│   │   │   ├── fc.fr
+│   │   │   ├── fc.lsm
+│   │   │   ├── fc.lst
+│   │   │   ├── fc.sv
+│   │   │   ├── fc.tr
+│   │   │   ├── fdapm.de
+│   │   │   ├── fdapm.fr
+│   │   │   ├── fdapm.lsm
+│   │   │   ├── fdapm.lst
+│   │   │   ├── fdapm.sv
+│   │   │   ├── fdapm.tr
+│   │   │   ├── fdbanner.de
+│   │   │   ├── fdbanner.fr
+│   │   │   ├── fdbanner.lsm
+│   │   │   ├── fdbanner.lst
+│   │   │   ├── fdbanner.sv
+│   │   │   ├── fdbanner.tr
+│   │   │   ├── fdhelper.de
+│   │   │   ├── fdhelper.fr
+│   │   │   ├── fdhelper.lsm
+│   │   │   ├── fdhelper.lst
+│   │   │   ├── fdhelper.sv
+│   │   │   ├── fdhelper.tr
+│   │   │   ├── fdimples.de
+│   │   │   ├── fdimples.fr
+│   │   │   ├── fdimples.lsm
+│   │   │   ├── fdimples.lst
+│   │   │   ├── fdimples.sv
+│   │   │   ├── fdimples.tr
+│   │   │   ├── fdisk.de
+│   │   │   ├── fdisk.fr
+│   │   │   ├── fdisk.lsm
+│   │   │   ├── fdisk.lst
+│   │   │   ├── fdisk.sv
+│   │   │   ├── fdisk.tr
+│   │   │   ├── fdisrc.lsm
+│   │   │   ├── fdisrc.lst
+│   │   │   ├── fdnet.de
+│   │   │   ├── fdnet.fr
+│   │   │   ├── fdnet.lsm
+│   │   │   ├── fdnet.lst
+│   │   │   ├── fdnet.sv
+│   │   │   ├── fdnet.tr
+│   │   │   ├── fdnpkg.de
+│   │   │   ├── fdnpkg.fr
+│   │   │   ├── fdnpkg.lsm
+│   │   │   ├── fdnpkg.lst
+│   │   │   ├── fdnpkg.sv
+│   │   │   ├── fdnpkg.tr
+│   │   │   ├── fdshell.de
+│   │   │   ├── fdshell.fr
+│   │   │   ├── fdshell.lsm
+│   │   │   ├── fdshell.lst
+│   │   │   ├── fdshell.sv
+│   │   │   ├── fdshell.tr
+│   │   │   ├── fdshield.de
+│   │   │   ├── fdshield.fr
+│   │   │   ├── fdshield.lsm
+│   │   │   ├── fdshield.lst
+│   │   │   ├── fdshield.sv
+│   │   │   ├── fdshield.tr
+│   │   │   ├── fdxms.de
+│   │   │   ├── fdxms.fr
+│   │   │   ├── fdxms.lsm
+│   │   │   ├── fdxms.lst
+│   │   │   ├── fdxms.sv
+│   │   │   ├── fdxms.tr
+│   │   │   ├── fdxms286.de
+│   │   │   ├── fdxms286.fr
+│   │   │   ├── fdxms286.lsm
+│   │   │   ├── fdxms286.lst
+│   │   │   ├── fdxms286.sv
+│   │   │   ├── fdxms286.tr
+│   │   │   ├── fed.de
+│   │   │   ├── fed.fr
+│   │   │   ├── fed.lsm
+│   │   │   ├── fed.lst
+│   │   │   ├── fed.sv
+│   │   │   ├── fed.tr
+│   │   │   ├── find.de
+│   │   │   ├── find.fr
+│   │   │   ├── find.lsm
+│   │   │   ├── find.lst
+│   │   │   ├── find.sv
+│   │   │   ├── find.tr
+│   │   │   ├── finddisk.de
+│   │   │   ├── finddisk.fr
+│   │   │   ├── finddisk.lsm
+│   │   │   ├── finddisk.lst
+│   │   │   ├── finddisk.sv
+│   │   │   ├── finddisk.tr
+│   │   │   ├── flashrom.de
+│   │   │   ├── flashrom.fr
+│   │   │   ├── flashrom.lsm
+│   │   │   ├── flashrom.lst
+│   │   │   ├── flashrom.sv
+│   │   │   ├── flashrom.tr
+│   │   │   ├── flpybird.de
+│   │   │   ├── flpybird.fr
+│   │   │   ├── flpybird.lsm
+│   │   │   ├── flpybird.lst
+│   │   │   ├── flpybird.sv
+│   │   │   ├── flpybird.tr
+│   │   │   ├── fmines.de
+│   │   │   ├── fmines.fr
+│   │   │   ├── fmines.lsm
+│   │   │   ├── fmines.lst
+│   │   │   ├── fmines.sv
+│   │   │   ├── fmines.tr
+│   │   │   ├── format.de
+│   │   │   ├── format.fr
+│   │   │   ├── format.lsm
+│   │   │   ├── format.lst
+│   │   │   ├── format.sv
+│   │   │   ├── format.tr
+│   │   │   ├── foxcalc.de
+│   │   │   ├── foxcalc.fr
+│   │   │   ├── foxcalc.lsm
+│   │   │   ├── foxcalc.lst
+│   │   │   ├── foxcalc.sv
+│   │   │   ├── foxcalc.tr
+│   │   │   ├── foxtype.de
+│   │   │   ├── foxtype.fr
+│   │   │   ├── foxtype.lsm
+│   │   │   ├── foxtype.lst
+│   │   │   ├── foxtype.sv
+│   │   │   ├── foxtype.tr
+│   │   │   ├── fpc.de
+│   │   │   ├── fpc.fr
+│   │   │   ├── fpc.lsm
+│   │   │   ├── fpc.lst
+│   │   │   ├── fpc.sv
+│   │   │   ├── fpc.tr
+│   │   │   ├── freecom.de
+│   │   │   ├── freecom.fr
+│   │   │   ├── freecom.lsm
+│   │   │   ├── freecom.lst
+│   │   │   ├── freecom.sv
+│   │   │   ├── freecom.tr
+│   │   │   ├── freedoom.de
+│   │   │   ├── freedoom.fr
+│   │   │   ├── freedoom.lsm
+│   │   │   ├── freedoom.lst
+│   │   │   ├── freedoom.sv
+│   │   │   ├── freedoom.tr
+│   │   │   ├── freemacs.de
+│   │   │   ├── freemacs.fr
+│   │   │   ├── freemacs.lsm
+│   │   │   ├── freemacs.lst
+│   │   │   ├── freemacs.sv
+│   │   │   ├── freemacs.tr
+│   │   │   ├── gcdrom.de
+│   │   │   ├── gcdrom.fr
+│   │   │   ├── gcdrom.lsm
+│   │   │   ├── gcdrom.lst
+│   │   │   ├── gcdrom.sv
+│   │   │   ├── gcdrom.tr
+│   │   │   ├── gifsicle.de
+│   │   │   ├── gifsicle.fr
+│   │   │   ├── gifsicle.lsm
+│   │   │   ├── gifsicle.lst
+│   │   │   ├── gifsicle.sv
+│   │   │   ├── gifsicle.tr
+│   │   │   ├── gnuchcp.de
+│   │   │   ├── gnuchcp.fr
+│   │   │   ├── gnuchcp.lsm
+│   │   │   ├── gnuchcp.lst
+│   │   │   ├── gnuchcp.sv
+│   │   │   ├── gnuchcp.tr
+│   │   │   ├── gnuchess.de
+│   │   │   ├── gnuchess.fr
+│   │   │   ├── gnuchess.lsm
+│   │   │   ├── gnuchess.lst
+│   │   │   ├── gnuchess.sv
+│   │   │   ├── gnuchess.tr
+│   │   │   ├── gnufonts.de
+│   │   │   ├── gnufonts.fr
+│   │   │   ├── gnufonts.lsm
+│   │   │   ├── gnufonts.lst
+│   │   │   ├── gnufonts.sv
+│   │   │   ├── gnufonts.tr
+│   │   │   ├── gnused.de
+│   │   │   ├── gnused.fr
+│   │   │   ├── gnused.lsm
+│   │   │   ├── gnused.lst
+│   │   │   ├── gnused.sv
+│   │   │   ├── gnused.tr
+│   │   │   ├── gopherus.de
+│   │   │   ├── gopherus.fr
+│   │   │   ├── gopherus.lsm
+│   │   │   ├── gopherus.lst
+│   │   │   ├── gopherus.sv
+│   │   │   ├── gopherus.tr
+│   │   │   ├── graphics.de
+│   │   │   ├── graphics.fr
+│   │   │   ├── graphics.lsm
+│   │   │   ├── graphics.lst
+│   │   │   ├── graphics.sv
+│   │   │   ├── graphics.tr
+│   │   │   ├── grep.de
+│   │   │   ├── grep.fr
+│   │   │   ├── grep.lsm
+│   │   │   ├── grep.lst
+│   │   │   ├── grep.sv
+│   │   │   ├── grep.tr
+│   │   │   ├── gzip.de
+│   │   │   ├── gzip.fr
+│   │   │   ├── gzip.lsm
+│   │   │   ├── gzip.lst
+│   │   │   ├── gzip.sv
+│   │   │   ├── gzip.tr
+│   │   │   ├── hangman.de
+│   │   │   ├── hangman.fr
+│   │   │   ├── hangman.lsm
+│   │   │   ├── hangman.lst
+│   │   │   ├── hangman.sv
+│   │   │   ├── hangman.tr
+│   │   │   ├── head.de
+│   │   │   ├── head.fr
+│   │   │   ├── head.lsm
+│   │   │   ├── head.lst
+│   │   │   ├── head.sv
+│   │   │   ├── head.tr
+│   │   │   ├── hexcomp.de
+│   │   │   ├── hexcomp.fr
+│   │   │   ├── hexcomp.lsm
+│   │   │   ├── hexcomp.lst
+│   │   │   ├── hexcomp.sv
+│   │   │   ├── hexcomp.tr
+│   │   │   ├── himemsx.de
+│   │   │   ├── himemsx.fr
+│   │   │   ├── himemsx.lsm
+│   │   │   ├── himemsx.lst
+│   │   │   ├── himemsx.sv
+│   │   │   ├── himemsx.tr
+│   │   │   ├── himemx.de
+│   │   │   ├── himemx.fr
+│   │   │   ├── himemx.lsm
+│   │   │   ├── himemx.lst
+│   │   │   ├── himemx.sv
+│   │   │   ├── himemx.tr
+│   │   │   ├── hip.de
+│   │   │   ├── hip.fr
+│   │   │   ├── hip.lsm
+│   │   │   ├── hip.lst
+│   │   │   ├── hip.sv
+│   │   │   ├── hip.tr
+│   │   │   ├── hiram.de
+│   │   │   ├── hiram.fr
+│   │   │   ├── hiram.lsm
+│   │   │   ├── hiram.lst
+│   │   │   ├── hiram.sv
+│   │   │   ├── hiram.tr
+│   │   │   ├── htget.de
+│   │   │   ├── htget.fr
+│   │   │   ├── htget.lsm
+│   │   │   ├── htget.lst
+│   │   │   ├── htget.sv
+│   │   │   ├── htget.tr
+│   │   │   ├── htmlhelp.de
+│   │   │   ├── htmlhelp.fr
+│   │   │   ├── htmlhelp.lsm
+│   │   │   ├── htmlhelp.lst
+│   │   │   ├── htmlhelp.sv
+│   │   │   ├── htmlhelp.tr
+│   │   │   ├── i16budoc.de
+│   │   │   ├── i16budoc.fr
+│   │   │   ├── i16budoc.lsm
+│   │   │   ├── i16budoc.lst
+│   │   │   ├── i16budoc.sv
+│   │   │   ├── i16budoc.tr
+│   │   │   ├── i16butil.de
+│   │   │   ├── i16butil.fr
+│   │   │   ├── i16butil.lsm
+│   │   │   ├── i16butil.lst
+│   │   │   ├── i16butil.sv
+│   │   │   ├── i16butil.tr
+│   │   │   ├── i16elklc.de
+│   │   │   ├── i16elklc.fr
+│   │   │   ├── i16elklc.lsm
+│   │   │   ├── i16elklc.lst
+│   │   │   ├── i16elklc.sv
+│   │   │   ├── i16elklc.tr
+│   │   │   ├── i16env.de
+│   │   │   ├── i16env.fr
+│   │   │   ├── i16env.lsm
+│   │   │   ├── i16env.lst
+│   │   │   ├── i16env.tr
+│   │   │   ├── i16gcc.de
+│   │   │   ├── i16gcc.fr
+│   │   │   ├── i16gcc.lsm
+│   │   │   ├── i16gcc.lst
+│   │   │   ├── i16gcc.sv
+│   │   │   ├── i16gcc.tr
+│   │   │   ├── i16gcdoc.de
+│   │   │   ├── i16gcdoc.fr
+│   │   │   ├── i16gcdoc.lsm
+│   │   │   ├── i16gcdoc.lst
+│   │   │   ├── i16gcdoc.sv
+│   │   │   ├── i16gcdoc.tr
+│   │   │   ├── i16lbi86.de
+│   │   │   ├── i16lbi86.fr
+│   │   │   ├── i16lbi86.lsm
+│   │   │   ├── i16lbi86.lst
+│   │   │   ├── i16lbi86.sv
+│   │   │   ├── i16lbi86.tr
+│   │   │   ├── i16newli.de
+│   │   │   ├── i16newli.fr
+│   │   │   ├── i16newli.lsm
+│   │   │   ├── i16newli.lst
+│   │   │   ├── i16newli.sv
+│   │   │   ├── i16newli.tr
+│   │   │   ├── i16nlelk.de
+│   │   │   ├── i16nlelk.fr
+│   │   │   ├── i16nlelk.lsm
+│   │   │   ├── i16nlelk.lst
+│   │   │   ├── i16nlelk.sv
+│   │   │   ├── i16nlelk.tr
+│   │   │   ├── i16src.de
+│   │   │   ├── i16src.fr
+│   │   │   ├── i16src.lsm
+│   │   │   ├── i16src.lst
+│   │   │   ├── i16src.sv
+│   │   │   ├── i16src.tr
+│   │   │   ├── imgedit.de
+│   │   │   ├── imgedit.fr
+│   │   │   ├── imgedit.lsm
+│   │   │   ├── imgedit.lst
+│   │   │   ├── imgedit.sv
+│   │   │   ├── imgedit.tr
+│   │   │   ├── insight.de
+│   │   │   ├── insight.fr
+│   │   │   ├── insight.lsm
+│   │   │   ├── insight.lst
+│   │   │   ├── insight.sv
+│   │   │   ├── insight.tr
+│   │   │   ├── ivan.de
+│   │   │   ├── ivan.fr
+│   │   │   ├── ivan.lsm
+│   │   │   ├── ivan.lst
+│   │   │   ├── ivan.sv
+│   │   │   ├── ivan.tr
+│   │   │   ├── jemm.de
+│   │   │   ├── jemm.fr
+│   │   │   ├── jemm.lsm
+│   │   │   ├── jemm.lst
+│   │   │   ├── jemm.sv
+│   │   │   ├── jemm.tr
+│   │   │   ├── jwasm.de
+│   │   │   ├── jwasm.fr
+│   │   │   ├── jwasm.lsm
+│   │   │   ├── jwasm.lst
+│   │   │   ├── jwasm.sv
+│   │   │   ├── jwasm.tr
+│   │   │   ├── kernel.de
+│   │   │   ├── kernel.fr
+│   │   │   ├── kernel.lsm
+│   │   │   ├── kernel.lst
+│   │   │   ├── kernel.sv
+│   │   │   ├── kernel.tr
+│   │   │   ├── keyb.de
+│   │   │   ├── keyb.fr
+│   │   │   ├── keyb.lsm
+│   │   │   ├── keyb.lst
+│   │   │   ├── keyb.sv
+│   │   │   ├── keyb.tr
+│   │   │   ├── keyb_lay.de
+│   │   │   ├── keyb_lay.fr
+│   │   │   ├── keyb_lay.lsm
+│   │   │   ├── keyb_lay.lst
+│   │   │   ├── keyb_lay.sv
+│   │   │   ├── keyb_lay.tr
+│   │   │   ├── kittenc.de
+│   │   │   ├── kittenc.fr
+│   │   │   ├── kittenc.lsm
+│   │   │   ├── kittenc.lst
+│   │   │   ├── kittenc.sv
+│   │   │   ├── kittenc.tr
+│   │   │   ├── kraptor.de
+│   │   │   ├── kraptor.fr
+│   │   │   ├── kraptor.lsm
+│   │   │   ├── kraptor.lst
+│   │   │   ├── kraptor.sv
+│   │   │   ├── kraptor.tr
+│   │   │   ├── label.de
+│   │   │   ├── label.fr
+│   │   │   ├── label.lsm
+│   │   │   ├── label.lst
+│   │   │   ├── label.sv
+│   │   │   ├── label.tr
+│   │   │   ├── lame.de
+│   │   │   ├── lame.fr
+│   │   │   ├── lame.lsm
+│   │   │   ├── lame.lst
+│   │   │   ├── lame.sv
+│   │   │   ├── lame.tr
+│   │   │   ├── lbacache.de
+│   │   │   ├── lbacache.fr
+│   │   │   ├── lbacache.lsm
+│   │   │   ├── lbacache.lst
+│   │   │   ├── lbacache.sv
+│   │   │   ├── lbacache.tr
+│   │   │   ├── ldebug.de
+│   │   │   ├── ldebug.fr
+│   │   │   ├── ldebug.lsm
+│   │   │   ├── ldebug.lst
+│   │   │   ├── ldebug.sv
+│   │   │   ├── ldebug.tr
+│   │   │   ├── less.de
+│   │   │   ├── less.fr
+│   │   │   ├── less.lsm
+│   │   │   ├── less.lst
+│   │   │   ├── less.sv
+│   │   │   ├── less.tr
+│   │   │   ├── lfndos.de
+│   │   │   ├── lfndos.fr
+│   │   │   ├── lfndos.lsm
+│   │   │   ├── lfndos.lst
+│   │   │   ├── lfndos.sv
+│   │   │   ├── lfndos.tr
+│   │   │   ├── links.de
+│   │   │   ├── links.fr
+│   │   │   ├── links.lsm
+│   │   │   ├── links.lst
+│   │   │   ├── links.sv
+│   │   │   ├── links.tr
+│   │   │   ├── liquiwar.de
+│   │   │   ├── liquiwar.fr
+│   │   │   ├── liquiwar.lsm
+│   │   │   ├── liquiwar.lst
+│   │   │   ├── liquiwar.sv
+│   │   │   ├── liquiwar.tr
+│   │   │   ├── listpci.de
+│   │   │   ├── listpci.fr
+│   │   │   ├── listpci.lsm
+│   │   │   ├── listpci.lst
+│   │   │   ├── listpci.sv
+│   │   │   ├── listpci.tr
+│   │   │   ├── listvesa.de
+│   │   │   ├── listvesa.fr
+│   │   │   ├── listvesa.lsm
+│   │   │   ├── listvesa.lst
+│   │   │   ├── listvesa.sv
+│   │   │   ├── listvesa.tr
+│   │   │   ├── localcfg.de
+│   │   │   ├── localcfg.fr
+│   │   │   ├── localcfg.lsm
+│   │   │   ├── localcfg.lst
+│   │   │   ├── localcfg.sv
+│   │   │   ├── localcfg.tr
+│   │   │   ├── localize.de
+│   │   │   ├── localize.fr
+│   │   │   ├── localize.lsm
+│   │   │   ├── localize.lst
+│   │   │   ├── localize.sv
+│   │   │   ├── localize.tr
+│   │   │   ├── logger.de
+│   │   │   ├── logger.fr
+│   │   │   ├── logger.lsm
+│   │   │   ├── logger.lst
+│   │   │   ├── logger.tr
+│   │   │   ├── lpq1.de
+│   │   │   ├── lpq1.fr
+│   │   │   ├── lpq1.lsm
+│   │   │   ├── lpq1.lst
+│   │   │   ├── lpq1.sv
+│   │   │   ├── lpq1.tr
+│   │   │   ├── lptdrv.de
+│   │   │   ├── lptdrv.fr
+│   │   │   ├── lptdrv.lsm
+│   │   │   ├── lptdrv.lst
+│   │   │   ├── lptdrv.sv
+│   │   │   ├── lptdrv.tr
+│   │   │   ├── lsppp.de
+│   │   │   ├── lsppp.fr
+│   │   │   ├── lsppp.lsm
+│   │   │   ├── lsppp.lst
+│   │   │   ├── lsppp.sv
+│   │   │   ├── lsppp.tr
+│   │   │   ├── lua.de
+│   │   │   ├── lua.fr
+│   │   │   ├── lua.lsm
+│   │   │   ├── lua.lst
+│   │   │   ├── lua.sv
+│   │   │   ├── lua.tr
+│   │   │   ├── lynx.de
+│   │   │   ├── lynx.fr
+│   │   │   ├── lynx.lsm
+│   │   │   ├── lynx.lst
+│   │   │   ├── lynx.sv
+│   │   │   ├── lynx.tr
+│   │   │   ├── lzip.de
+│   │   │   ├── lzip.fr
+│   │   │   ├── lzip.lsm
+│   │   │   ├── lzip.lst
+│   │   │   ├── lzip.sv
+│   │   │   ├── lzip.tr
+│   │   │   ├── lzma.de
+│   │   │   ├── lzma.fr
+│   │   │   ├── lzma.lsm
+│   │   │   ├── lzma.lst
+│   │   │   ├── lzma.sv
+│   │   │   ├── lzma.tr
+│   │   │   ├── lzop.de
+│   │   │   ├── lzop.fr
+│   │   │   ├── lzop.lsm
+│   │   │   ├── lzop.lst
+│   │   │   ├── lzop.sv
+│   │   │   ├── lzop.tr
+│   │   │   ├── m2wat.de
+│   │   │   ├── m2wat.fr
+│   │   │   ├── m2wat.lsm
+│   │   │   ├── m2wat.lst
+│   │   │   ├── m2wat.sv
+│   │   │   ├── m2wat.tr
+│   │   │   ├── mbedit.de
+│   │   │   ├── mbedit.fr
+│   │   │   ├── mbedit.lsm
+│   │   │   ├── mbedit.lst
+│   │   │   ├── mbedit.sv
+│   │   │   ├── mbedit.tr
+│   │   │   ├── md5sum.de
+│   │   │   ├── md5sum.fr
+│   │   │   ├── md5sum.lsm
+│   │   │   ├── md5sum.lst
+│   │   │   ├── md5sum.sv
+│   │   │   ├── md5sum.tr
+│   │   │   ├── mem.de
+│   │   │   ├── mem.fr
+│   │   │   ├── mem.lsm
+│   │   │   ├── mem.lst
+│   │   │   ├── mem.sv
+│   │   │   ├── mem.tr
+│   │   │   ├── memteste.de
+│   │   │   ├── memteste.fr
+│   │   │   ├── memteste.lsm
+│   │   │   ├── memteste.lst
+│   │   │   ├── memteste.sv
+│   │   │   ├── memteste.tr
+│   │   │   ├── mined.de
+│   │   │   ├── mined.fr
+│   │   │   ├── mined.lsm
+│   │   │   ├── mined.lst
+│   │   │   ├── mined.sv
+│   │   │   ├── mined.tr
+│   │   │   ├── mirmagic.de
+│   │   │   ├── mirmagic.fr
+│   │   │   ├── mirmagic.lsm
+│   │   │   ├── mirmagic.lst
+│   │   │   ├── mirmagic.sv
+│   │   │   ├── mirmagic.tr
+│   │   │   ├── mirror.de
+│   │   │   ├── mirror.fr
+│   │   │   ├── mirror.lsm
+│   │   │   ├── mirror.lst
+│   │   │   ├── mirror.sv
+│   │   │   ├── mirror.tr
+│   │   │   ├── mistral.de
+│   │   │   ├── mistral.fr
+│   │   │   ├── mistral.lsm
+│   │   │   ├── mistral.lst
+│   │   │   ├── mistral.sv
+│   │   │   ├── mistral.tr
+│   │   │   ├── mkeyb.de
+│   │   │   ├── mkeyb.fr
+│   │   │   ├── mkeyb.lsm
+│   │   │   ├── mkeyb.lst
+│   │   │   ├── mkeyb.sv
+│   │   │   ├── mkeyb.tr
+│   │   │   ├── mode.de
+│   │   │   ├── mode.fr
+│   │   │   ├── mode.lsm
+│   │   │   ├── mode.lst
+│   │   │   ├── mode.sv
+│   │   │   ├── mode.tr
+│   │   │   ├── more.de
+│   │   │   ├── more.fr
+│   │   │   ├── more.lsm
+│   │   │   ├── more.lst
+│   │   │   ├── more.sv
+│   │   │   ├── more.tr
+│   │   │   ├── move.de
+│   │   │   ├── move.fr
+│   │   │   ├── move.lsm
+│   │   │   ├── move.lst
+│   │   │   ├── move.sv
+│   │   │   ├── move.tr
+│   │   │   ├── mplayer.de
+│   │   │   ├── mplayer.fr
+│   │   │   ├── mplayer.lsm
+│   │   │   ├── mplayer.lst
+│   │   │   ├── mplayer.sv
+│   │   │   ├── mplayer.tr
+│   │   │   ├── msa.de
+│   │   │   ├── msa.fr
+│   │   │   ├── msa.lsm
+│   │   │   ├── msa.lst
+│   │   │   ├── msa.sv
+│   │   │   ├── msa.tr
+│   │   │   ├── msedit.de
+│   │   │   ├── msedit.fr
+│   │   │   ├── msedit.lsm
+│   │   │   ├── msedit.lst
+│   │   │   ├── msedit.sv
+│   │   │   ├── msedit.tr
+│   │   │   ├── mskermit.de
+│   │   │   ├── mskermit.fr
+│   │   │   ├── mskermit.lsm
+│   │   │   ├── mskermit.lst
+│   │   │   ├── mskermit.sv
+│   │   │   ├── mskermit.tr
+│   │   │   ├── mtcp.de
+│   │   │   ├── mtcp.fr
+│   │   │   ├── mtcp.lsm
+│   │   │   ├── mtcp.lst
+│   │   │   ├── mtcp.sv
+│   │   │   ├── mtcp.tr
+│   │   │   ├── nansi.de
+│   │   │   ├── nansi.fr
+│   │   │   ├── nansi.lsm
+│   │   │   ├── nansi.lst
+│   │   │   ├── nansi.sv
+│   │   │   ├── nansi.tr
+│   │   │   ├── nasm.de
+│   │   │   ├── nasm.fr
+│   │   │   ├── nasm.lsm
+│   │   │   ├── nasm.lst
+│   │   │   ├── nasm.sv
+│   │   │   ├── nasm.tr
+│   │   │   ├── nethack.de
+│   │   │   ├── nethack.fr
+│   │   │   ├── nethack.lsm
+│   │   │   ├── nethack.lst
+│   │   │   ├── nethack.sv
+│   │   │   ├── nethack.tr
+│   │   │   ├── newsnuz.de
+│   │   │   ├── newsnuz.fr
+│   │   │   ├── newsnuz.lsm
+│   │   │   ├── newsnuz.lst
+│   │   │   ├── newsnuz.sv
+│   │   │   ├── newsnuz.tr
+│   │   │   ├── nge_nibb.de
+│   │   │   ├── nge_nibb.fr
+│   │   │   ├── nge_nibb.lsm
+│   │   │   ├── nge_nibb.lst
+│   │   │   ├── nge_nibb.sv
+│   │   │   ├── nge_nibb.tr
+│   │   │   ├── nlsfunc.de
+│   │   │   ├── nlsfunc.fr
+│   │   │   ├── nlsfunc.lsm
+│   │   │   ├── nlsfunc.lst
+│   │   │   ├── nlsfunc.sv
+│   │   │   ├── nlsfunc.tr
+│   │   │   ├── noudar.de
+│   │   │   ├── noudar.fr
+│   │   │   ├── noudar.lsm
+│   │   │   ├── noudar.lst
+│   │   │   ├── noudar.sv
+│   │   │   ├── noudar.tr
+│   │   │   ├── nro.de
+│   │   │   ├── nro.fr
+│   │   │   ├── nro.lsm
+│   │   │   ├── nro.lst
+│   │   │   ├── nro.sv
+│   │   │   ├── nro.tr
+│   │   │   ├── ntfs.de
+│   │   │   ├── ntfs.fr
+│   │   │   ├── ntfs.lsm
+│   │   │   ├── ntfs.lst
+│   │   │   ├── ntfs.sv
+│   │   │   ├── ntfs.tr
+│   │   │   ├── ntool.de
+│   │   │   ├── ntool.fr
+│   │   │   ├── ntool.lsm
+│   │   │   ├── ntool.lst
+│   │   │   ├── ntool.sv
+│   │   │   ├── ntool.tr
+│   │   │   ├── opencp.de
+│   │   │   ├── opencp.fr
+│   │   │   ├── opencp.lsm
+│   │   │   ├── opencp.lst
+│   │   │   ├── opencp.sv
+│   │   │   ├── opencp.tr
+│   │   │   ├── opengem.de
+│   │   │   ├── opengem.fr
+│   │   │   ├── opengem.lsm
+│   │   │   ├── opengem.lst
+│   │   │   ├── opengem.sv
+│   │   │   ├── opengem.tr
+│   │   │   ├── ospedit.de
+│   │   │   ├── ospedit.fr
+│   │   │   ├── ospedit.lsm
+│   │   │   ├── ospedit.lst
+│   │   │   ├── ospedit.sv
+│   │   │   ├── ospedit.tr
+│   │   │   ├── ospimg.de
+│   │   │   ├── ospimg.fr
+│   │   │   ├── ospimg.lsm
+│   │   │   ├── ospimg.lst
+│   │   │   ├── ospimg.sv
+│   │   │   ├── ospimg.tr
+│   │   │   ├── p7zip.de
+│   │   │   ├── p7zip.fr
+│   │   │   ├── p7zip.lsm
+│   │   │   ├── p7zip.lst
+│   │   │   ├── p7zip.sv
+│   │   │   ├── p7zip.tr
+│   │   │   ├── part.de
+│   │   │   ├── part.fr
+│   │   │   ├── part.lsm
+│   │   │   ├── part.lst
+│   │   │   ├── part.sv
+│   │   │   ├── part.tr
+│   │   │   ├── password.de
+│   │   │   ├── password.fr
+│   │   │   ├── password.lsm
+│   │   │   ├── password.lst
+│   │   │   ├── password.sv
+│   │   │   ├── password.tr
+│   │   │   ├── pbox.de
+│   │   │   ├── pbox.fr
+│   │   │   ├── pbox.lsm
+│   │   │   ├── pbox.lst
+│   │   │   ├── pbox.sv
+│   │   │   ├── pbox.tr
+│   │   │   ├── pcisleep.de
+│   │   │   ├── pcisleep.fr
+│   │   │   ├── pcisleep.lsm
+│   │   │   ├── pcisleep.lst
+│   │   │   ├── pcisleep.sv
+│   │   │   ├── pcisleep.tr
+│   │   │   ├── pdtree.de
+│   │   │   ├── pdtree.fr
+│   │   │   ├── pdtree.lsm
+│   │   │   ├── pdtree.lst
+│   │   │   ├── pdtree.sv
+│   │   │   ├── pdtree.tr
+│   │   │   ├── perl.de
+│   │   │   ├── perl.fr
+│   │   │   ├── perl.lsm
+│   │   │   ├── perl.lst
+│   │   │   ├── perl.sv
+│   │   │   ├── perl.tr
+│   │   │   ├── pg.de
+│   │   │   ├── pg.fr
+│   │   │   ├── pg.lsm
+│   │   │   ├── pg.lst
+│   │   │   ├── pg.sv
+│   │   │   ├── pg.tr
+│   │   │   ├── pgme.de
+│   │   │   ├── pgme.fr
+│   │   │   ├── pgme.lsm
+│   │   │   ├── pgme.lst
+│   │   │   ├── pgme.sv
+│   │   │   ├── pgme.tr
+│   │   │   ├── pico.de
+│   │   │   ├── pico.fr
+│   │   │   ├── pico.lsm
+│   │   │   ├── pico.lst
+│   │   │   ├── pico.sv
+│   │   │   ├── pico.tr
+│   │   │   ├── picosntp.de
+│   │   │   ├── picosntp.fr
+│   │   │   ├── picosntp.lsm
+│   │   │   ├── picosntp.lst
+│   │   │   ├── picosntp.sv
+│   │   │   ├── picosntp.tr
+│   │   │   ├── picotcp.de
+│   │   │   ├── picotcp.fr
+│   │   │   ├── picotcp.lsm
+│   │   │   ├── picotcp.lst
+│   │   │   ├── picotcp.sv
+│   │   │   ├── picotcp.tr
+│   │   │   ├── ping.de
+│   │   │   ├── ping.fr
+│   │   │   ├── ping.lsm
+│   │   │   ├── ping.lst
+│   │   │   ├── ping.sv
+│   │   │   ├── ping.tr
+│   │   │   ├── pkgtools.de
+│   │   │   ├── pkgtools.fr
+│   │   │   ├── pkgtools.lsm
+│   │   │   ├── pkgtools.lst
+│   │   │   ├── pkgtools.sv
+│   │   │   ├── pkgtools.tr
+│   │   │   ├── playcd.lsm
+│   │   │   ├── playcd.lst
+│   │   │   ├── pngcrush.de
+│   │   │   ├── pngcrush.fr
+│   │   │   ├── pngcrush.lsm
+│   │   │   ├── pngcrush.lst
+│   │   │   ├── pngcrush.sv
+│   │   │   ├── pngcrush.tr
+│   │   │   ├── print.de
+│   │   │   ├── print.fr
+│   │   │   ├── print.lsm
+│   │   │   ├── print.lst
+│   │   │   ├── print.sv
+│   │   │   ├── print.tr
+│   │   │   ├── qtetris.de
+│   │   │   ├── qtetris.fr
+│   │   │   ├── qtetris.lsm
+│   │   │   ├── qtetris.lst
+│   │   │   ├── qtetris.sv
+│   │   │   ├── qtetris.tr
+│   │   │   ├── raread.de
+│   │   │   ├── raread.fr
+│   │   │   ├── raread.lsm
+│   │   │   ├── raread.lst
+│   │   │   ├── raread.sv
+│   │   │   ├── raread.tr
+│   │   │   ├── rawrite.de
+│   │   │   ├── rawrite.fr
+│   │   │   ├── rawrite.lsm
+│   │   │   ├── rawrite.lst
+│   │   │   ├── rawrite.sv
+│   │   │   ├── rawrite.tr
+│   │   │   ├── rcal.de
+│   │   │   ├── rcal.fr
+│   │   │   ├── rcal.lsm
+│   │   │   ├── rcal.lst
+│   │   │   ├── rcal.sv
+│   │   │   ├── rcal.tr
+│   │   │   ├── rdisk.de
+│   │   │   ├── rdisk.fr
+│   │   │   ├── rdisk.lsm
+│   │   │   ├── rdisk.lst
+│   │   │   ├── rdisk.sv
+│   │   │   ├── rdisk.tr
+│   │   │   ├── recover.de
+│   │   │   ├── recover.fr
+│   │   │   ├── recover.lsm
+│   │   │   ├── recover.lst
+│   │   │   ├── recover.sv
+│   │   │   ├── recover.tr
+│   │   │   ├── regina.de
+│   │   │   ├── regina.fr
+│   │   │   ├── regina.lsm
+│   │   │   ├── regina.lst
+│   │   │   ├── regina.sv
+│   │   │   ├── regina.tr
+│   │   │   ├── replace.de
+│   │   │   ├── replace.fr
+│   │   │   ├── replace.lsm
+│   │   │   ├── replace.lst
+│   │   │   ├── replace.sv
+│   │   │   ├── replace.tr
+│   │   │   ├── rsync.de
+│   │   │   ├── rsync.fr
+│   │   │   ├── rsync.lsm
+│   │   │   ├── rsync.lst
+│   │   │   ├── rsync.sv
+│   │   │   ├── rsync.tr
+│   │   │   ├── runtime.de
+│   │   │   ├── runtime.fr
+│   │   │   ├── runtime.lsm
+│   │   │   ├── runtime.lst
+│   │   │   ├── runtime.sv
+│   │   │   ├── runtime.tr
+│   │   │   ├── samcfg.de
+│   │   │   ├── samcfg.fr
+│   │   │   ├── samcfg.lsm
+│   │   │   ├── samcfg.lst
+│   │   │   ├── samcfg.sv
+│   │   │   ├── samcfg.tr
+│   │   │   ├── sayswho.de
+│   │   │   ├── sayswho.fr
+│   │   │   ├── sayswho.lsm
+│   │   │   ├── sayswho.lst
+│   │   │   ├── sayswho.tr
+│   │   │   ├── sbemu.de
+│   │   │   ├── sbemu.fr
+│   │   │   ├── sbemu.lsm
+│   │   │   ├── sbemu.lst
+│   │   │   ├── sbemu.tr
+│   │   │   ├── sbpmixer.de
+│   │   │   ├── sbpmixer.fr
+│   │   │   ├── sbpmixer.lsm
+│   │   │   ├── sbpmixer.lst
+│   │   │   ├── sbpmixer.tr
+│   │   │   ├── search.de
+│   │   │   ├── search.fr
+│   │   │   ├── search.lsm
+│   │   │   ├── search.lst
+│   │   │   ├── search.sv
+│   │   │   ├── search.tr
+│   │   │   ├── senet.de
+│   │   │   ├── senet.fr
+│   │   │   ├── senet.lsm
+│   │   │   ├── senet.lst
+│   │   │   ├── senet.sv
+│   │   │   ├── senet.tr
+│   │   │   ├── setedit.de
+│   │   │   ├── setedit.fr
+│   │   │   ├── setedit.lsm
+│   │   │   ├── setedit.lst
+│   │   │   ├── setedit.sv
+│   │   │   ├── setedit.tr
+│   │   │   ├── setlock.de
+│   │   │   ├── setlock.fr
+│   │   │   ├── setlock.lsm
+│   │   │   ├── setlock.lst
+│   │   │   ├── setlock.sv
+│   │   │   ├── setlock.tr
+│   │   │   ├── share.de
+│   │   │   ├── share.fr
+│   │   │   ├── share.lsm
+│   │   │   ├── share.lst
+│   │   │   ├── share.sv
+│   │   │   ├── share.tr
+│   │   │   ├── shareext.de
+│   │   │   ├── shareext.fr
+│   │   │   ├── shareext.lsm
+│   │   │   ├── shareext.lst
+│   │   │   ├── shareext.sv
+│   │   │   ├── shareext.tr
+│   │   │   ├── shsucdx.de
+│   │   │   ├── shsucdx.fr
+│   │   │   ├── shsucdx.lsm
+│   │   │   ├── shsucdx.lst
+│   │   │   ├── shsucdx.sv
+│   │   │   ├── shsucdx.tr
+│   │   │   ├── shsufdrv.de
+│   │   │   ├── shsufdrv.fr
+│   │   │   ├── shsufdrv.lsm
+│   │   │   ├── shsufdrv.lst
+│   │   │   ├── shsufdrv.sv
+│   │   │   ├── shsufdrv.tr
+│   │   │   ├── sjgplay.de
+│   │   │   ├── sjgplay.fr
+│   │   │   ├── sjgplay.lsm
+│   │   │   ├── sjgplay.lst
+│   │   │   ├── sjgplay.tr
+│   │   │   ├── sleep.de
+│   │   │   ├── sleep.fr
+│   │   │   ├── sleep.lsm
+│   │   │   ├── sleep.lst
+│   │   │   ├── sleep.sv
+│   │   │   ├── sleep.tr
+│   │   │   ├── slicer.de
+│   │   │   ├── slicer.fr
+│   │   │   ├── slicer.lsm
+│   │   │   ├── slicer.lst
+│   │   │   ├── slicer.sv
+│   │   │   ├── slicer.tr
+│   │   │   ├── slowdown.de
+│   │   │   ├── slowdown.fr
+│   │   │   ├── slowdown.lsm
+│   │   │   ├── slowdown.lst
+│   │   │   ├── slowdown.sv
+│   │   │   ├── slowdown.tr
+│   │   │   ├── smiley.de
+│   │   │   ├── smiley.fr
+│   │   │   ├── smiley.lsm
+│   │   │   ├── smiley.lst
+│   │   │   ├── smiley.sv
+│   │   │   ├── smiley.tr
+│   │   │   ├── sort.de
+│   │   │   ├── sort.fr
+│   │   │   ├── sort.lsm
+│   │   │   ├── sort.lst
+│   │   │   ├── sort.sv
+│   │   │   ├── sort.tr
+│   │   │   ├── spool.de
+│   │   │   ├── spool.fr
+│   │   │   ├── spool.lsm
+│   │   │   ├── spool.lst
+│   │   │   ├── spool.sv
+│   │   │   ├── spool.tr
+│   │   │   ├── sqlite.de
+│   │   │   ├── sqlite.fr
+│   │   │   ├── sqlite.lsm
+│   │   │   ├── sqlite.lst
+│   │   │   ├── sqlite.sv
+│   │   │   ├── sqlite.tr
+│   │   │   ├── srdisk.de
+│   │   │   ├── srdisk.fr
+│   │   │   ├── srdisk.lsm
+│   │   │   ├── srdisk.lst
+│   │   │   ├── srdisk.sv
+│   │   │   ├── srdisk.tr
+│   │   │   ├── ssh2dos.de
+│   │   │   ├── ssh2dos.fr
+│   │   │   ├── ssh2dos.lsm
+│   │   │   ├── ssh2dos.lst
+│   │   │   ├── ssh2dos.sv
+│   │   │   ├── ssh2dos.tr
+│   │   │   ├── sshdos.de
+│   │   │   ├── sshdos.fr
+│   │   │   ├── sshdos.lsm
+│   │   │   ├── sshdos.lst
+│   │   │   ├── sshdos.sv
+│   │   │   ├── sshdos.tr
+│   │   │   ├── stamp.de
+│   │   │   ├── stamp.fr
+│   │   │   ├── stamp.lsm
+│   │   │   ├── stamp.lst
+│   │   │   ├── stamp.sv
+│   │   │   ├── stamp.tr
+│   │   │   ├── sudoku86.de
+│   │   │   ├── sudoku86.fr
+│   │   │   ├── sudoku86.lsm
+│   │   │   ├── sudoku86.lst
+│   │   │   ├── sudoku86.sv
+│   │   │   ├── sudoku86.tr
+│   │   │   ├── suppls.de
+│   │   │   ├── suppls.fr
+│   │   │   ├── suppls.lsm
+│   │   │   ├── suppls.lst
+│   │   │   ├── suppls.sv
+│   │   │   ├── suppls.tr
+│   │   │   ├── switchar.de
+│   │   │   ├── switchar.fr
+│   │   │   ├── switchar.lsm
+│   │   │   ├── switchar.lst
+│   │   │   ├── switchar.sv
+│   │   │   ├── switchar.tr
+│   │   │   ├── swsubst.de
+│   │   │   ├── swsubst.fr
+│   │   │   ├── swsubst.lsm
+│   │   │   ├── swsubst.lst
+│   │   │   ├── swsubst.sv
+│   │   │   ├── swsubst.tr
+│   │   │   ├── syslnx.de
+│   │   │   ├── syslnx.fr
+│   │   │   ├── syslnx.lsm
+│   │   │   ├── syslnx.lst
+│   │   │   ├── syslnx.sv
+│   │   │   ├── syslnx.tr
+│   │   │   ├── tar.de
+│   │   │   ├── tar.fr
+│   │   │   ├── tar.lsm
+│   │   │   ├── tar.lst
+│   │   │   ├── tar.sv
+│   │   │   ├── tar.tr
+│   │   │   ├── tde.de
+│   │   │   ├── tde.fr
+│   │   │   ├── tde.lsm
+│   │   │   ├── tde.lst
+│   │   │   ├── tde.sv
+│   │   │   ├── tde.tr
+│   │   │   ├── tee.de
+│   │   │   ├── tee.fr
+│   │   │   ├── tee.lsm
+│   │   │   ├── tee.lst
+│   │   │   ├── tee.sv
+│   │   │   ├── tee.tr
+│   │   │   ├── terminal.de
+│   │   │   ├── terminal.fr
+│   │   │   ├── terminal.lsm
+│   │   │   ├── terminal.lst
+│   │   │   ├── terminal.sv
+│   │   │   ├── terminal.tr
+│   │   │   ├── testdisk.de
+│   │   │   ├── testdisk.fr
+│   │   │   ├── testdisk.lsm
+│   │   │   ├── testdisk.lst
+│   │   │   ├── testdisk.sv
+│   │   │   ├── testdisk.tr
+│   │   │   ├── tinyasm.de
+│   │   │   ├── tinyasm.fr
+│   │   │   ├── tinyasm.lsm
+│   │   │   ├── tinyasm.lst
+│   │   │   ├── tinyasm.sv
+│   │   │   ├── tinyasm.tr
+│   │   │   ├── topspin.de
+│   │   │   ├── topspin.fr
+│   │   │   ├── topspin.lsm
+│   │   │   ├── topspin.lst
+│   │   │   ├── topspin.sv
+│   │   │   ├── topspin.tr
+│   │   │   ├── touch.de
+│   │   │   ├── touch.fr
+│   │   │   ├── touch.lsm
+│   │   │   ├── touch.lst
+│   │   │   ├── touch.sv
+│   │   │   ├── touch.tr
+│   │   │   ├── tp7p5fix.de
+│   │   │   ├── tp7p5fix.fr
+│   │   │   ├── tp7p5fix.lsm
+│   │   │   ├── tp7p5fix.lst
+│   │   │   ├── tp7p5fix.sv
+│   │   │   ├── tp7p5fix.tr
+│   │   │   ├── tree.de
+│   │   │   ├── tree.fr
+│   │   │   ├── tree.lsm
+│   │   │   ├── tree.lst
+│   │   │   ├── tree.sv
+│   │   │   ├── tree.tr
+│   │   │   ├── udvd2.de
+│   │   │   ├── udvd2.fr
+│   │   │   ├── udvd2.lsm
+│   │   │   ├── udvd2.lst
+│   │   │   ├── udvd2.sv
+│   │   │   ├── udvd2.tr
+│   │   │   ├── uhdd.de
+│   │   │   ├── uhdd.fr
+│   │   │   ├── uhdd.lsm
+│   │   │   ├── uhdd.lst
+│   │   │   ├── uhdd.sv
+│   │   │   ├── uhdd.tr
+│   │   │   ├── uhex.de
+│   │   │   ├── uhex.fr
+│   │   │   ├── uhex.lsm
+│   │   │   ├── uhex.lst
+│   │   │   ├── uhex.sv
+│   │   │   ├── uhex.tr
+│   │   │   ├── uide.de
+│   │   │   ├── uide.fr
+│   │   │   ├── uide.lsm
+│   │   │   ├── uide.lst
+│   │   │   ├── uide.sv
+│   │   │   ├── uide.tr
+│   │   │   ├── undelete.de
+│   │   │   ├── undelete.fr
+│   │   │   ├── undelete.lsm
+│   │   │   ├── undelete.lst
+│   │   │   ├── undelete.sv
+│   │   │   ├── undelete.tr
+│   │   │   ├── unformat.de
+│   │   │   ├── unformat.fr
+│   │   │   ├── unformat.lsm
+│   │   │   ├── unformat.lst
+│   │   │   ├── unformat.sv
+│   │   │   ├── unformat.tr
+│   │   │   ├── unrtf.de
+│   │   │   ├── unrtf.fr
+│   │   │   ├── unrtf.lsm
+│   │   │   ├── unrtf.lst
+│   │   │   ├── unrtf.sv
+│   │   │   ├── unrtf.tr
+│   │   │   ├── unzip.de
+│   │   │   ├── unzip.fr
+│   │   │   ├── unzip.lsm
+│   │   │   ├── unzip.lst
+│   │   │   ├── unzip.sv
+│   │   │   ├── unzip.tr
+│   │   │   ├── uptimec.de
+│   │   │   ├── uptimec.fr
+│   │   │   ├── uptimec.lsm
+│   │   │   ├── uptimec.lst
+│   │   │   ├── uptimec.sv
+│   │   │   ├── uptimec.tr
+│   │   │   ├── upx.de
+│   │   │   ├── upx.fr
+│   │   │   ├── upx.lsm
+│   │   │   ├── upx.lst
+│   │   │   ├── upx.sv
+│   │   │   ├── upx.tr
+│   │   │   ├── usbdos.de
+│   │   │   ├── usbdos.fr
+│   │   │   ├── usbdos.lsm
+│   │   │   ├── usbdos.lst
+│   │   │   ├── usbdos.sv
+│   │   │   ├── usbdos.tr
+│   │   │   ├── utf8tocp.de
+│   │   │   ├── utf8tocp.fr
+│   │   │   ├── utf8tocp.lsm
+│   │   │   ├── utf8tocp.lst
+│   │   │   ├── utf8tocp.sv
+│   │   │   ├── utf8tocp.tr
+│   │   │   ├── v8power.de
+│   │   │   ├── v8power.fr
+│   │   │   ├── v8power.lsm
+│   │   │   ├── v8power.lst
+│   │   │   ├── v8power.sv
+│   │   │   ├── v8power.tr
+│   │   │   ├── vertigo.de
+│   │   │   ├── vertigo.fr
+│   │   │   ├── vertigo.lsm
+│   │   │   ├── vertigo.lst
+│   │   │   ├── vertigo.sv
+│   │   │   ├── vertigo.tr
+│   │   │   ├── vim.de
+│   │   │   ├── vim.fr
+│   │   │   ├── vim.lsm
+│   │   │   ├── vim.lst
+│   │   │   ├── vim.sv
+│   │   │   ├── vim.tr
+│   │   │   ├── vitetris.de
+│   │   │   ├── vitetris.fr
+│   │   │   ├── vitetris.lsm
+│   │   │   ├── vitetris.lst
+│   │   │   ├── vitetris.sv
+│   │   │   ├── vitetris.tr
+│   │   │   ├── vmsmount.de
+│   │   │   ├── vmsmount.fr
+│   │   │   ├── vmsmount.lsm
+│   │   │   ├── vmsmount.lst
+│   │   │   ├── vmsmount.sv
+│   │   │   ├── vmsmount.tr
+│   │   │   ├── vncview.de
+│   │   │   ├── vncview.fr
+│   │   │   ├── vncview.lsm
+│   │   │   ├── vncview.lst
+│   │   │   ├── vncview.sv
+│   │   │   ├── vncview.tr
+│   │   │   ├── vsbhda.de
+│   │   │   ├── vsbhda.fr
+│   │   │   ├── vsbhda.lsm
+│   │   │   ├── vsbhda.lst
+│   │   │   ├── vsbhda.tr
+│   │   │   ├── watcomc.de
+│   │   │   ├── watcomc.fr
+│   │   │   ├── watcomc.lsm
+│   │   │   ├── watcomc.lst
+│   │   │   ├── watcomc.sv
+│   │   │   ├── watcomc.tr
+│   │   │   ├── watcomf.de
+│   │   │   ├── watcomf.fr
+│   │   │   ├── watcomf.lsm
+│   │   │   ├── watcomf.lst
+│   │   │   ├── watcomf.sv
+│   │   │   ├── watcomf.tr
+│   │   │   ├── wattcp.de
+│   │   │   ├── wattcp.fr
+│   │   │   ├── wattcp.lsm
+│   │   │   ├── wattcp.lst
+│   │   │   ├── wattcp.sv
+│   │   │   ├── wattcp.tr
+│   │   │   ├── wcd.de
+│   │   │   ├── wcd.fr
+│   │   │   ├── wcd.lsm
+│   │   │   ├── wcd.lst
+│   │   │   ├── wcd.sv
+│   │   │   ├── wcd.tr
+│   │   │   ├── wde.de
+│   │   │   ├── wde.fr
+│   │   │   ├── wde.lsm
+│   │   │   ├── wde.lst
+│   │   │   ├── wde.sv
+│   │   │   ├── wde.tr
+│   │   │   ├── wget.de
+│   │   │   ├── wget.fr
+│   │   │   ├── wget.lsm
+│   │   │   ├── wget.lst
+│   │   │   ├── wget.sv
+│   │   │   ├── wget.tr
+│   │   │   ├── which.de
+│   │   │   ├── which.fr
+│   │   │   ├── which.lsm
+│   │   │   ├── which.lst
+│   │   │   ├── which.sv
+│   │   │   ├── which.tr
+│   │   │   ├── whichfat.de
+│   │   │   ├── whichfat.fr
+│   │   │   ├── whichfat.lsm
+│   │   │   ├── whichfat.lst
+│   │   │   ├── whichfat.sv
+│   │   │   ├── whichfat.tr
+│   │   │   ├── wing.de
+│   │   │   ├── wing.fr
+│   │   │   ├── wing.lsm
+│   │   │   ├── wing.lst
+│   │   │   ├── wing.sv
+│   │   │   ├── wing.tr
+│   │   │   ├── wptail.de
+│   │   │   ├── wptail.fr
+│   │   │   ├── wptail.lsm
+│   │   │   ├── wptail.lst
+│   │   │   ├── wptail.sv
+│   │   │   ├── wptail.tr
+│   │   │   ├── xcopy.de
+│   │   │   ├── xcopy.fr
+│   │   │   ├── xcopy.lsm
+│   │   │   ├── xcopy.lst
+│   │   │   ├── xcopy.sv
+│   │   │   ├── xcopy.tr
+│   │   │   ├── xdel.de
+│   │   │   ├── xdel.fr
+│   │   │   ├── xdel.lsm
+│   │   │   ├── xdel.lst
+│   │   │   ├── xdel.sv
+│   │   │   ├── xdel.tr
+│   │   │   ├── xfdisk.de
+│   │   │   ├── xfdisk.fr
+│   │   │   ├── xfdisk.lsm
+│   │   │   ├── xfdisk.lst
+│   │   │   ├── xfdisk.sv
+│   │   │   ├── xfdisk.tr
+│   │   │   ├── xgrep.de
+│   │   │   ├── xgrep.fr
+│   │   │   ├── xgrep.lsm
+│   │   │   ├── xgrep.lst
+│   │   │   ├── xgrep.sv
+│   │   │   ├── xgrep.tr
+│   │   │   ├── xkeyb.de
+│   │   │   ├── xkeyb.fr
+│   │   │   ├── xkeyb.lsm
+│   │   │   ├── xkeyb.lst
+│   │   │   ├── xkeyb.sv
+│   │   │   ├── xkeyb.tr
+│   │   │   ├── zdir.de
+│   │   │   ├── zdir.fr
+│   │   │   ├── zdir.lsm
+│   │   │   ├── zdir.lst
+│   │   │   ├── zdir.sv
+│   │   │   ├── zdir.tr
+│   │   │   ├── zerofill.de
+│   │   │   ├── zerofill.fr
+│   │   │   ├── zerofill.lsm
+│   │   │   ├── zerofill.lst
+│   │   │   ├── zerofill.sv
+│   │   │   ├── zerofill.tr
+│   │   │   ├── zip.de
+│   │   │   ├── zip.fr
+│   │   │   ├── zip.lsm
+│   │   │   ├── zip.lst
+│   │   │   ├── zip.sv
+│   │   │   ├── zip.tr
+│   │   │   ├── zmiy.de
+│   │   │   ├── zmiy.fr
+│   │   │   ├── zmiy.lsm
+│   │   │   ├── zmiy.lst
+│   │   │   ├── zmiy.sv
+│   │   │   ├── zmiy.tr
+│   │   │   ├── zoo.de
+│   │   │   ├── zoo.fr
+│   │   │   ├── zoo.lsm
+│   │   │   ├── zoo.lst
+│   │   │   ├── zoo.sv
+│   │   │   └── zoo.tr
+│   │   ├── sound
+│   │   │   ├── adplay.zip
+│   │   │   ├── bladeenc.zip
+│   │   │   ├── dosmid.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── lame.zip
+│   │   │   ├── mplayer.zip
+│   │   │   ├── opencp.zip
+│   │   │   ├── playcd.zip
+│   │   │   ├── sbpmixer.zip
+│   │   │   └── sjgplay.zip
+│   │   ├── tools
+│   │   │   ├── ambread.zip
+│   │   │   ├── callver.zip
+│   │   │   ├── cwsdpmi.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── pkgtools.zip
+│   │   │   ├── slowdown.zip
+│   │   │   └── v8power.zip
+│   │   ├── unix
+│   │   │   ├── cal.zip
+│   │   │   ├── du.zip
+│   │   │   ├── gnused.zip
+│   │   │   ├── grep.zip
+│   │   │   ├── head.zip
+│   │   │   ├── index.de
+│   │   │   ├── index.fr
+│   │   │   ├── index.gz
+│   │   │   ├── index.lst
+│   │   │   ├── index.sv
+│   │   │   ├── index.tr
+│   │   │   ├── less.zip
+│   │   │   ├── md5sum.zip
+│   │   │   ├── nro.zip
+│   │   │   ├── sleep.zip
+│   │   │   ├── tee.zip
+│   │   │   ├── touch.zip
+│   │   │   ├── uptimec.zip
+│   │   │   ├── which.zip
+│   │   │   └── xgrep.zip
+│   │   └── util
+│   │       ├── ansimat.zip
+│   │       ├── b64.zip
+│   │       ├── bsum.zip
+│   │       ├── cdrom2ui.zip
+│   │       ├── cpied.zip
+│   │       ├── daa2iso.zip
+│   │       ├── dialog.zip
+│   │       ├── dog.zip
+│   │       ├── dos32a.zip
+│   │       ├── dosview.zip
+│   │       ├── dzemm.zip
+│   │       ├── fdbanner.zip
+│   │       ├── fdshield.zip
+│   │       ├── flashrom.zip
+│   │       ├── foxcalc.zip
+│   │       ├── foxtype.zip
+│   │       ├── gifsicle.zip
+│   │       ├── gnuchcp.zip
+│   │       ├── gnufonts.zip
+│   │       ├── hexcomp.zip
+│   │       ├── hip.zip
+│   │       ├── index.de
+│   │       ├── index.fr
+│   │       ├── index.gz
+│   │       ├── index.lst
+│   │       ├── index.sv
+│   │       ├── index.tr
+│   │       ├── listpci.zip
+│   │       ├── listvesa.zip
+│   │       ├── localcfg.zip
+│   │       ├── localize.zip
+│   │       ├── memteste.zip
+│   │       ├── password.zip
+│   │       ├── pbox.zip
+│   │       ├── pcisleep.zip
+│   │       ├── pdtree.zip
+│   │       ├── pg.zip
+│   │       ├── pngcrush.zip
+│   │       ├── rcal.zip
+│   │       ├── search.zip
+│   │       ├── setlock.zip
+│   │       ├── stamp.zip
+│   │       ├── switchar.zip
+│   │       ├── topspin.zip
+│   │       ├── tp7p5fix.zip
+│   │       ├── unrtf.zip
+│   │       ├── utf8tocp.zip
+│   │       ├── wcd.zip
+│   │       ├── wptail.zip
+│   │       ├── xdel.zip
+│   │       └── zdir.zip
+│   └── setup.bat
+├── RX-580-PATCH.ROM
+├── RX-580.ROM
+└── amdflash.exe
+
+48 directories, 2675 files

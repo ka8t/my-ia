@@ -52,7 +52,15 @@ logs/
 # === Tests ===
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.tox/
+coverage.xml
+*.cover
+.hypothesis/
+.pytest-monitor/
+test-results/
+.pytype/
 
 # === Temporaires ===
 tmp/

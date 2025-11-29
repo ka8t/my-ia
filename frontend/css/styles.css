@@ -500,19 +500,120 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-top: 12px;
+    padding-bottom: 4px;
     font-size: 13px;
     color: var(--text-secondary);
+    overflow: visible;
 }
 
 .mode-toggle {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    cursor: pointer;
+    position: relative;
+    line-height: normal;
+    padding-top: 2px;
 }
 
 .mode-toggle input {
     cursor: pointer;
+}
+
+/* Bouton d'aide */
+.btn-help {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+    margin-top: -2px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.btn-help svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    vertical-align: bottom;
+}
+
+.btn-help:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--accent-color);
+}
+
+/* Tooltip d'aide */
+.mode-help-tooltip {
+    position: absolute;
+    bottom: 50px;
+    left: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    max-width: 400px;
+    min-width: 300px;
+    animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tooltip-content h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.mode-comparison {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mode-info {
+    padding: 10px;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.mode-info strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.mode-info p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.mode-info small {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 /* Settings Panel */
