@@ -54,6 +54,14 @@
                     <h2 id="chatTitle">Nouvelle conversation</h2>
                     <span class="chat-mode" id="chatMode">ChatBot</span>
                 </div>
+                <button class="btn-upload" id="uploadBtn" title="Ajouter des documents">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Ajouter documents
+                </button>
             </div>
 
             <div class="messages-container" id="messagesContainer">
@@ -156,10 +164,43 @@
                 </div>
             </div>
         </div>
+
+        <!-- Upload Modal -->
+        <div class="upload-modal" id="uploadModal" style="display: none;">
+            <div class="upload-modal-content">
+                <div class="upload-modal-header">
+                    <h2>📎 Ajouter des documents</h2>
+                    <button class="btn-close" id="closeUploadModal">×</button>
+                </div>
+                <div class="upload-modal-body">
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <p id="progressText">Upload en cours...</p>
+                    </div>
+                    <div class="upload-zone" id="uploadZone">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>Glissez vos fichiers ici ou cliquez pour sélectionner</p>
+                        <small>Formats supportés: PDF, TXT, MD, HTML, JSONL</small>
+                        <input type="file" id="fileInput" accept=".pdf,.txt,.md,.html,.jsonl" multiple style="display: none;">
+                    </div>
+                    <div class="upload-files-list" id="uploadFilesList"></div>
+                </div>
+                <div class="upload-modal-footer">
+                    <button class="btn-secondary" id="cancelUpload">Annuler</button>
+                    <button class="btn-primary" id="startUpload" disabled>Envoyer</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="js/app.js?v=4"></script>
+    <script src="js/app.js?v=8"></script>
 </body>
 </html>

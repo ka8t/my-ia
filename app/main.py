@@ -1,12 +1,15 @@
 import os
 import logging
+import json
 from typing import Optional, List, Dict, Any
 from pathlib import Path
+import tempfile
+import uuid
 
 import httpx
 import chromadb
 from chromadb.config import Settings
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, HTTPException, Header, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -15,6 +18,9 @@ from starlette.responses import Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+# Import des fonctions d'ingestion
+from ingest import chunk, embed, embed_with_progress, extract_pdf_text, extract_html_text
 
 # Configuration du logging
 logging.basicConfig(
@@ -110,6 +116,12 @@ class HealthResponse(BaseModel):
     ollama: bool
     chroma: bool
     model: str
+
+class UploadResponse(BaseModel):
+    success: bool
+    filename: str
+    chunks_indexed: int
+    message: str
 
 # Fonctions utilitaires
 def verify_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
@@ -416,6 +428,215 @@ async def test_ollama(
             REQUEST_COUNT.labels(endpoint="/test", method="POST", status="500").inc()
             logger.error(f"Error in test endpoint: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/upload", response_model=UploadResponse)
+@limiter.limit("10/minute")
+async def upload_file(
+    request: Request,
+    file: UploadFile = File(...),
+    x_api_key: Optional[str] = Header(None)
+):
+    """Endpoint pour uploader et indexer un fichier dans ChromaDB"""
+    verify_api_key(x_api_key)
+
+    # Vérifier le type de fichier
+    allowed_extensions = {".pdf", ".txt", ".md", ".html", ".jsonl"}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Type de fichier non supporté. Extensions autorisées: {', '.join(allowed_extensions)}"
+        )
+
+    try:
+        # Créer un fichier temporaire
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+            # Écrire le contenu uploadé
+            content = await file.read()
+            tmp_file.write(content)
+            tmp_file_path = tmp_file.name
+
+        logger.info(f"File uploaded: {file.filename} ({len(content)} bytes)")
+
+        # Extraire le texte selon le type de fichier
+        text = ""
+        if file_ext == ".pdf":
+            text = extract_pdf_text(tmp_file_path)
+        elif file_ext == ".html":
+            text = extract_html_text(tmp_file_path)
+        elif file_ext == ".jsonl":
+            # Pour JSONL, lire ligne par ligne
+            import json
+            with open(tmp_file_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        row = json.loads(line)
+                        text += row.get("text") or row.get("content") or ""
+                        text += "\n"
+        else:  # .txt ou .md
+            with open(tmp_file_path, "r", encoding="utf-8") as f:
+                text = f.read()
+
+        # Supprimer le fichier temporaire
+        os.unlink(tmp_file_path)
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Le fichier ne contient pas de texte extractible")
+
+        # Découper en chunks
+        chunks = chunk(text)
+        logger.info(f"Document split into {len(chunks)} chunks")
+
+        # Ajouter à ChromaDB
+        if chroma_client is None:
+            raise HTTPException(status_code=500, detail="ChromaDB client not initialized")
+
+        try:
+            collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
+            file_id = str(uuid.uuid4())
+
+            # Traiter par batches pour éviter les timeouts
+            BATCH_SIZE = 64
+            total_indexed = 0
+
+            for i in range(0, len(chunks), BATCH_SIZE):
+                batch_chunks = chunks[i:i+BATCH_SIZE]
+                batch_num = i//BATCH_SIZE + 1
+                total_batches = (len(chunks)-1)//BATCH_SIZE + 1
+                logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch_chunks)} chunks)")
+
+                # Générer les embeddings pour ce batch
+                embeddings = await embed(batch_chunks)
+
+                # Générer les IDs et métadonnées pour ce batch
+                batch_ids = [f"{file_id}-{i+j}" for j in range(len(batch_chunks))]
+                batch_metadatas = [{"source": file.filename} for _ in batch_chunks]
+
+                # Ajouter ce batch à ChromaDB
+                collection.add(
+                    ids=batch_ids,
+                    embeddings=embeddings,
+                    documents=batch_chunks,
+                    metadatas=batch_metadatas
+                )
+                total_indexed += len(batch_chunks)
+                logger.info(f"Indexed {total_indexed}/{len(chunks)} chunks")
+
+            logger.info(f"Successfully indexed {len(chunks)} chunks from {file.filename}")
+        except Exception as e:
+            logger.error(f"Error adding to ChromaDB: {e}")
+            raise HTTPException(status_code=500, detail=f"Error indexing file: {str(e)}")
+
+        REQUEST_COUNT.labels(endpoint="/upload", method="POST", status="200").inc()
+
+        return UploadResponse(
+            success=True,
+            filename=file.filename,
+            chunks_indexed=len(chunks),
+            message=f"Fichier '{file.filename}' indexé avec succès ({len(chunks)} chunks)"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/upload", method="POST", status="500").inc()
+        logger.error(f"Error in upload endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/upload/stream")
+@limiter.limit("10/minute")
+async def upload_file_stream(
+    request: Request,
+    file: UploadFile = File(...),
+    x_api_key: Optional[str] = Header(None)
+):
+    """Endpoint pour uploader et indexer un fichier avec progression SSE"""
+    verify_api_key(x_api_key)
+
+    # Vérifier le type de fichier et lire le contenu AVANT le générateur
+    allowed_extensions = {".pdf", ".txt", ".md", ".html", ".jsonl"}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
+    if file_ext not in allowed_extensions:
+        error_msg = f"Type de fichier non supporté. Extensions autorisées: {', '.join(allowed_extensions)}"
+        async def error_gen():
+            yield f"data: {json.dumps({'error': error_msg})}\n\n"
+        return StreamingResponse(error_gen(), media_type="text/event-stream")
+
+    # Lire le fichier AVANT d'entrer dans le générateur
+    content = await file.read()
+    filename = file.filename
+
+    async def generate():
+        try:
+            # Créer un fichier temporaire
+            with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+                tmp_file.write(content)
+                tmp_file_path = tmp_file.name
+
+            logger.info(f"File uploaded: {filename} ({len(content)} bytes)")
+            yield f"data: {json.dumps({'status': 'uploaded', 'filename': filename, 'size': len(content)})}\n\n"
+
+            # Extraire le texte
+            text = ""
+            if file_ext == ".pdf":
+                text = extract_pdf_text(tmp_file_path)
+            elif file_ext == ".html":
+                text = extract_html_text(tmp_file_path)
+            elif file_ext == ".jsonl":
+                import json as json_lib
+                with open(tmp_file_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip():
+                            row = json_lib.loads(line)
+                            text += row.get("text") or row.get("content") or ""
+                            text += "\n"
+            else:
+                with open(tmp_file_path, "r", encoding="utf-8") as f:
+                    text = f.read()
+
+            os.unlink(tmp_file_path)
+
+            if not text.strip():
+                yield f"data: {json.dumps({'error': 'Le fichier ne contient pas de texte extractible'})}\n\n"
+                return
+
+            # Découper en chunks
+            chunks = chunk(text)
+            logger.info(f"Document split into {len(chunks)} chunks")
+            yield f"data: {json.dumps({'status': 'chunked', 'total_chunks': len(chunks)})}\n\n"
+
+            # Générer les embeddings (tous d'un coup pour plus de performance)
+            yield f"data: {json.dumps({'status': 'embedding', 'total_chunks': len(chunks)})}\n\n"
+            embeddings = await embed(chunks)
+
+            # Générer les IDs et métadonnées
+            file_id = str(uuid.uuid4())
+            ids = [f"{file_id}-{i}" for i in range(len(chunks))]
+            metadatas = [{"source": filename} for _ in chunks]
+
+            # Ajouter à ChromaDB
+            if chroma_client is None:
+                yield f"data: {json.dumps({'error': 'ChromaDB client not initialized'})}\n\n"
+                return
+
+            collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
+            collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=chunks,
+                metadatas=metadatas
+            )
+            logger.info(f"Successfully indexed {len(chunks)} chunks from {filename}")
+
+            yield f"data: {json.dumps({'status': 'completed', 'chunks_indexed': len(chunks), 'filename': filename})}\n\n"
+
+        except Exception as e:
+            logger.error(f"Error in upload/stream endpoint: {e}", exc_info=True)
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
 
 @app.get("/")
 async def root():

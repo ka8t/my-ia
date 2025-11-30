@@ -510,6 +510,7 @@ function createMessageElement(role, content, timestamp, sources = null) {
                     📋 Copier
                 </button>
                 ${role === 'assistant' ? '<button class="btn-action btn-regenerate">🔄 Régénérer</button>' : ''}
+                ${role === 'user' ? '<button class="btn-action btn-edit">✏️ Éditer</button>' : ''}
             </div>
         </div>
     `;
@@ -531,7 +532,171 @@ function createMessageElement(role, content, timestamp, sources = null) {
         });
     }
 
+    const editBtn = messageDiv.querySelector('.btn-edit');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            editMessage(messageDiv, content);
+        });
+    }
+
     return messageDiv;
+}
+
+function editMessage(userMessageDiv, originalContent) {
+    if (isStreaming) {
+        return; // Ne pas éditer pendant un streaming
+    }
+
+    const messageTextDiv = userMessageDiv.querySelector('.message-text');
+    const actionsDiv = userMessageDiv.querySelector('.message-actions');
+
+    // Créer le champ d'édition
+    const editContainer = document.createElement('div');
+    editContainer.className = 'message-edit-container';
+    editContainer.innerHTML = `
+        <textarea class="message-edit-textarea" rows="3">${originalContent}</textarea>
+        <div class="message-edit-actions">
+            <button class="btn-action btn-save">✓ Enregistrer</button>
+            <button class="btn-action btn-cancel">✗ Annuler</button>
+        </div>
+    `;
+
+    // Cacher le texte original et les actions
+    messageTextDiv.style.display = 'none';
+    actionsDiv.style.display = 'none';
+
+    // Insérer le champ d'édition
+    messageTextDiv.parentNode.insertBefore(editContainer, messageTextDiv.nextSibling);
+
+    const textarea = editContainer.querySelector('.message-edit-textarea');
+    const saveBtn = editContainer.querySelector('.btn-save');
+    const cancelBtn = editContainer.querySelector('.btn-cancel');
+
+    // Focus et sélection
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+    // Auto-resize du textarea
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+    textarea.addEventListener('input', (e) => {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+    });
+
+    // Annuler
+    cancelBtn.addEventListener('click', () => {
+        editContainer.remove();
+        messageTextDiv.style.display = '';
+        actionsDiv.style.display = '';
+    });
+
+    // Enregistrer
+    saveBtn.addEventListener('click', async () => {
+        const newContent = textarea.value.trim();
+        if (!newContent || newContent === originalContent) {
+            // Pas de changement, annuler
+            cancelBtn.click();
+            return;
+        }
+
+        await saveAndResendMessage(userMessageDiv, newContent);
+    });
+
+    // Enter pour enregistrer (Shift+Enter pour nouvelle ligne)
+    textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            saveBtn.click();
+        }
+        if (e.key === 'Escape') {
+            cancelBtn.click();
+        }
+    });
+}
+
+async function saveAndResendMessage(userMessageDiv, newContent) {
+    const conversation = conversations.find(c => c.id === currentConversationId);
+    if (!conversation) return;
+
+    // Trouver l'index du message utilisateur dans la conversation
+    const allMessages = document.querySelectorAll('.message');
+    const messageIndex = Array.from(allMessages).indexOf(userMessageDiv);
+
+    // Trouver le message dans la conversation
+    let userMsgIndex = -1;
+    let messagesBeforeThisOne = 0;
+
+    for (let i = 0; i < conversation.messages.length; i++) {
+        if (conversation.messages[i].role === 'user') {
+            if (messagesBeforeThisOne === Math.floor(messageIndex / 2)) {
+                userMsgIndex = i;
+                break;
+            }
+            messagesBeforeThisOne++;
+        }
+    }
+
+    if (userMsgIndex === -1) return;
+
+    // Supprimer tous les messages après celui-ci (dans la conversation et le DOM)
+    const messagesToRemove = conversation.messages.length - userMsgIndex - 1;
+    conversation.messages.splice(userMsgIndex + 1, messagesToRemove);
+
+    // Mettre à jour le contenu du message
+    conversation.messages[userMsgIndex].content = newContent;
+    conversation.updatedAt = new Date().toISOString();
+    saveConversationsToStorage();
+
+    // Supprimer les messages suivants du DOM
+    let nextElement = userMessageDiv.nextElementSibling;
+    while (nextElement) {
+        const toRemove = nextElement;
+        nextElement = nextElement.nextElementSibling;
+        if (toRemove.classList.contains('message')) {
+            toRemove.remove();
+        }
+    }
+
+    // Mettre à jour l'affichage du message
+    const messageTextDiv = userMessageDiv.querySelector('.message-text');
+    const editContainer = userMessageDiv.querySelector('.message-edit-container');
+    const actionsDiv = userMessageDiv.querySelector('.message-actions');
+
+    messageTextDiv.innerHTML = marked.parse(newContent);
+    editContainer.remove();
+    messageTextDiv.style.display = '';
+    actionsDiv.style.display = '';
+
+    // Mettre à jour le data-content du bouton copier
+    const copyBtn = userMessageDiv.querySelector('.btn-copy');
+    copyBtn.setAttribute('data-content', escapeHtml(newContent));
+
+    // Envoyer le nouveau message
+    const typingId = showTypingIndicator();
+
+    try {
+        isStreaming = true;
+        document.getElementById('sendBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'flex';
+
+        abortController = new AbortController();
+
+        await streamMessage(newContent, typingId);
+
+    } catch (error) {
+        console.error('Error resending edited message:', error);
+        removeTypingIndicator(typingId);
+
+        if (error.name !== 'AbortError') {
+            appendMessage('assistant', '❌ Erreur lors de l\'envoi du message. Veuillez réessayer.', new Date().toISOString());
+        }
+    } finally {
+        isStreaming = false;
+        document.getElementById('sendBtn').style.display = 'flex';
+        document.getElementById('stopBtn').style.display = 'none';
+        abortController = null;
+    }
 }
 
 async function regenerateResponse(assistantMessageDiv) {
@@ -681,4 +846,213 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// ============================================================================
+// UPLOAD DE FICHIERS
+// ============================================================================
+
+let selectedFiles = [];
+
+// Ouvrir la modal d'upload
+document.getElementById('uploadBtn').addEventListener('click', () => {
+    document.getElementById('uploadModal').style.display = 'flex';
+    selectedFiles = [];
+    updateFilesList();
+});
+
+// Fermer la modal
+document.getElementById('closeUploadModal').addEventListener('click', closeUploadModal);
+document.getElementById('cancelUpload').addEventListener('click', closeUploadModal);
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    selectedFiles = [];
+    updateFilesList();
+    document.getElementById('uploadProgress').style.display = 'none';
+    document.getElementById('progressFill').style.width = '0%';
+}
+
+// Zone de upload - click pour sélectionner
+document.getElementById('uploadZone').addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+});
+
+// Sélection de fichiers
+document.getElementById('fileInput').addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    addFilesToList(files);
+});
+
+// Drag and drop
+const uploadZone = document.getElementById('uploadZone');
+
+uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files);
+    addFilesToList(files);
+});
+
+function addFilesToList(files) {
+    // Filtrer les fichiers selon les extensions autorisées
+    const allowedExtensions = ['.pdf', '.txt', '.md', '.html', '.jsonl'];
+    const validFiles = files.filter(file => {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        return allowedExtensions.includes(ext);
+    });
+
+    selectedFiles = [...selectedFiles, ...validFiles];
+    updateFilesList();
+}
+
+function updateFilesList() {
+    const listContainer = document.getElementById('uploadFilesList');
+    const startUploadBtn = document.getElementById('startUpload');
+
+    if (selectedFiles.length === 0) {
+        listContainer.innerHTML = '';
+        startUploadBtn.disabled = true;
+        return;
+    }
+
+    startUploadBtn.disabled = false;
+
+    listContainer.innerHTML = selectedFiles.map((file, index) => {
+        const ext = file.name.split('.').pop().toUpperCase();
+        const size = formatFileSize(file.size);
+
+        return `
+            <div class="upload-file-item">
+                <div class="upload-file-item-info">
+                    <div class="upload-file-item-icon">${ext}</div>
+                    <div class="upload-file-item-details">
+                        <div class="upload-file-item-name">${escapeHtml(file.name)}</div>
+                        <div class="upload-file-item-size">${size}</div>
+                    </div>
+                </div>
+                <button class="upload-file-item-remove" data-index="${index}">×</button>
+            </div>
+        `;
+    }).join('');
+
+    // Ajouter les event listeners pour supprimer
+    listContainer.querySelectorAll('.upload-file-item-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            selectedFiles.splice(index, 1);
+            updateFilesList();
+        });
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Démarrer l'upload
+document.getElementById('startUpload').addEventListener('click', async () => {
+    if (selectedFiles.length === 0) return;
+
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const listContainer = document.getElementById('uploadFilesList');
+
+    progressDiv.style.display = 'block';
+    document.getElementById('startUpload').disabled = true;
+    document.getElementById('cancelUpload').disabled = true;
+
+    let successCount = 0;
+    let errorCount = 0;
+    const totalFiles = selectedFiles.length;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const progress = ((i) / totalFiles) * 100;
+
+        progressFill.style.width = progress + '%';
+        progressText.textContent = `Indexation en cours : ${file.name}... (${i + 1}/${totalFiles})`;
+
+        try {
+            const result = await uploadFile(file, progressText);
+            successCount++;
+
+            // Afficher le nombre de chunks indexés
+            const chunksInfo = result.chunks_indexed ? ` (${result.chunks_indexed} chunk${result.chunks_indexed > 1 ? 's' : ''})` : '';
+            progressText.textContent = `✅ ${file.name} indexé${chunksInfo} - ${i + 1}/${totalFiles}`;
+
+        } catch (error) {
+            console.error(`Error uploading ${file.name}:`, error);
+            errorCount++;
+            progressText.textContent = `❌ Erreur : ${file.name} - ${i + 1}/${totalFiles}`;
+        }
+
+        // Petite pause pour que l'utilisateur puisse voir le statut
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    progressFill.style.width = '100%';
+
+    // Afficher le résultat
+    if (errorCount === 0) {
+        listContainer.innerHTML = `
+            <div class="upload-success">
+                ✅ ${successCount} fichier(s) uploadé(s) et indexé(s) avec succès !
+            </div>
+        `;
+    } else {
+        listContainer.innerHTML = `
+            <div class="upload-${successCount > 0 ? 'success' : 'error'}">
+                ${successCount > 0 ? `✅ ${successCount} fichier(s) uploadé(s) avec succès<br>` : ''}
+                ${errorCount > 0 ? `❌ ${errorCount} fichier(s) en erreur` : ''}
+            </div>
+        `;
+    }
+
+    // Réinitialiser après 3 secondes
+    setTimeout(() => {
+        closeUploadModal();
+    }, 3000);
+});
+
+async function uploadFile(file, progressText) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    progressText.textContent = `⚙️  Indexation de ${file.name} en cours...`;
+
+    try {
+        const response = await fetch(`${CONFIG.apiUrl}/upload`, {
+            method: 'POST',
+            headers: {
+                'X-API-Key': CONFIG.apiKey
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Upload failed');
+        }
+
+        const result = await response.json();
+        progressText.textContent = `✅ ${result.message}`;
+
+        return result;
+    } catch (error) {
+        progressText.textContent = `❌ Erreur: ${error.message}`;
+        throw error;
+    }
 }

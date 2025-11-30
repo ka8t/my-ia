@@ -1,10 +1,10 @@
 # MY-IA - IA Personnelle avec Ollama + N8N
 
-Stack complète d'IA conversationnelle avec interface web et automatisation de workflows :
-- 💬 **Interface Web** : Chat moderne type ChatGPT/Claude
-- 🤖 **Ollama** : Serveur LLM local
-- 🗄️ **ChromaDB** : Base vectorielle pour RAG
-- ⚡ **FastAPI** : API REST pour l'IA
+Stack complète d'IA conversationnelle avec interface web moderne et automatisation de workflows :
+- 💬 **Interface Web** : Chat moderne type ChatGPT/Claude avec streaming en temps réel
+- 🤖 **Ollama** : Serveur LLM local (Mistral, Llama, etc.)
+- 🗄️ **ChromaDB** : Base vectorielle pour RAG (Retrieval Augmented Generation)
+- ⚡ **FastAPI** : API REST pour l'IA avec rate limiting et métriques
 - 🔄 **N8N** : Automatisation de workflows
 - 🐘 **PostgreSQL** : Base de données pour N8N
 

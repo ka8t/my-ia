@@ -22,10 +22,25 @@ def chunk(text: str, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
 
 async def embed(texts: List[str]) -> List[List[float]]:
     """Génère les embeddings via Ollama"""
-    async with httpx.AsyncClient(timeout=120) as s:
+    async with httpx.AsyncClient(timeout=600) as s:
         r = await s.post(f"{OLLAMA}/api/embed", json={"model": EMBED_MODEL, "input": texts})
         r.raise_for_status()
         return r.json()["embeddings"]
+
+async def embed_with_progress(texts: List[str], batch_size: int = 100, progress_callback=None):
+    """Génère les embeddings par batches avec callback de progression"""
+    all_embeddings = []
+    total = len(texts)
+
+    for i in range(0, total, batch_size):
+        batch = texts[i:i + batch_size]
+        batch_embeddings = await embed(batch)
+        all_embeddings.extend(batch_embeddings)
+
+        if progress_callback:
+            await progress_callback(min(i + batch_size, total), total)
+
+    return all_embeddings
 
 def read_jsonl(path: str):
     """Lit un fichier JSONL ligne par ligne"""

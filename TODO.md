@@ -12,7 +12,7 @@ Ce fichier suit l'évolution du projet MY-IA. Les tâches sont organisées par p
 
 ## État actuel du projet
 
-**Date de dernière mise à jour :** 27 novembre 2025 (Interface Chat Web terminée ✅)
+**Date de dernière mise à jour :** 29 novembre 2025 (Fonctionnalités Régénérer + Éditer terminées ✅)
 
 **Analyse globale :**
 - ✅ Architecture de base : Ollama + ChromaDB + FastAPI + N8N + PostgreSQL
@@ -53,8 +53,8 @@ Ce fichier suit l'évolution du projet MY-IA. Les tâches sont organisées par p
 - ✅ Streaming des réponses en temps réel
 - ✅ Support markdown avec syntax highlighting (marked.js + highlight.js)
 - ✅ Copier le texte d'un message
-- ⏳ Régénérer une réponse (TODO)
-- ⏳ Éditer et renvoyer un message (TODO)
+- ✅ Régénérer une réponse
+- ✅ Éditer et renvoyer un message
 - ✅ Stop generation (annuler une réponse en cours)
 - ⏳ Upload de fichiers (pour ingestion future) (TODO)
 - ✅ Affichage des sources utilisées par le RAG
