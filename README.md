@@ -8,6 +8,19 @@ Stack complète d'IA conversationnelle avec interface web moderne et automatisat
 - 🔄 **N8N** : Automatisation de workflows
 - 🐘 **PostgreSQL** : Base de données pour N8N
 
+## ✨ Nouveautés v2.0 - Système d'Ingestion Avancé
+
+🚀 **Nouvelle architecture d'ingestion avec les meilleurs outils open-source 2025 :**
+- 📚 **13 formats supportés** (vs 5) : PDF, DOCX, XLSX, PPTX, TXT, MD, HTML, images avec OCR
+- 🧠 **Chunking sémantique** avec LangChain (respecte la structure des documents)
+- 🔍 **Parsing intelligent** avec Unstructured.io (détection de tables, titres)
+- ♻️ **Déduplication automatique** (hash SHA256, pas de réindexation inutile)
+- 📊 **Métadonnées enrichies** (11 champs vs 1)
+- 🖼️ **OCR intégré** (Tesseract pour images et PDFs scannés)
+- ⚡ **Hot reload activé** - Modifiez le code sans rebuild !
+
+👉 **[Voir la documentation complète](docs/INGESTION_V2.md)** | **[Changelog détaillé](docs/CHANGELOG_INGESTION_V2.md)**
+
 ## 🚀 Démarrage rapide
 
 ```bash
@@ -59,26 +72,71 @@ Stack complète d'IA conversationnelle avec interface web moderne et automatisat
 | **N8N** | 5678 | Automatisation de workflows | http://localhost:5678 |
 | **Ollama** | 11434 | Serveur LLM | http://localhost:11434 |
 | **ChromaDB** | 8000 | Base de données vectorielle | http://localhost:8000 |
-| **PostgreSQL** | 5432 | Base de données N8N | localhost:5432 |
+| **PostgreSQL** | 5432 | Base de données N8N | Interne (exposé sur demande) |
 
 ### Identifiants par défaut
 
 ⚠️ **À CHANGER EN PRODUCTION!**
 
 - **N8N**: admin / change-me-in-production
-- **PostgreSQL**: n8n / n8n_password
+- **PostgreSQL**: n8n / n8n_password (Database: n8n)
 - **API**: Header `X-API-Key: change-me-in-production`
+
+### Note sur le premier démarrage
+
+Si N8N ne démarre pas correctement (erreur de connexion DB), vous devrez peut-être créer la base de données manuellement :
+```bash
+docker exec my-ia-postgres createdb -U n8n n8n
+```
 
 ## 📖 Documentation
 
-### Ajouter vos données
+### 📚 Guides disponibles
 
-1. Placez vos fichiers dans `./datasets/`:
-   - Formats supportés: `.jsonl`, `.md`, `.txt`, `.pdf`, `.html`
-   
-2. Lancez l'ingestion:
+| Document | Description |
+|----------|-------------|
+| **[DEV_WORKFLOW.md](docs/DEV_WORKFLOW.md)** | 🔥 **À lire en premier !** Guide de développement avec hot reload |
+| **[INGESTION_V2.md](docs/INGESTION_V2.md)** | Système d'ingestion avancé v2.0 (multi-formats, OCR, chunking sémantique) |
+| **[CHANGELOG_INGESTION_V2.md](docs/CHANGELOG_INGESTION_V2.md)** | Détails techniques des nouveautés v2.0 |
+| **[TODO.md](docs/TODO.md)** | Roadmap et tâches en cours |
+| **[API.md](docs/API.md)** | Documentation complète de l'API REST |
+| **[INSTALLATION.md](docs/INSTALLATION.md)** | Guide d'installation détaillé |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | Résolution de problèmes |
+| **[TESTING.md](docs/TESTING.md)** | Tests et validation |
+| **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** | Guide de contribution |
+
+### Ajouter vos données (v2 - Nouveau !)
+
+**Via l'interface web :**
+1. Accédez à http://localhost:3000
+2. Cliquez sur "Ajouter documents"
+3. Uploadez vos fichiers (PDF, DOCX, XLSX, PPTX, images, etc.)
+4. L'indexation est automatique avec déduplication !
+
+**En ligne de commande :**
+1. Placez vos fichiers dans `./datasets/`
+   - **Formats supportés v2** : PDF, DOCX, XLSX, PPTX, TXT, MD, HTML, JSONL, CSV, PNG, JPG
+
+2. Lancez l'ingestion avancée :
 ```bash
+# Système v2 (recommandé) avec chunking sémantique et OCR
+docker compose exec app python ingest_v2.py
+
+# Ancien système (legacy)
 docker compose exec app python ingest.py
+```
+
+**API Upload :**
+```bash
+# Upload avec parsing avancé
+curl -X POST http://localhost:8080/upload/v2 \
+  -H "X-API-Key: change-me-in-production" \
+  -F "file=@document.pdf"
+
+# Upload haute résolution (meilleure qualité)
+curl -X POST "http://localhost:8080/upload/v2?parsing_strategy=hi_res" \
+  -H "X-API-Key: change-me-in-production" \
+  -F "file=@complex_document.pdf"
 ```
 
 ### Créer des workflows N8N
@@ -122,8 +180,60 @@ curl -N -X POST http://localhost:8080/chat/stream \
 ### Documentation complète
 http://localhost:8080/docs
 
+## 👨‍💻 Développement
+
+### Hot Reload activé ⚡
+
+**Modifiez le code sans rebuild !** Le serveur FastAPI redémarre automatiquement (2-3 secondes).
+
+```bash
+# Démarrer les services
+docker compose up -d
+
+# Modifier le code Python (app/*.py)
+nano app/main.py
+nano app/ingest_v2.py
+
+# Voir le reload automatique
+docker compose logs -f app
+# → INFO: Detected file change... Reloading...
+# → INFO: Application startup complete.
+
+# Tester immédiatement !
+curl http://localhost:8080/health
+```
+
+**Quand rebuild ?**
+- ✅ **Jamais** pour les modifications Python
+- ❌ **Seulement** pour nouvelles dépendances ou changements Docker
+
+👉 **[Guide complet de développement](docs/DEV_WORKFLOW.md)**
+
+### Workflow recommandé
+
+1. **Modifier** le code dans `app/`
+2. **Observer** les logs : `docker compose logs -f app`
+3. **Tester** (reload auto en 2-3s)
+4. **Itérer** jusqu'à satisfaction
+
 ## 🛠️ Commandes utiles
 
+### Développement
+```bash
+# Logs en temps réel
+docker compose logs -f app
+
+# Restart rapide (2s)
+docker compose restart app
+
+# Shell dans le container
+docker compose exec app bash
+
+# Tester l'ingestion v2
+docker compose exec app python ingest_v2.py
+```
+
+### Production
 ```bash
 # Voir les logs
 docker compose logs -f
@@ -245,19 +355,39 @@ docker compose up -d
 
 ```
 my-ia/
-├── docker-compose.yml      # 5 services configurés
+├── docker-compose.yml      # 6 services (+ frontend)
+├── README.md              # Ce fichier
 ├── app/
-│   ├── main.py            # API FastAPI (CORS activé pour N8N)
-│   ├── ingest.py          # Ingestion de données
-│   └── prompts/           # System prompts
-├── datasets/              # Vos données
-│   └── examples/          # Exemples fournis
+│   ├── main.py            # API FastAPI + endpoints /upload/v2
+│   ├── ingest.py          # Ingestion legacy (v1)
+│   ├── ingest_v2.py       # ✨ Ingestion avancée v2 (Unstructured + LangChain)
+│   ├── requirements.txt   # Dépendances Python
+│   ├── Dockerfile         # Image avec hot reload activé
+│   └── prompts/           # System prompts (chatbot, assistant)
+├── frontend/              # Interface web Chat
+│   ├── index.html         # UI moderne type ChatGPT
+│   ├── js/app.js          # Logic avec upload v2
+│   ├── css/styles.css     # Styles dark/light mode
+│   └── Dockerfile         # Nginx Alpine
+├── datasets/              # Vos données sources
+│   ├── examples/          # Exemples fournis
+│   └── procedures/        # Documentation procédures
+├── docs/                  # 📚 Documentation complète
+│   ├── DEV_WORKFLOW.md    # 🔥 Guide développement (hot reload)
+│   ├── INGESTION_V2.md    # Nouveau système d'ingestion
+│   ├── CHANGELOG_INGESTION_V2.md  # Détails techniques v2
+│   ├── TODO.md            # Roadmap et tâches
+│   ├── API.md             # Documentation API REST
+│   ├── INSTALLATION.md    # Installation détaillée
+│   ├── TROUBLESHOOTING.md # Résolution problèmes
+│   ├── TESTING.md         # Tests et validation
+│   └── CONTRIBUTING.md    # Guide contribution
 ├── n8n/
 │   ├── workflows/         # Workflows N8N exportés
 │   └── README.md          # Doc workflows
 ├── scripts/
-│   ├── setup.sh           # Setup automatique
-│   ├── backup.sh          # Backup complet (incluant N8N)
+│   ├── setup.sh           # Setup automatique complet
+│   ├── backup.sh          # Backup (N8N + ChromaDB + code)
 │   ├── restore.sh         # Restauration
 │   └── test.sh            # Tests système
 └── backups/               # Sauvegardes automatiques

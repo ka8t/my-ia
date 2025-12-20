@@ -96,6 +96,7 @@ services:
     volumes:
       - ./datasets:/app/datasets
       - chroma-data:/chroma/chroma
+      - ./app:/app  # Hot reload : changements visibles sans rebuild
     ports:
       - "8080:8080"
     restart: unless-stopped

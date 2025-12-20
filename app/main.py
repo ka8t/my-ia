@@ -19,8 +19,11 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-# Import des fonctions d'ingestion
+# Import des fonctions d'ingestion (legacy)
 from ingest import chunk, embed, embed_with_progress, extract_pdf_text, extract_html_text
+
+# Import du nouveau système d'ingestion v2
+from ingest_v2 import AdvancedIngestionPipeline
 
 # Configuration du logging
 logging.basicConfig(
@@ -49,6 +52,15 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize ChromaDB client: {e}")
     chroma_client = None
+
+# Initialiser le pipeline d'ingestion avancé v2
+ingestion_pipeline = None
+if chroma_client:
+    try:
+        ingestion_pipeline = AdvancedIngestionPipeline(chroma_client=chroma_client)
+        logger.info("Advanced Ingestion Pipeline v2 initialized")
+    except Exception as e:
+        logger.error(f"Failed to initialize ingestion pipeline: {e}")
 
 # Chargement des system prompts
 PROMPTS_DIR = Path(__file__).parent / "prompts"
@@ -249,7 +261,7 @@ async def health_check():
     # Check ChromaDB
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(f"{CHROMA_HOST}/api/v1/heartbeat")
+            response = await client.get(f"{CHROMA_HOST}/api/v2/heartbeat")
             chroma_healthy = response.status_code == 200
     except:
         pass
@@ -637,6 +649,113 @@ async def upload_file_stream(
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+@app.post("/upload/v2", response_model=UploadResponse)
+@limiter.limit("10/minute")
+async def upload_file_v2(
+    request: Request,
+    file: UploadFile = File(...),
+    parsing_strategy: str = "auto",
+    skip_duplicates: bool = True,
+    x_api_key: Optional[str] = Header(None)
+):
+    """
+    Advanced upload endpoint with Unstructured.io parsing and semantic chunking
+
+    Features:
+    - Multi-format support (PDF, DOCX, XLSX, PPTX, images with OCR, etc.)
+    - Semantic chunking with LangChain
+    - Automatic deduplication
+    - Rich metadata extraction
+    - Table extraction
+
+    Args:
+        file: File to upload
+        parsing_strategy: 'auto', 'fast', 'hi_res', or 'ocr_only'
+        skip_duplicates: Skip if document hash already exists
+        x_api_key: API key for authentication
+    """
+    verify_api_key(x_api_key)
+
+    if not ingestion_pipeline:
+        raise HTTPException(status_code=500, detail="Ingestion pipeline not initialized")
+
+    # Supported extensions
+    allowed_extensions = {
+        ".pdf", ".txt", ".md", ".html", ".htm",
+        ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt",
+        ".jsonl", ".json", ".csv",
+        ".png", ".jpg", ".jpeg"
+    }
+    file_ext = os.path.splitext(file.filename)[1].lower()
+
+    if file_ext not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Type de fichier non supporté. Extensions autorisées: {', '.join(sorted(allowed_extensions))}"
+        )
+
+    try:
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+            content = await file.read()
+            tmp_file.write(content)
+            tmp_file_path = tmp_file.name
+
+        logger.info(f"File uploaded: {file.filename} ({len(content)} bytes)")
+
+        # Ingest with advanced pipeline
+        result = await ingestion_pipeline.ingest_file(
+            file_path=tmp_file_path,
+            parsing_strategy=parsing_strategy,
+            skip_duplicates=skip_duplicates
+        )
+
+        # Clean up temp file
+        os.unlink(tmp_file_path)
+
+        # Handle different result statuses
+        if result["status"] == "skipped":
+            return UploadResponse(
+                success=True,
+                filename=file.filename,
+                chunks_indexed=0,
+                message=f"Document déjà indexé (hash: {result['document_hash'][:8]}...)"
+            )
+        elif result["status"] == "failed":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Échec de l'ingestion: {result.get('reason', 'unknown error')}"
+            )
+        else:  # success
+            REQUEST_COUNT.labels(endpoint="/upload/v2", method="POST", status="200").inc()
+
+            message = f"Fichier '{file.filename}' indexé avec succès ({result['chunks_indexed']} chunks"
+            if result.get('tables_found', 0) > 0:
+                message += f", {result['tables_found']} tables détectées"
+            message += ")"
+
+            return UploadResponse(
+                success=True,
+                filename=file.filename,
+                chunks_indexed=result["chunks_indexed"],
+                message=message
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/upload/v2", method="POST", status="500").inc()
+        logger.error(f"Error in upload/v2 endpoint: {e}", exc_info=True)
+
+        # Clean up temp file if it exists
+        if 'tmp_file_path' in locals():
+            try:
+                os.unlink(tmp_file_path)
+            except:
+                pass
+
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def root():

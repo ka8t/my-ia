@@ -904,8 +904,12 @@ uploadZone.addEventListener('drop', (e) => {
 });
 
 function addFilesToList(files) {
-    // Filtrer les fichiers selon les extensions autorisées
-    const allowedExtensions = ['.pdf', '.txt', '.md', '.html', '.jsonl'];
+    // Filtrer les fichiers selon les extensions autorisées (v2 - plus de formats)
+    const allowedExtensions = [
+        '.pdf', '.txt', '.md', '.html', '.htm', '.jsonl', '.json', '.csv',
+        '.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt',
+        '.png', '.jpg', '.jpeg'
+    ];
     const validFiles = files.filter(file => {
         const ext = '.' + file.name.split('.').pop().toLowerCase();
         return allowedExtensions.includes(ext);
@@ -1034,7 +1038,8 @@ async function uploadFile(file, progressText) {
     progressText.textContent = `⚙️  Indexation de ${file.name} en cours...`;
 
     try {
-        const response = await fetch(`${CONFIG.apiUrl}/upload`, {
+        // Use advanced v2 endpoint with better parsing and chunking
+        const response = await fetch(`${CONFIG.apiUrl}/upload/v2`, {
             method: 'POST',
             headers: {
                 'X-API-Key': CONFIG.apiKey
