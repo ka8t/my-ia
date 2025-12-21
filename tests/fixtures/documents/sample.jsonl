@@ -1,0 +1,5 @@
+{"id": "doc1", "text": "FastAPI est un framework web moderne et rapide pour Python.", "category": "framework"}
+{"id": "doc2", "text": "Uvicorn est un serveur ASGI ultra-performant pour applications asynchrones.", "category": "serveur"}
+{"id": "doc3", "text": "Pydantic permet la validation de données avec les type hints Python.", "category": "validation"}
+{"id": "doc4", "text": "N8N est un outil d'automatisation de workflows open-source.", "category": "automatisation"}
+{"id": "doc5", "text": "PostgreSQL est une base de données relationnelle avancée.", "category": "database"}

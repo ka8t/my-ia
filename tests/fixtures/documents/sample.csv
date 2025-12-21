@@ -1,0 +1,9 @@
+nom,categorie,description,annee
+Python,langage,Langage de programmation polyvalent et lisible,1991
+JavaScript,langage,Langage pour le web côté client et serveur,1995
+Docker,infrastructure,Plateforme de conteneurisation,2013
+Kubernetes,infrastructure,Orchestration de containers,2014
+TensorFlow,ml,Framework de machine learning,2015
+PyTorch,ml,Framework de deep learning,2016
+FastAPI,web,Framework web Python moderne,2018
+ChromaDB,database,Base de données vectorielle,2022

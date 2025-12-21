@@ -1,303 +1,134 @@
-# Tests MY-IA
+# Tests MY-IA v2.0
 
-Ce répertoire contient tous les tests automatisés pour le projet MY-IA.
+Suite de tests pour MY-IA avec support des fonctionnalités v2.0.
 
-## Structure
+## 📋 Structure des tests
 
 ```
 tests/
-├── conftest.py                    # Fixtures pytest globales
-├── test_api_endpoints.py          # Tests des endpoints API
-├── test_utility_functions.py      # Tests des fonctions utilitaires
-├── test_ingest.py                 # Tests du système d'ingestion (à venir)
-├── test_integration.py            # Tests d'intégration end-to-end (à venir)
-└── README.md                      # Ce fichier
+├── conftest.py                    # Configuration pytest et fixtures globales
+├── fixtures/                      # Données de test
+│   ├── documents/                # Fichiers de test (TXT, PDF, DOCX, etc.)
+│   ├── images/                   # Images pour tests OCR
+│   └── generate_test_files.py   # Script de génération de fixtures
+│
+├── test_api_endpoints.py         # Tests de tous les endpoints API
+├── test_ingest_v2.py             # Tests système d'ingestion v2.0
+└── README.md                     # Ce fichier
 ```
 
-## Installation
+## 🚀 Démarrage rapide
 
-Installer les dépendances de test :
+### 1. Installation des dépendances de test
 
 ```bash
-pip install -r requirements-test.txt
+# Installer pytest et dépendances
+pip install pytest pytest-asyncio pytest-mock pytest-cov httpx
+
+# Installer les dépendances pour générer les fixtures
+pip install reportlab python-docx openpyxl python-pptx Pillow
 ```
 
-## Lancer les tests
-
-### Tous les tests
+### 2. Générer les fichiers de test
 
 ```bash
+# Générer tous les fichiers de test (PDF, DOCX, XLSX, PPTX, images)
+cd tests/fixtures
+python generate_test_files.py
+```
+
+### 3. Lancer les tests
+
+```bash
+# Tous les tests
 pytest
-```
 
-### Tests unitaires seulement
-
-```bash
-pytest -m unit
-```
-
-### Tests d'intégration seulement
-
-```bash
-pytest -m integration
-```
-
-### Tests d'un fichier spécifique
-
-```bash
-pytest tests/test_api_endpoints.py
-```
-
-### Tests d'une classe spécifique
-
-```bash
-pytest tests/test_api_endpoints.py::TestChatEndpoint
-```
-
-### Tests d'une fonction spécifique
-
-```bash
-pytest tests/test_api_endpoints.py::TestChatEndpoint::test_chat_with_valid_api_key
-```
-
-### Avec coverage
-
-```bash
-pytest --cov=app --cov-report=html
-```
-
-Le rapport HTML sera généré dans `htmlcov/index.html`.
-
-### Tests en parallèle (plus rapide)
-
-```bash
-pip install pytest-xdist
-pytest -n auto
-```
-
-### Tests avec output détaillé
-
-```bash
+# Tests avec verbosité
 pytest -v
-pytest -vv  # Encore plus détaillé
-```
 
-### Arrêter au premier échec
-
-```bash
-pytest -x
-```
-
-### Mode watch (relance automatiquement quand le code change)
-
-```bash
-pip install pytest-watch
-ptw
-```
-
-## Markers disponibles
-
-Les tests sont marqués avec des catégories :
-
-- `@pytest.mark.unit` - Tests unitaires rapides
-- `@pytest.mark.integration` - Tests d'intégration avec services externes
-- `@pytest.mark.slow` - Tests lents (> 1s)
-- `@pytest.mark.api` - Tests des endpoints API
-- `@pytest.mark.ingest` - Tests du système d'ingestion
-- `@pytest.mark.rag` - Tests du système RAG
-
-### Exemples d'utilisation des markers
-
-```bash
-# Tous les tests API
-pytest -m api
-
-# Tous les tests sauf les lents
-pytest -m "not slow"
-
-# Tests unitaires ET API
-pytest -m "unit and api"
-
-# Tests d'intégration OU lents
-pytest -m "integration or slow"
-```
-
-## Configuration
-
-La configuration de pytest est dans `pytest.ini` à la racine du projet.
-
-Options importantes :
-- `--cov-fail-under=70` : Échec si coverage < 70%
-- `--tb=short` : Tracebacks courts pour meilleure lisibilité
-- `-v` : Mode verbose par défaut
-
-## Fixtures disponibles
-
-Voir `conftest.py` pour la liste complète. Principales fixtures :
-
-### Clients
-- `client` : TestClient FastAPI synchrone
-- `async_client` : httpx.AsyncClient pour tests async
-
-### Données de test
-- `sample_chat_request` : Requête chat valide
-- `sample_document_text` : Texte de document pour tests d'ingestion
-- `sample_embeddings` : Vecteur d'embeddings simulé
-- `mock_chroma_results` : Résultats ChromaDB mockés
-- `mock_ollama_response` : Réponse Ollama mockée
-
-### Mocks
-- `mock_ollama_embeddings` : Mock de get_embeddings()
-- `mock_chroma_search` : Mock de search_context()
-- `mock_ollama_generate` : Mock de generate_response()
-
-### Configuration
-- `test_api_key` : Clé API de test
-- `test_ollama_host` : URL Ollama de test
-- `test_chroma_host` : URL ChromaDB de test
-
-## Écrire de nouveaux tests
-
-### Template de test unitaire
-
-```python
-import pytest
-
-@pytest.mark.unit
-class TestMyFeature:
-    """Tests pour ma fonctionnalité"""
-
-    def test_feature_works(self, client, test_api_key):
-        """Vérifie que la fonctionnalité fonctionne"""
-        response = client.get("/my-endpoint", headers={"X-API-Key": test_api_key})
-
-        assert response.status_code == 200
-        assert "expected_field" in response.json()
-```
-
-### Template de test async
-
-```python
-import pytest
-
-@pytest.mark.unit
-@pytest.mark.asyncio
-class TestAsyncFeature:
-    """Tests pour fonctionnalité async"""
-
-    async def test_async_function(self, mocker):
-        """Vérifie une fonction async"""
-        from app.main import my_async_function
-
-        result = await my_async_function("test")
-
-        assert result is not None
-```
-
-### Template de test d'intégration
-
-```python
-import pytest
-
-@pytest.mark.integration
-@pytest.mark.slow
-class TestIntegration:
-    """Tests d'intégration avec services externes"""
-
-    async def test_end_to_end_workflow(self, async_client, test_api_key):
-        """Test du workflow complet"""
-        # Ingestion
-        # ...
-
-        # Query
-        response = await async_client.post(
-            "/chat",
-            json={"query": "Test"},
-            headers={"X-API-Key": test_api_key}
-        )
-
-        assert response.status_code == 200
-```
-
-## Bonnes pratiques
-
-1. **Nommer clairement les tests** : Le nom doit décrire ce qui est testé
-   - ✅ `test_chat_endpoint_rejects_invalid_api_key`
-   - ❌ `test_1`
-
-2. **Un test = une assertion principale**
-   - Tester une seule chose par test
-   - Utiliser des asserts multiples si nécessaire pour la même chose
-
-3. **Utiliser les fixtures** : Éviter la duplication de code
-   - Créer des fixtures réutilisables dans `conftest.py`
-
-4. **Mocker les dépendances externes**
-   - Ollama, ChromaDB, etc. doivent être mockés en tests unitaires
-   - Tests d'intégration peuvent utiliser les vrais services
-
-5. **Documenter les tests complexes**
-   - Ajouter des docstrings expliquant le scénario
-
-6. **Isoler les tests**
-   - Chaque test doit être indépendant
-   - Utiliser `autouse=True` fixtures pour reset l'état
-
-## Debugging
-
-### Afficher les prints pendant les tests
-
-```bash
-pytest -s
-```
-
-### Entrer en mode debug avec pdb
-
-```bash
-pytest --pdb
-```
-
-Ou ajouter dans le code :
-```python
-import pdb; pdb.set_trace()
-```
-
-### Voir les variables locales en cas d'échec
-
-```bash
-pytest -l
-```
-
-### Augmenter la verbosité des logs
-
-```bash
-pytest --log-cli-level=DEBUG
-```
-
-## CI/CD
-
-Les tests sont exécutés automatiquement via GitHub Actions à chaque push/PR.
-
-Voir `.github/workflows/tests.yml` pour la configuration.
-
-## Coverage
-
-Le coverage minimum requis est de 70%.
-
-Vérifier le coverage actuel :
-```bash
-pytest --cov=app --cov-report=term-missing
-```
-
-Identifier les lignes non couvertes :
-```bash
+# Tests avec couverture de code
 pytest --cov=app --cov-report=html
+
+# Tests spécifiques
+pytest tests/test_api_endpoints.py      # Tests API
+pytest tests/test_ingest_v2.py          # Tests ingestion v2
+
+# Tests par marker
+pytest -m api                           # Seulement tests API
+pytest -m ingest_v2                     # Seulement tests ingestion v2
+pytest -m unit                          # Seulement tests unitaires
+pytest -m integration                   # Seulement tests d'intégration
+```
+
+## 🏷️ Markers disponibles
+
+- `@pytest.mark.unit` - Tests unitaires (rapides)
+- `@pytest.mark.integration` - Tests d'intégration (plus lents)
+- `@pytest.mark.slow` - Tests lents
+- `@pytest.mark.ingest_v2` - Tests système d'ingestion v2.0
+- `@pytest.mark.api` - Tests endpoints API
+- `@pytest.mark.upload_v2` - Tests endpoint /upload/v2
+- `@pytest.mark.smoke` - Tests de fumée critiques
+
+## 📦 Fixtures disponibles
+
+Voir `conftest.py` pour la liste complète des fixtures.
+
+Principaux fixtures :
+- `client` - Client FastAPI de test (avec API key configurée)
+- `test_api_key` - Clé API de test
+- `test_ollama_host` - URL Ollama de test
+- `test_chroma_host` - URL ChromaDB de test
+
+## 🧪 Tests par endpoint
+
+### API Endpoints (`test_api_endpoints.py`)
+
+Tous les endpoints de l'application sont testés:
+- `GET /health` - Santé de l'application
+- `GET /metrics` - Métriques Prometheus
+- `GET /` - Endpoint racine
+- `POST /chat` - Chat avec RAG
+- `POST /assistant` - Mode assistant
+- `POST /chat/stream` - Chat streaming
+- `POST /test` - Test sans RAG
+- `POST /upload` - Upload v1 (legacy)
+- `POST /upload/stream` - Upload avec streaming v1
+- `POST /upload/v2` - Upload v2 avec Unstructured
+
+### Ingestion v2.0 (`test_ingest_v2.py`)
+
+Tests pour le système d'ingestion avancé:
+- **DocumentDeduplicator** - Hash et détection de duplicates
+- **MetadataExtractor** - Extraction de métadonnées enrichies
+- **SemanticChunker** - Découpage sémantique avec LangChain
+- **DocumentParser** - Parsing multi-format avec Unstructured
+- **EmbeddingGenerator** - Génération d'embeddings
+- **AdvancedIngestionPipeline** - Pipeline complet d'ingestion
+
+## 📊 Couverture de code
+
+```bash
+# Générer le rapport HTML
+pytest --cov=app --cov-report=html
+
+# Ouvrir le rapport
 open htmlcov/index.html
 ```
 
-## Ressources
+## 🔧 Configuration
 
-- [Documentation pytest](https://docs.pytest.org/)
-- [Documentation pytest-asyncio](https://pytest-asyncio.readthedocs.io/)
-- [Documentation pytest-mock](https://pytest-mock.readthedocs.io/)
-- [Guide coverage.py](https://coverage.readthedocs.io/)
+Le fichier `pytest.ini` contient la configuration par défaut:
+- Couverture de code minimale: 20%
+- Rapports: HTML + terminal
+- Markers: strict mode activé
+
+## 💡 Notes
+
+- **Python 3.13**: Les tests utilisent des mocks pour ChromaDB et Unstructured car ces librairies ne sont pas compatibles avec Python 3.13
+- **Ollama**: Les tests API qui nécessitent Ollama acceptent soit 200 (succès) soit 500 (Ollama indisponible)
+- **ChromaDB**: Les tests d'intégration nécessitent ChromaDB en cours d'exécution
+
+---
+
+Pour plus de détails, voir la documentation dans chaque fichier de test.

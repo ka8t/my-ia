@@ -1,0 +1,16 @@
+Test de caractères Unicode
+
+Français: Les caractères accentués comme é, è, à, ô, ù, ç
+Espagnol: ñ, á, í, ó, ú, ¿, ¡
+Allemand: ä, ö, ü, ß
+Chinois: 你好世界 (Bonjour le monde)
+Japonais: こんにちは (Bonjour)
+Arabe: مرحبا (Bonjour)
+Russe: Привет (Bonjour)
+Grec: Γεια σου (Bonjour)
+
+Symboles mathématiques: ∑, ∫, ∂, √, ∞, ≈, ≠, ≤, ≥
+Symboles monétaires: €, $, £, ¥, ₹, ₽
+Emojis: 🚀 🤖 💻 📚 🎯 ⭐ ✅ ❌
+
+Ce fichier teste le support Unicode complet pour l'ingestion v2.

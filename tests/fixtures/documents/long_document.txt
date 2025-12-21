@@ -1,0 +1,78 @@
+CHAPITRE 1: Introduction au Machine Learning
+
+Le machine learning est une branche de l'intelligence artificielle qui permet aux ordinateurs d'apprendre à partir de données sans être explicitement programmés pour chaque tâche spécifique.
+
+1.1 Types d'apprentissage
+
+Il existe trois types principaux d'apprentissage automatique:
+
+Apprentissage supervisé: Le modèle apprend à partir de données étiquetées. On fournit au modèle des exemples d'entrées et de sorties attendues, et il apprend à faire le mapping entre les deux. C'est le type le plus courant pour les tâches de classification et de régression.
+
+Apprentissage non supervisé: Le modèle doit trouver des structures dans les données sans étiquettes. Utilisé pour le clustering, la réduction de dimensionnalité, et la détection d'anomalies.
+
+Apprentissage par renforcement: L'agent apprend en interagissant avec un environnement et en recevant des récompenses ou pénalités pour ses actions.
+
+1.2 Applications courantes
+
+Le machine learning est utilisé dans de nombreux domaines:
+- Reconnaissance d'images et vision par ordinateur
+- Traitement automatique du langage naturel
+- Systèmes de recommandation
+- Véhicules autonomes
+- Diagnostic médical
+- Trading algorithmique
+- Détection de fraude
+
+
+CHAPITRE 2: Les Réseaux de Neurones
+
+Les réseaux de neurones sont des modèles inspirés du cerveau humain, composés de couches de neurones artificiels interconnectés.
+
+2.1 Architecture de base
+
+Un réseau de neurones typique contient:
+- Une couche d'entrée qui reçoit les données
+- Une ou plusieurs couches cachées qui transforment les données
+- Une couche de sortie qui produit le résultat final
+
+Chaque connexion entre neurones a un poids qui est ajusté pendant l'entraînement.
+
+2.2 Fonction d'activation
+
+Les fonctions d'activation introduisent la non-linéarité dans le réseau:
+- ReLU (Rectified Linear Unit): f(x) = max(0, x)
+- Sigmoid: f(x) = 1 / (1 + e^(-x))
+- Tanh: f(x) = (e^x - e^(-x)) / (e^x + e^(-x))
+
+2.3 Rétropropagation
+
+La rétropropagation est l'algorithme qui permet d'entraîner les réseaux de neurones en calculant les gradients de la fonction de coût par rapport aux poids.
+
+
+CHAPITRE 3: Deep Learning
+
+Le deep learning utilise des réseaux de neurones profonds avec de nombreuses couches cachées.
+
+3.1 Architectures modernes
+
+Réseaux convolutifs (CNN): Excellents pour le traitement d'images. Ils utilisent des filtres convolutifs pour détecter des features locales.
+
+Réseaux récurrents (RNN): Adaptés aux séquences comme le texte ou les séries temporelles. Les LSTM et GRU sont des variantes qui résolvent le problème du gradient vanishing.
+
+Transformers: Architecture révolutionnaire introduite en 2017, base des modèles de langage modernes comme GPT et BERT. Utilisent l'attention pour capturer les dépendances à longue distance.
+
+3.2 Transfer Learning
+
+Le transfer learning consiste à réutiliser un modèle pré-entraîné sur une grande quantité de données pour une nouvelle tâche. Cela permet d'obtenir de bonnes performances même avec peu de données.
+
+3.3 Techniques d'optimisation
+
+- Dropout: Désactive aléatoirement des neurones pendant l'entraînement pour éviter le surapprentissage
+- Batch Normalization: Normalise les activations pour accélérer l'entraînement
+- Data Augmentation: Augmente artificiellement le dataset d'entraînement
+- Early Stopping: Arrête l'entraînement quand la performance sur le validation set cesse de s'améliorer
+
+
+CONCLUSION
+
+Le machine learning et le deep learning continuent d'évoluer rapidement. Les avancées récentes incluent les modèles de langage de grande taille, la génération d'images par diffusion, et l'apprentissage auto-supervisé.

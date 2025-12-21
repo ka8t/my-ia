@@ -1,0 +1,20 @@
+Guide sur le Retrieval-Augmented Generation (RAG)
+
+Le RAG est une technique qui combine la recherche d'information et la génération de texte par LLM.
+
+Fonctionnement:
+1. Indexation de documents dans une base vectorielle
+2. Recherche de documents pertinents via embeddings sémantiques
+3. Génération de réponse avec contexte augmenté
+
+Avantages:
+- Réduit les hallucinations du modèle
+- Permet d'utiliser des données privées et spécifiques
+- Reste à jour sans nécessiter de retraining du modèle
+- Améliore la traçabilité des réponses
+
+Cas d'usage:
+- Support client automatisé
+- Documentation interactive
+- Chatbots d'entreprise avec données internes
+- Analyse de documents légaux ou médicaux

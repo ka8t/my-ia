@@ -3,15 +3,60 @@ Configuration pytest et fixtures globales pour tous les tests
 """
 import os
 import sys
-from typing import AsyncGenerator, Generator
+from typing import Generator
 from pathlib import Path
 
 import pytest
-import httpx
 from fastapi.testclient import TestClient
 
-# Ajouter le répertoire parent au PYTHONPATH pour importer app
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Ajouter les répertoires au PYTHONPATH pour importer app
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "app"))
+
+# IMPORTANT: Configurer l'API key AVANT d'importer l'app
+# Sinon l'app lit la valeur par défaut au moment de l'import
+os.environ["API_KEY"] = "test-api-key-12345"
+os.environ["LOG_LEVEL"] = "ERROR"
+
+# Mock des modules manquants (chromadb, unstructured, etc.)
+from unittest.mock import MagicMock
+
+# Mock chromadb (non compatible Python 3.13 à cause de onnxruntime)
+try:
+    import chromadb
+except ImportError:
+    sys.modules['chromadb'] = MagicMock()
+    sys.modules['chromadb.config'] = MagicMock()
+    sys.modules['chromadb.utils'] = MagicMock()
+    sys.modules['chromadb.api'] = MagicMock()
+
+# Mock unstructured (lourd à installer, ne fonctionne pas partout)
+try:
+    import unstructured
+except ImportError:
+    sys.modules['unstructured'] = MagicMock()
+    sys.modules['unstructured.partition'] = MagicMock()
+    sys.modules['unstructured.partition.auto'] = MagicMock()
+    sys.modules['unstructured.cleaners'] = MagicMock()
+    sys.modules['unstructured.cleaners.core'] = MagicMock()
+    sys.modules['unstructured.chunking'] = MagicMock()
+    sys.modules['unstructured.chunking.title'] = MagicMock()
+    sys.modules['unstructured.staging'] = MagicMock()
+    sys.modules['unstructured.staging.base'] = MagicMock()
+
+# Mock ingest (legacy v1 - peut ne pas être présent localement)
+try:
+    import ingest
+except ImportError:
+    # Créer un mock complet avec les fonctions attendues
+    ingest_mock = MagicMock()
+    ingest_mock.chunk = MagicMock(return_value=[])
+    ingest_mock.embed = MagicMock()
+    ingest_mock.embed_with_progress = MagicMock()
+    ingest_mock.extract_pdf_text = MagicMock(return_value="")
+    ingest_mock.extract_html_text = MagicMock(return_value="")
+    sys.modules['ingest'] = ingest_mock
 
 from app.main import app
 
@@ -46,110 +91,13 @@ def test_chroma_host() -> str:
 def client(test_api_key: str) -> Generator[TestClient, None, None]:
     """
     Client de test FastAPI synchrone.
-    Utilise TestClient qui gère automatiquement le lifecycle de l'app.
+    Configure automatiquement l'API key pour les tests.
     """
     # Override de la clé API pour les tests
     os.environ["API_KEY"] = test_api_key
 
     with TestClient(app) as test_client:
         yield test_client
-
-
-@pytest.fixture(scope="function")
-async def async_client(test_api_key: str) -> AsyncGenerator[httpx.AsyncClient, None]:
-    """
-    Client HTTP asynchrone pour tester les endpoints avec streaming.
-    """
-    os.environ["API_KEY"] = test_api_key
-
-    async with httpx.AsyncClient(
-        app=app,
-        base_url="http://testserver",
-        timeout=30.0
-    ) as ac:
-        yield ac
-
-
-# ============================================================================
-# FIXTURES DONNÉES DE TEST
-# ============================================================================
-
-@pytest.fixture
-def sample_chat_request() -> dict:
-    """Requête de chat valide pour les tests"""
-    return {
-        "query": "Qu'est-ce que le RAG ?",
-        "session_id": "test-session-123"
-    }
-
-
-@pytest.fixture
-def sample_document_text() -> str:
-    """Texte de document exemple pour tests d'ingestion"""
-    return """
-    # Guide sur le RAG (Retrieval-Augmented Generation)
-
-    Le RAG est une technique qui combine la recherche d'information et la génération de texte.
-
-    ## Fonctionnement
-    1. Indexation de documents dans une base vectorielle
-    2. Recherche de documents pertinents via embeddings
-    3. Génération de réponse avec contexte augmenté
-
-    ## Avantages
-    - Réduit les hallucinations
-    - Permet d'utiliser des données privées
-    - Reste à jour sans retraining
-    """
-
-
-@pytest.fixture
-def sample_embeddings() -> list[float]:
-    """Vecteur d'embeddings exemple (simulé, dimension réduite)"""
-    return [0.1] * 768  # Dimension typique pour nomic-embed-text
-
-
-@pytest.fixture
-def mock_chroma_results() -> dict:
-    """Résultats mockés de ChromaDB"""
-    return {
-        "documents": [[
-            "Le RAG combine recherche et génération.",
-            "ChromaDB est une base vectorielle."
-        ]],
-        "metadatas": [[
-            {"source": "docs/rag.md", "chunk_id": 0},
-            {"source": "docs/chroma.md", "chunk_id": 1}
-        ]],
-        "distances": [[0.15, 0.23]]
-    }
-
-
-@pytest.fixture
-def mock_ollama_response() -> dict:
-    """Réponse mockée d'Ollama (non-streaming)"""
-    return {
-        "model": "mistral:7b",
-        "created_at": "2024-11-27T10:00:00Z",
-        "response": "Le RAG (Retrieval-Augmented Generation) est une technique...",
-        "done": True,
-        "context": [],
-        "total_duration": 5000000000,
-        "load_duration": 1000000000,
-        "prompt_eval_count": 100,
-        "eval_count": 50
-    }
-
-
-@pytest.fixture
-def mock_ollama_stream_chunks() -> list[str]:
-    """Chunks de streaming mockés d'Ollama"""
-    return [
-        '{"model":"mistral:7b","created_at":"2024-11-27T10:00:00Z","response":"Le ","done":false}\n',
-        '{"model":"mistral:7b","created_at":"2024-11-27T10:00:01Z","response":"RAG ","done":false}\n',
-        '{"model":"mistral:7b","created_at":"2024-11-27T10:00:02Z","response":"est","done":false}\n',
-        '{"model":"mistral:7b","created_at":"2024-11-27T10:00:03Z","response":"...","done":true}\n'
-    ]
 
 
 # ============================================================================
@@ -178,45 +126,6 @@ def reset_env_vars():
 
 
 # ============================================================================
-# FIXTURES MOCK SERVICES
-# ============================================================================
-
-@pytest.fixture
-def mock_ollama_embeddings(mocker, sample_embeddings):
-    """Mock de la fonction get_embeddings"""
-    mock = mocker.patch("app.main.get_embeddings")
-    mock.return_value = sample_embeddings
-    return mock
-
-
-@pytest.fixture
-def mock_chroma_search(mocker, mock_chroma_results):
-    """Mock de la fonction search_context"""
-    mock = mocker.patch("app.main.search_context")
-    mock.return_value = [
-        {
-            "content": doc,
-            "metadata": meta,
-            "distance": dist
-        }
-        for doc, meta, dist in zip(
-            mock_chroma_results["documents"][0],
-            mock_chroma_results["metadatas"][0],
-            mock_chroma_results["distances"][0]
-        )
-    ]
-    return mock
-
-
-@pytest.fixture
-def mock_ollama_generate(mocker, mock_ollama_response):
-    """Mock de la fonction generate_response"""
-    mock = mocker.patch("app.main.generate_response")
-    mock.return_value = mock_ollama_response["response"]
-    return mock
-
-
-# ============================================================================
 # HOOKS PYTEST
 # ============================================================================
 
@@ -232,12 +141,21 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: mark test as slow running"
     )
+    config.addinivalue_line(
+        "markers", "ingest_v2: mark test as testing ingestion v2.0"
+    )
+    config.addinivalue_line(
+        "markers", "api: mark test as testing API endpoints"
+    )
+    config.addinivalue_line(
+        "markers", "upload_v2: mark test as testing upload v2 endpoint"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
     """
     Modifier la collection de tests.
-    Par exemple, marquer automatiquement certains tests.
+    Marquer automatiquement certains tests.
     """
     for item in items:
         # Marquer les tests d'intégration comme slow
