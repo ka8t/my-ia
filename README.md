@@ -18,8 +18,11 @@ Stack complète d'IA conversationnelle avec interface web moderne et automatisat
 - 📊 **Métadonnées enrichies** (11 champs vs 1)
 - 🖼️ **OCR intégré** (Tesseract pour images et PDFs scannés)
 - ⚡ **Hot reload activé** - Modifiez le code sans rebuild !
+- 🧪 **Infrastructure de tests** - Tests unitaires pour ingest_v2 + fixtures complètes
 
 👉 **[Voir la documentation complète](docs/INGESTION_V2.md)** | **[Changelog détaillé](docs/CHANGELOG_INGESTION_V2.md)**
+
+**Dernière mise à jour :** 21 décembre 2025 - Système d'ingestion v2 finalisé + infrastructure de tests créée
 
 ## 🚀 Démarrage rapide
 
