@@ -24,10 +24,11 @@ from slowapi.errors import RateLimitExceeded
 from ingest_v2 import AdvancedIngestionPipeline
 
 # Imports Authentification & DB
-from db import engine, Base
+from db import engine, Base, get_async_session
 from users import auth_backend, fastapi_users, current_active_user
 from schemas import UserRead, UserCreate, UserUpdate
 from models import User
+from sqlalchemy.ext.asyncio import AsyncSession
 
 # Configuration du logging
 logging.basicConfig(
@@ -594,6 +595,188 @@ async def upload_file(
             except:
                 pass
 
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Helper Functions for Admin ---
+async def get_current_admin_user(user: User = Depends(current_active_user)):
+    """Vérifie que l'utilisateur actuel est un administrateur"""
+    if user.role_id != 1:  # 1 = role admin
+        raise HTTPException(
+            status_code=403,
+            detail="Access forbidden: Admin role required"
+        )
+    return user
+
+# --- Admin Endpoints ---
+
+@app.get("/admin/audit")
+async def get_audit_logs(
+    user_id: Optional[str] = None,
+    action: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Récupère les logs d'audit avec filtres
+
+    Query Parameters:
+    - user_id: Filtrer par utilisateur (UUID)
+    - action: Filtrer par nom d'action (ex: 'login_success')
+    - limit: Nombre de résultats (défaut: 50, max: 200)
+    - offset: Pagination
+
+    Requires: Admin role
+    """
+    from sqlalchemy import select, desc
+    from models import AuditLog, AuditAction, ResourceType, User as UserModel
+
+    try:
+        # Limiter le nombre maximum de résultats
+        limit = min(limit, 200)
+
+        # Construire la requête de base avec jointures
+        query = select(AuditLog).order_by(desc(AuditLog.created_at))
+
+        # Filtrer par user_id si fourni
+        if user_id:
+            try:
+                user_uuid = uuid.UUID(user_id)
+                query = query.where(AuditLog.user_id == user_uuid)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid user_id format")
+
+        # Filtrer par action si fourni
+        if action:
+            # Récupérer l'action_id depuis le nom
+            action_result = await db.execute(
+                select(AuditAction).where(AuditAction.name == action)
+            )
+            action_obj = action_result.scalar_one_or_none()
+            if action_obj:
+                query = query.where(AuditLog.action_id == action_obj.id)
+
+        # Appliquer la pagination
+        query = query.limit(limit).offset(offset)
+
+        # Exécuter la requête
+        result = await db.execute(query)
+        audit_logs = result.scalars().all()
+
+        # Préparer la réponse avec les détails enrichis
+        logs_data = []
+        for log in audit_logs:
+            # Récupérer l'utilisateur
+            user_data = None
+            if log.user_id:
+                user_result = await db.execute(
+                    select(UserModel).where(UserModel.id == log.user_id)
+                )
+                user_obj = user_result.scalar_one_or_none()
+                if user_obj:
+                    user_data = {
+                        "id": str(user_obj.id),
+                        "email": user_obj.email,
+                        "username": user_obj.username
+                    }
+
+            # Récupérer l'action
+            action_result = await db.execute(
+                select(AuditAction).where(AuditAction.id == log.action_id)
+            )
+            action_obj = action_result.scalar_one()
+
+            # Récupérer le type de ressource
+            resource_type_data = None
+            if log.resource_type_id:
+                resource_type_result = await db.execute(
+                    select(ResourceType).where(ResourceType.id == log.resource_type_id)
+                )
+                resource_type_obj = resource_type_result.scalar_one_or_none()
+                if resource_type_obj:
+                    resource_type_data = {
+                        "id": resource_type_obj.id,
+                        "name": resource_type_obj.name,
+                        "display_name": resource_type_obj.display_name
+                    }
+
+            logs_data.append({
+                "id": str(log.id),
+                "user": user_data,
+                "action": {
+                    "id": action_obj.id,
+                    "name": action_obj.name,
+                    "display_name": action_obj.display_name,
+                    "severity": action_obj.severity
+                },
+                "resource_type": resource_type_data,
+                "resource_id": str(log.resource_id) if log.resource_id else None,
+                "details": log.details,
+                "ip_address": log.ip_address,
+                "user_agent": log.user_agent,
+                "created_at": log.created_at.isoformat()
+            })
+
+        REQUEST_COUNT.labels(endpoint="/admin/audit", method="GET", status="200").inc()
+
+        return {
+            "total": len(logs_data),
+            "limit": limit,
+            "offset": offset,
+            "logs": logs_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/audit", method="GET", status="500").inc()
+        logger.error(f"Error fetching audit logs: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/stats")
+async def get_admin_stats(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Récupère les statistiques globales du système
+
+    Requires: Admin role
+    """
+    from sqlalchemy import select, func
+    from models import User as UserModel, Conversation, Document
+
+    try:
+        # Compter les utilisateurs
+        users_count_result = await db.execute(select(func.count(UserModel.id)))
+        users_count = users_count_result.scalar()
+
+        # Compter les conversations
+        conversations_count_result = await db.execute(select(func.count(Conversation.id)))
+        conversations_count = conversations_count_result.scalar()
+
+        # Compter les documents
+        documents_count_result = await db.execute(select(func.count(Document.id)))
+        documents_count = documents_count_result.scalar()
+
+        REQUEST_COUNT.labels(endpoint="/admin/stats", method="GET", status="200").inc()
+
+        return {
+            "users": {
+                "total": users_count
+            },
+            "conversations": {
+                "total": conversations_count
+            },
+            "documents": {
+                "total": documents_count
+            }
+        }
+
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/stats", method="GET", status="500").inc()
+        logger.error(f"Error fetching admin stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
