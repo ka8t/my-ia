@@ -1,0 +1,58 @@
+app
+├── common
+│   ├── exceptions
+│   │   ├── __init__.py
+│   │   └── http.py
+│   ├── schemas
+│   │   ├── __init__.py
+│   │   └── base.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── chroma.py
+│   │   └── ollama.py
+│   └── __init__.py
+├── core
+│   ├── __init__.py
+│   ├── config.py
+│   └── deps.py
+├── datasets
+├── features
+│   ├── admin
+│   │   └── __init__.py
+│   ├── audit
+│   │   └── __init__.py
+│   ├── auth
+│   │   └── __init__.py
+│   ├── chat
+│   │   ├── __init__.py
+│   │   ├── router.py
+│   │   ├── schemas.py
+│   │   └── service.py
+│   ├── health
+│   │   ├── __init__.py
+│   │   ├── router.py
+│   │   └── service.py
+│   ├── ingestion
+│   │   └── __init__.py
+│   ├── user
+│   │   └── __init__.py
+│   └── __init__.py
+├── prompts
+│   ├── assistant_system.md
+│   └── chatbot_system.md
+├── CLAUDE.md
+├── Dockerfile
+├── alembic.ini
+├── audit_service.py
+├── db.py
+├── ingest_v2.py
+├── main.py
+├── main.py.backup
+├── main.py.old
+├── main_new.py
+├── models.py
+├── requirements.txt
+├── schemas.py
+└── users.py
+
+16 directories, 40 files

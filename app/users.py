@@ -12,9 +12,9 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db import get_async_session
-from models import User
-import audit_service
+from app.db import get_async_session
+from app.models import User
+from app.features.audit import service as audit_service
 
 # --- Configuration JWT ---
 # En production, cette clé doit être chargée depuis les variables d'environnement

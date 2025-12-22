@@ -35,7 +35,7 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
 )
-from langchain.schema import Document as LangchainDocument
+from langchain_core.documents import Document as LangchainDocument
 
 # Configuration
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")

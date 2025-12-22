@@ -1,0 +1,600 @@
+"""
+Router Admin
+
+Endpoints d'administration pour gérer les utilisateurs, rôles, audit, etc.
+Tous les endpoints nécessitent le rôle admin.
+"""
+import uuid
+import logging
+from typing import Optional
+
+from fastapi import APIRouter, Request, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
+
+from app.core.deps import get_current_admin_user, get_db
+from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference
+from app.schemas import (
+    RoleRead, RoleCreate, RoleUpdate,
+    ConversationModeRead, ConversationModeCreate, ConversationModeUpdate,
+    ResourceTypeRead, ResourceTypeCreate, ResourceTypeUpdate,
+    AuditActionRead, AuditActionCreate, AuditActionUpdate,
+    UserPreferenceRead, UserPreferenceUpdate,
+    ConversationRead, MessageRead, DocumentRead, SessionRead
+)
+from app.features.admin.repository import AdminRepository
+from app.features.admin.service import AdminService
+from app.features.audit.service import AuditService
+from app.common.metrics import REQUEST_COUNT
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+# =============================================================================
+# AUDIT LOGS & STATS
+# =============================================================================
+
+@router.get("/audit")
+async def get_audit_logs(
+    user_id: Optional[str] = None,
+    action: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Récupère les logs d'audit avec filtres
+
+    Query Parameters:
+    - user_id: Filtrer par utilisateur (UUID)
+    - action: Filtrer par nom d'action
+    - limit: Nombre de résultats (max 200)
+    - offset: Pagination
+
+    Requires: Admin role
+    """
+    try:
+        limit = min(limit, 200)
+
+        user_uuid = None
+        if user_id:
+            try:
+                user_uuid = uuid.UUID(user_id)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid user_id format")
+
+        audit_logs = await AdminRepository.get_audit_logs(
+            db, user_uuid, action, limit, offset
+        )
+
+        # Enrichir les données (jointures manuelles pour simplifier)
+        # Note: Dans une vraie app, utiliser eager loading avec joinedload()
+        logs_data = []
+        for log in audit_logs:
+            logs_data.append({
+                "id": str(log.id),
+                "user_id": str(log.user_id) if log.user_id else None,
+                "action_id": log.action_id,
+                "resource_type_id": log.resource_type_id,
+                "resource_id": str(log.resource_id) if log.resource_id else None,
+                "details": log.details,
+                "ip_address": log.ip_address,
+                "user_agent": log.user_agent,
+                "created_at": log.created_at.isoformat()
+            })
+
+        REQUEST_COUNT.labels(endpoint="/admin/audit", method="GET", status="200").inc()
+
+        return {
+            "total": len(logs_data),
+            "limit": limit,
+            "offset": offset,
+            "logs": logs_data
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/audit", method="GET", status="500").inc()
+        logger.error(f"Error fetching audit logs: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats")
+async def get_admin_stats(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Récupère les statistiques globales du système
+
+    Requires: Admin role
+    """
+    try:
+        stats = await AdminService.get_stats(db)
+
+        REQUEST_COUNT.labels(endpoint="/admin/stats", method="GET", status="200").inc()
+
+        return stats
+
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/stats", method="GET", status="500").inc()
+        logger.error(f"Error fetching admin stats: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# ROLES CRUD
+# =============================================================================
+
+@router.get("/roles", response_model=list[RoleRead])
+async def get_roles(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère tous les rôles - Requires: Admin role"""
+    try:
+        roles = await AdminRepository.get_all(db, Role, order_by=Role.id)
+
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="GET", status="200").inc()
+        return roles
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="GET", status="500").inc()
+        logger.error(f"Error fetching roles: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/roles", response_model=RoleRead, status_code=201)
+async def create_role(
+    role_data: RoleCreate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crée un nouveau rôle - Requires: Admin role"""
+    try:
+        new_role = await AdminService.create_role(db, role_data.model_dump())
+
+        # Audit log
+        await AuditService.log_action(
+            db=db,
+            action_name='role_created',
+            user_id=admin_user.id,
+            resource_type_name='role',
+            resource_id=None,
+            details={'role_name': new_role.name, 'role_id': new_role.id},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="POST", status="201").inc()
+        return new_role
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="POST", status="500").inc()
+        logger.error(f"Error creating role: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/roles/{role_id}", response_model=RoleRead)
+async def update_role(
+    role_id: int,
+    role_data: RoleUpdate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Met à jour un rôle - Requires: Admin role"""
+    try:
+        role = await AdminService.update_role(db, role_id, role_data.model_dump(exclude_unset=True))
+
+        # Audit log
+        await AuditService.log_action(
+            db=db,
+            action_name='role_updated',
+            user_id=admin_user.id,
+            resource_type_name='role',
+            resource_id=None,
+            details={'role_id': role.id, 'updates': role_data.model_dump(exclude_unset=True)},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="PATCH", status="200").inc()
+        return role
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="PATCH", status="500").inc()
+        logger.error(f"Error updating role: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/roles/{role_id}", status_code=204)
+async def delete_role(
+    role_id: int,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Supprime un rôle - Requires: Admin role"""
+    try:
+        role = await AdminRepository.get_by_id(db, Role, role_id)
+        if not role:
+            raise HTTPException(status_code=404, detail="Role not found")
+
+        role_name = role.name
+        await AdminService.delete_role(db, role_id)
+
+        # Audit log
+        await AuditService.log_action(
+            db=db,
+            action_name='role_deleted',
+            user_id=admin_user.id,
+            resource_type_name='role',
+            resource_id=None,
+            details={'role_id': role_id, 'role_name': role_name},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/roles", method="DELETE", status="500").inc()
+        logger.error(f"Error deleting role: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# CONVERSATION MODES CRUD
+# =============================================================================
+
+@router.get("/conversation-modes", response_model=list[ConversationModeRead])
+async def get_conversation_modes(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère tous les modes de conversation"""
+    try:
+        modes = await AdminRepository.get_all(db, ConversationMode, order_by=ConversationMode.id)
+
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="GET", status="200").inc()
+        return modes
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="GET", status="500").inc()
+        logger.error(f"Error fetching conversation modes: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/conversation-modes", response_model=ConversationModeRead, status_code=201)
+async def create_conversation_mode(
+    mode_data: ConversationModeCreate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crée un nouveau mode de conversation"""
+    try:
+        new_mode = await AdminService.create_conversation_mode(db, mode_data.model_dump())
+
+        await AuditService.log_action(
+            db=db,
+            action_name='conversation_mode_created',
+            user_id=admin_user.id,
+            resource_type_name='conversation_mode',
+            resource_id=None,
+            details={'mode_name': new_mode.name, 'mode_id': new_mode.id},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="POST", status="201").inc()
+        return new_mode
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="POST", status="500").inc()
+        logger.error(f"Error creating conversation mode: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/conversation-modes/{mode_id}", response_model=ConversationModeRead)
+async def update_conversation_mode(
+    mode_id: int,
+    mode_data: ConversationModeUpdate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Met à jour un mode de conversation"""
+    try:
+        mode = await AdminService.update_conversation_mode(
+            db, mode_id, mode_data.model_dump(exclude_unset=True)
+        )
+
+        await AuditService.log_action(
+            db=db,
+            action_name='conversation_mode_updated',
+            user_id=admin_user.id,
+            resource_type_name='conversation_mode',
+            resource_id=None,
+            details={'mode_id': mode.id, 'updates': mode_data.model_dump(exclude_unset=True)},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="PATCH", status="200").inc()
+        return mode
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="PATCH", status="500").inc()
+        logger.error(f"Error updating conversation mode: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/conversation-modes/{mode_id}", status_code=204)
+async def delete_conversation_mode(
+    mode_id: int,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Supprime un mode de conversation"""
+    try:
+        mode = await AdminRepository.get_by_id(db, ConversationMode, mode_id)
+        if not mode:
+            raise HTTPException(status_code=404, detail="Conversation mode not found")
+
+        mode_name = mode.name
+        await AdminService.delete_conversation_mode(db, mode_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='conversation_mode_deleted',
+            user_id=admin_user.id,
+            resource_type_name='conversation_mode',
+            resource_id=None,
+            details={'mode_id': mode_id, 'mode_name': mode_name},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/conversation-modes", method="DELETE", status="500").inc()
+        logger.error(f"Error deleting conversation mode: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# RESOURCE TYPES & AUDIT ACTIONS CRUD (Simplified - same pattern as above)
+# =============================================================================
+
+@router.get("/resource-types", response_model=list[ResourceTypeRead])
+async def get_resource_types(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère tous les types de ressources"""
+    try:
+        types = await AdminRepository.get_all(db, ResourceType, order_by=ResourceType.id)
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="GET", status="200").inc()
+        return types
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/audit-actions", response_model=list[AuditActionRead])
+async def get_audit_actions(
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère toutes les actions d'audit"""
+    try:
+        actions = await AdminRepository.get_all(db, AuditAction, order_by=AuditAction.id)
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="GET", status="200").inc()
+        return actions
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# USER PREFERENCES
+# =============================================================================
+
+@router.get("/user-preferences/{user_id}", response_model=UserPreferenceRead)
+async def get_user_preferences(
+    user_id: uuid.UUID,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère les préférences d'un utilisateur"""
+    try:
+        preferences = await AdminRepository.get_by_id(db, UserPreference, user_id)
+        if not preferences:
+            raise HTTPException(status_code=404, detail="User preferences not found")
+
+        REQUEST_COUNT.labels(endpoint="/admin/user-preferences", method="GET", status="200").inc()
+        return preferences
+    except HTTPException:
+        raise
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/user-preferences", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# CONVERSATIONS, MESSAGES, DOCUMENTS, SESSIONS
+# =============================================================================
+
+@router.get("/conversations", response_model=list[ConversationRead])
+async def get_conversations(
+    user_id: Optional[uuid.UUID] = None,
+    mode_id: Optional[int] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère toutes les conversations avec filtres"""
+    try:
+        limit = min(limit, 200)
+        conversations = await AdminRepository.get_conversations(db, user_id, mode_id, limit, offset)
+
+        REQUEST_COUNT.labels(endpoint="/admin/conversations", method="GET", status="200").inc()
+        return conversations
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/conversations", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/messages", response_model=list[MessageRead])
+async def get_messages(
+    conversation_id: Optional[uuid.UUID] = None,
+    sender_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère tous les messages avec filtres"""
+    try:
+        limit = min(limit, 200)
+        messages = await AdminRepository.get_messages(db, conversation_id, sender_type, limit, offset)
+
+        REQUEST_COUNT.labels(endpoint="/admin/messages", method="GET", status="200").inc()
+        return messages
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/messages", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/documents", response_model=list[DocumentRead])
+async def get_documents(
+    user_id: Optional[uuid.UUID] = None,
+    file_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère tous les documents avec filtres"""
+    try:
+        limit = min(limit, 200)
+        documents = await AdminRepository.get_documents(db, user_id, file_type, limit, offset)
+
+        REQUEST_COUNT.labels(endpoint="/admin/documents", method="GET", status="200").inc()
+        return documents
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/documents", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/documents/{document_id}", status_code=204)
+async def delete_document(
+    document_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Supprime un document (aussi dans ChromaDB si possible)"""
+    try:
+        document = await AdminRepository.get_by_id(db, Document, document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        document_info = {
+            'filename': document.filename,
+            'file_hash': document.file_hash,
+            'user_id': str(document.user_id)
+        }
+
+        await AdminService.delete_document(db, document_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='document_deleted',
+            user_id=admin_user.id,
+            resource_type_name='document',
+            resource_id=document_id,
+            details=document_info,
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/documents", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/documents", method="DELETE", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/sessions", response_model=list[SessionRead])
+async def get_sessions(
+    user_id: Optional[uuid.UUID] = None,
+    active_only: bool = False,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Récupère toutes les sessions avec filtres"""
+    try:
+        limit = min(limit, 200)
+        sessions = await AdminRepository.get_sessions(db, user_id, active_only, limit, offset)
+
+        REQUEST_COUNT.labels(endpoint="/admin/sessions", method="GET", status="200").inc()
+        return sessions
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/sessions", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/sessions/user/{user_id}", status_code=204)
+async def revoke_all_user_sessions(
+    user_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Révoque toutes les sessions d'un utilisateur"""
+    try:
+        user = await AdminRepository.get_by_id(db, User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        count = await AdminRepository.revoke_all_user_sessions(db, user_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='all_sessions_revoked',
+            user_id=admin_user.id,
+            resource_type_name='session',
+            resource_id=user_id,
+            details={'target_user_id': str(user_id), 'sessions_revoked': count},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/sessions", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/sessions", method="DELETE", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))

@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # Import des modèles pour l'autogenerate
-from db import Base, DATABASE_URL
-from models import * # Import all models to ensure they are registered
+from app.db import Base, DATABASE_URL
+from app.models import * # Import all models to ensure they are registered
 
 config = context.config
 
