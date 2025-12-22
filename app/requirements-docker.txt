@@ -1,0 +1,53 @@
+# Core API - Installation rapide (~2 min)
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+python-dotenv>=1.0.0
+
+# Database
+sqlalchemy>=2.0
+asyncpg
+alembic
+
+# Auth
+fastapi-users[sqlalchemy]
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+email-validator
+
+# Vector DB
+chromadb>=0.5.0
+
+# HTTP & Utils
+httpx>=0.27.0
+python-multipart
+
+# Monitoring
+prometheus-client
+slowapi
+
+# PDF basique (si besoin)
+pymupdf>=1.25.0
+beautifulsoup4
+lxml
+# Ingestion avancée - Installation longue (optionnel)
+# À installer APRÈS avoir testé l'API avec requirements-core.txt
+
+# LangChain
+langchain>=0.3.0
+langchain-text-splitters>=0.3.0
+langchain-community>=0.3.0
+
+# Document processing (simplifié, sans [all-docs])
+unstructured>=0.10.0
+python-magic
+python-docx
+openpyxl
+Pillow
+markdown
+
+# OCR (optionnel - nécessite tesseract installé sur système)
+# pytesseract
+# pdf2image
