@@ -14,7 +14,7 @@ from starlette.responses import Response
 
 from app.core.deps import get_current_admin_user, get_db
 from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference
-from app.schemas import (
+from app.common.schemas import (
     RoleRead, RoleCreate, RoleUpdate,
     ConversationModeRead, ConversationModeCreate, ConversationModeUpdate,
     ResourceTypeRead, ResourceTypeCreate, ResourceTypeUpdate,

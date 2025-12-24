@@ -21,9 +21,9 @@ from app.features.chat.router import router as chat_router, assistant_router, te
 from app.features.ingestion.router import router as ingestion_router
 from app.features.admin.router import router as admin_router
 
-# Import de l'authentification
-from app.users import auth_backend, fastapi_users, current_active_user
-from app.schemas import UserRead, UserCreate, UserUpdate
+# Import de l'authentification et des utilisateurs
+from app.features.auth.router import router as auth_router
+from app.features.user.router import router as user_router
 
 # Configuration du logging
 logging.basicConfig(
@@ -89,32 +89,9 @@ app.add_middleware(
 # Health & Metrics
 app.include_router(health_router)
 
-# Authentication
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend),
-    prefix="/auth/jwt",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_reset_password_router(),
-    prefix="/auth",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_verify_router(UserRead),
-    prefix="/auth",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_users_router(UserRead, UserUpdate),
-    prefix="/users",
-    tags=["users"],
-)
+# Authentication & Users
+app.include_router(auth_router)
+app.include_router(user_router)
 
 # Chat
 app.include_router(chat_router)

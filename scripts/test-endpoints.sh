@@ -1,0 +1,358 @@
+#!/bin/bash
+
+##############################################################################
+# Script de test des endpoints MY-IA API
+# Usage: ./scripts/test-endpoints.sh [base|auth|user|all]
+##############################################################################
+
+set -e
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+API_URL="${API_URL:-http://localhost:8000}"
+TIMEOUT=5
+
+# Compteurs
+TOTAL=0
+SUCCESS=0
+FAILED=0
+
+# Variables globales pour auth
+ACCESS_TOKEN=""
+USER_EMAIL="test_$(date +%s)@example.com"
+USER_PASSWORD="TestPassword123!"
+USER_ID=""
+
+##############################################################################
+# Fonctions utilitaires
+##############################################################################
+
+print_header() {
+    echo -e "\n${BLUE}========================================${NC}"
+    echo -e "${BLUE}$1${NC}"
+    echo -e "${BLUE}========================================${NC}\n"
+}
+
+print_test() {
+    echo -e "${YELLOW}[TEST]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
+    ((SUCCESS++))
+    ((TOTAL++))
+}
+
+print_error() {
+    echo -e "${RED}[✗]${NC} $1"
+    ((FAILED++))
+    ((TOTAL++))
+}
+
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+# Test HTTP avec gestion d'erreur
+test_endpoint() {
+    local method=$1
+    local endpoint=$2
+    local expected_status=$3
+    local description=$4
+    local data=${5:-}
+    local headers=${6:-}
+
+    print_test "$description"
+
+    local url="${API_URL}${endpoint}"
+    local curl_cmd="curl -s -w '\n%{http_code}' -X $method '$url' --max-time $TIMEOUT"
+
+    if [ -n "$headers" ]; then
+        curl_cmd="$curl_cmd -H '$headers'"
+    fi
+
+    if [ -n "$data" ]; then
+        curl_cmd="$curl_cmd -H 'Content-Type: application/json' -d '$data'"
+    fi
+
+    # Exécuter la requête
+    local response
+    response=$(eval $curl_cmd 2>&1) || {
+        print_error "$description - Connection failed"
+        return 1
+    }
+
+    # Extraire le code HTTP (dernière ligne)
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    # Vérifier le code HTTP
+    if [ "$http_code" = "$expected_status" ]; then
+        print_success "$description (HTTP $http_code)"
+        echo "    Response: ${body:0:100}..." | head -c 150
+        echo ""
+        return 0
+    else
+        print_error "$description - Expected $expected_status, got $http_code"
+        echo "    Response: $body" | head -c 200
+        echo ""
+        return 1
+    fi
+}
+
+##############################################################################
+# Tests des endpoints de base
+##############################################################################
+
+test_basic_endpoints() {
+    print_header "Tests des endpoints de base"
+
+    test_endpoint "GET" "/" 200 "Root endpoint"
+    test_endpoint "GET" "/health" 200 "Health check"
+    test_endpoint "GET" "/metrics" 200 "Prometheus metrics"
+    test_endpoint "GET" "/docs" 200 "OpenAPI documentation"
+    test_endpoint "GET" "/openapi.json" 200 "OpenAPI schema"
+}
+
+##############################################################################
+# Tests des endpoints d'authentification
+##############################################################################
+
+test_auth_endpoints() {
+    print_header "Tests des endpoints d'authentification"
+
+    # 1. Register
+    local register_data="{\"email\":\"$USER_EMAIL\",\"password\":\"$USER_PASSWORD\",\"username\":\"testuser\",\"full_name\":\"Test User\"}"
+
+    print_test "POST /auth/register - Création d'utilisateur"
+    local response=$(curl -s -w '\n%{http_code}' -X POST "$API_URL/auth/register" \
+        -H 'Content-Type: application/json' \
+        -d "$register_data" \
+        --max-time $TIMEOUT 2>&1)
+
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [ "$http_code" = "201" ]; then
+        print_success "Utilisateur créé (HTTP 201)"
+        # Extraire l'ID utilisateur
+        USER_ID=$(echo "$body" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+        print_info "User ID: $USER_ID"
+        echo "    Response: ${body:0:100}..."
+    else
+        print_error "Échec création utilisateur - Expected 201, got $http_code"
+        echo "    Response: $body"
+    fi
+    echo ""
+
+    # 2. Login
+    print_test "POST /auth/jwt/login - Connexion utilisateur"
+    local login_data="username=$USER_EMAIL&password=$USER_PASSWORD"
+
+    response=$(curl -s -w '\n%{http_code}' -X POST "$API_URL/auth/jwt/login" \
+        -H 'Content-Type: application/x-www-form-urlencoded' \
+        -d "$login_data" \
+        --max-time $TIMEOUT 2>&1)
+
+    http_code=$(echo "$response" | tail -n1)
+    body=$(echo "$response" | sed '$d')
+
+    if [ "$http_code" = "200" ]; then
+        print_success "Connexion réussie (HTTP 200)"
+        # Extraire le token
+        ACCESS_TOKEN=$(echo "$body" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+        print_info "Access Token: ${ACCESS_TOKEN:0:50}..."
+        echo "    Response: ${body:0:100}..."
+    else
+        print_error "Échec connexion - Expected 200, got $http_code"
+        echo "    Response: $body"
+    fi
+    echo ""
+
+    # 3. Logout
+    if [ -n "$ACCESS_TOKEN" ]; then
+        test_endpoint "POST" "/auth/jwt/logout" 200 "POST /auth/jwt/logout - Déconnexion" "" "Authorization: Bearer $ACCESS_TOKEN"
+    else
+        print_error "POST /auth/jwt/logout - Pas de token disponible"
+        ((FAILED++))
+        ((TOTAL++))
+    fi
+
+    # 4. Request verify token (sans être connecté, devrait échouer ou réussir selon config)
+    test_endpoint "POST" "/auth/request-verify-token" 202 "POST /auth/request-verify-token - Demande token vérification" "{\"email\":\"$USER_EMAIL\"}"
+
+    # 5. Forgot password
+    test_endpoint "POST" "/auth/forgot-password" 202 "POST /auth/forgot-password - Mot de passe oublié" "{\"email\":\"$USER_EMAIL\"}"
+}
+
+##############################################################################
+# Tests des endpoints utilisateurs
+##############################################################################
+
+test_user_endpoints() {
+    print_header "Tests des endpoints utilisateurs"
+
+    if [ -z "$ACCESS_TOKEN" ]; then
+        print_error "Pas de token d'authentification - Login requis"
+        ((FAILED++))
+        ((TOTAL++))
+        return 1
+    fi
+
+    # 1. Get current user
+    print_test "GET /users/me - Récupérer l'utilisateur courant"
+    local response=$(curl -s -w '\n%{http_code}' -X GET "$API_URL/users/me" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        --max-time $TIMEOUT 2>&1)
+
+    local http_code=$(echo "$response" | tail -n1)
+    local body=$(echo "$response" | sed '$d')
+
+    if [ "$http_code" = "200" ]; then
+        print_success "Utilisateur récupéré (HTTP 200)"
+        echo "    Response: ${body:0:150}..."
+    else
+        print_error "Échec récupération utilisateur - Expected 200, got $http_code"
+        echo "    Response: $body"
+    fi
+    echo ""
+
+    # 2. Update current user
+    print_test "PATCH /users/me - Mettre à jour l'utilisateur courant"
+    local update_data='{"full_name":"Updated Test User"}'
+
+    response=$(curl -s -w '\n%{http_code}' -X PATCH "$API_URL/users/me" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H 'Content-Type: application/json' \
+        -d "$update_data" \
+        --max-time $TIMEOUT 2>&1)
+
+    http_code=$(echo "$response" | tail -n1)
+    body=$(echo "$response" | sed '$d')
+
+    if [ "$http_code" = "200" ]; then
+        print_success "Utilisateur mis à jour (HTTP 200)"
+        echo "    Response: ${body:0:150}..."
+    else
+        print_error "Échec mise à jour utilisateur - Expected 200, got $http_code"
+        echo "    Response: $body"
+    fi
+    echo ""
+
+    # 3. Get user by ID (si on a l'ID)
+    if [ -n "$USER_ID" ]; then
+        print_test "GET /users/$USER_ID - Récupérer utilisateur par ID"
+        response=$(curl -s -w '\n%{http_code}' -X GET "$API_URL/users/$USER_ID" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            --max-time $TIMEOUT 2>&1)
+
+        http_code=$(echo "$response" | tail -n1)
+        body=$(echo "$response" | sed '$d')
+
+        if [ "$http_code" = "200" ]; then
+            print_success "Utilisateur récupéré par ID (HTTP 200)"
+            echo "    Response: ${body:0:150}..."
+        else
+            print_error "Échec récupération utilisateur par ID - Expected 200, got $http_code"
+            echo "    Response: $body"
+        fi
+        echo ""
+    fi
+}
+
+##############################################################################
+# Tests des autres endpoints (chat, ingestion, admin)
+##############################################################################
+
+test_other_endpoints() {
+    print_header "Tests des autres endpoints (non-authentifiés)"
+
+    # Chat (nécessite authentification normalement)
+    test_endpoint "POST" "/chat" 401 "POST /chat - Sans authentification (attendu 401)" '{"query":"test"}'
+
+    # Ingestion (nécessite authentification normalement)
+    test_endpoint "GET" "/ingestion/documents" 401 "GET /ingestion/documents - Sans authentification (attendu 401)"
+
+    # Admin (nécessite authentification + role admin)
+    test_endpoint "GET" "/admin/roles" 401 "GET /admin/roles - Sans authentification (attendu 401)"
+}
+
+##############################################################################
+# Rapport final
+##############################################################################
+
+print_summary() {
+    print_header "Résumé des tests"
+
+    echo -e "${BLUE}Total de tests:${NC} $TOTAL"
+    echo -e "${GREEN}Réussis:${NC} $SUCCESS"
+    echo -e "${RED}Échecs:${NC} $FAILED"
+
+    local success_rate=0
+    if [ $TOTAL -gt 0 ]; then
+        success_rate=$(awk "BEGIN {printf \"%.1f\", ($SUCCESS/$TOTAL)*100}")
+    fi
+
+    echo -e "\n${BLUE}Taux de réussite:${NC} $success_rate%"
+
+    if [ $FAILED -eq 0 ]; then
+        echo -e "\n${GREEN}✓ Tous les tests sont passés avec succès!${NC}\n"
+        exit 0
+    else
+        echo -e "\n${RED}✗ Certains tests ont échoué${NC}\n"
+        exit 1
+    fi
+}
+
+##############################################################################
+# Main
+##############################################################################
+
+main() {
+    local test_suite=${1:-all}
+
+    echo -e "${BLUE}"
+    echo "╔════════════════════════════════════════════════════════╗"
+    echo "║       MY-IA API - Script de test des endpoints        ║"
+    echo "╚════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+
+    print_info "API URL: $API_URL"
+    print_info "Timeout: ${TIMEOUT}s"
+    echo ""
+
+    case "$test_suite" in
+        base|basic)
+            test_basic_endpoints
+            ;;
+        auth)
+            test_auth_endpoints
+            ;;
+        user)
+            # Login d'abord pour obtenir le token
+            test_auth_endpoints
+            test_user_endpoints
+            ;;
+        all)
+            test_basic_endpoints
+            test_auth_endpoints
+            test_user_endpoints
+            test_other_endpoints
+            ;;
+        *)
+            echo -e "${RED}Usage: $0 [base|auth|user|all]${NC}"
+            exit 1
+            ;;
+    esac
+
+    print_summary
+}
+
+# Exécuter
+main "$@"

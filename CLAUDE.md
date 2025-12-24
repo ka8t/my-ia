@@ -1,7 +1,14 @@
 IMPORTANT : SUIT CES RÈGLES À CHAQUE ÉTAPE DE GÉNÉRATION DE CODE. Relis ce fichier au début de chaque session. Appliquez systématiquement cette structure modulaire, scalable et maintenable pour tous les projets Python/FastAPI.
 
 # Context : Projet "MY-IA API"
+Je suis sous Macos Monterey. MacBook Pro 2015.
+Intel core I5 2,7 
+256 Go SSD interne
+1 Go SSD externe
+Je veux utiliser le minimum de ressources pour créer l'application et doit donc optimiser les ressources.
 
+## Interaction
+Tu dois toujours t'adresser à moi en Français
 
 ## Description
 Application de Chatbot RAG avec gestion administrative poussée, authentification et observabilité.
@@ -15,38 +22,73 @@ Application de Chatbot RAG avec gestion administrative poussée, authentificatio
 - **Ingestion :** Pipeline personnalisé (Unstructured.io + LangChain semantic chunking)
 - **Monitoring :** Prometheus Client, SlowAPI (Rate Limiting)
 
-## Architecture & Structure (Cible)
-projet/
-├── main.py              # SEULEMENT: app = FastAPI(); app.include_router(...)
-├── Dockerfile           # Multi-stage
-├── docker-compose.yml   # DB/Redis/Celery
-├── app/
-│   ├── core/config.py   # pydantic-settings (.env)
-│   ├── core/deps.py     # get_db(), get_redis()
-│   ├── common/          # Librairies partagées UNIQUEMENT
-│   │   ├── utils/       # validators, loggers
-│   │   ├── exceptions/  # Custom HTTPException
-│   │   └── schemas/     # Base Pydantic models
-│   └── features/        # UNE feature = 1 dossier
-│       ├── user/
-│       │   ├── router.py     # @router.get/post ONLY
-│       │   ├── service.py    # Business logic
-│       │   ├── repository.py # DB ops
-│       │   └── models.py     # SQLAlchemy + Pydantic
-│       └── auth/             # Même structure
-├── tests/              # Pytest >80% coverage
-└── docs/
 
 NE JAMais mettre de logique métier dans main.py ou router.py.
 
-Ce projet est en cours de migration d'un `main.py` monolithique vers une architecture modulaire :
-- `/app/routers` : Définition des endpoints (fichiers séparés par domaine : `chat.py`, `admin.py`, `auth.py`).
-- `/app/services` : Logique métier pure (ex: `ChatService`, `IngestionService`).
-- `/app/models` : Modèles SQLAlchemy.
-- `/app/schemas` : Modèles Pydantic (DTOs).
-- `/app/core` : Configuration, Sécurité, Dépendances globales.
+Ce projet a migré d'un `main.py` monolithique vers une architecture modulaire.
+Chaque feature est découpée comme suit
+exemple dans le dossier `/app`
+```
+app/
+├── main.py                        # 135 lignes (vs 2102) - Point d'entrée minimal
+├── core/                          # Configuration centralisée
+│   ├── config.py                  # pydantic-settings
+│   └── deps.py                    # Injection de dépendances
+├── common/                        # Code partagé
+│   ├── utils/
+│   │   ├── chroma.py              # search_context()
+│   │   └── ollama.py              # get_embeddings(), generate_response()
+│   ├── exceptions/http.py         # Custom HTTP exceptions
+│   ├── schemas/base.py            # Base Pydantic models
+│   └── metrics.py                 # Métriques Prometheus centralisées
+└── features/                      # 🎯 Architecture modulaire
+    ├── health/                    # ✅ Health check & metrics
+    │   ├── router.py
+    │   └── service.py
+    ├── chat/                      # ✅ Chat conversationnel RAG
+    │   ├── router.py
+    │   ├── service.py
+    │   └── schemas.py
+    ├── ingestion/                 # ✅ Upload documents
+    │   ├── router.py
+    │   ├── service.py
+    │   └── schemas.py
+    ├── audit/                     # ✅ Audit logs
+    │   ├── service.py
+    │   └── repository.py
+    └── admin/                     # ✅ CRUD admin (20+ endpoints)
+        ├── router.py
+        ├── service.py
+        └── repository.py
+```
 
-Si la migration est terminée :
+### Pattern Feature (Standard Appliqué)
+
+Chaque feature suit le pattern **Router → Service → Repository** :
+
+```python
+features/[nom]/
+├── router.py       # FastAPI endpoints ONLY (GET/POST/PATCH/DELETE)
+├── service.py      # Business logic (async)
+├── repository.py   # Database operations (optionnel)
+└── schemas.py      # Pydantic DTOs (optionnel)
+```
+
+Les documents Mardown(sauf readme) doivent être stockés dans le dossier /docs
+à la racine et organisés par type de documentation 
+- Générale
+    - cahier des charges
+    - evolutions
+    - todos ... 
+- technique
+    - installation
+    - cdeploiement
+    - maintenance ...
+
+Les documents Mardown (sauf readme) doivent être stockés dans le dossier /tests
+à la racine et organisés de manière à pouvoir les excuter individuellement ou tout l'ensemble;
+
+
 Vérification Finale
 À CHAQUE réponse de code, confirmer :
 ✅ Structure features/ respectée
@@ -68,6 +110,7 @@ La route /upload fait : await ingestion_pipeline.ingest_file(...). Problème : S
 Les routes Admin (get_roles, create_role, update_role, etc.) répètent la même logique CRUD 10 fois. Solution : Crée une classe générique.
 
 ## Directives de Code
+0. **DRY** Pas de duplication de code qui viole le principe DRY (Don't Repeat Yourself).
 1. **Asynchronisme :** Tout doit être `async/await`, surtout les appels DB et HTTP (Ollama).
 2. **Typage :** Utiliser `typing` (List, Optional, Dict) et Pydantic strictement.
 3. **Erreurs :** Toujours wrapper les appels externes dans des `try/except` avec logging approprié.
@@ -78,5 +121,13 @@ Les routes Admin (get_roles, create_role, update_role, etc.) répètent la même
 - Variables/Fonctions : `snake_case`
 - Classes : `PascalCase`
 - Constantes : `UPPER_CASE`
+
+Pour les containers docker, on ne doit pas redémarrer ou les reconstruire si il y a un changement de code mais uniquement si cela est nécessaire, ajout/modification de libs systèmes, dépendances ....
+
+Ne prends jamais d'initiatives d'optimisatations sans me présenter le pour et le contre. Sachant que le plus important est la maintenabilité, la clarté, la scabilité.
+
+Tu dois toujoujours suggérer les meilleurs pratiques de codage.
+
+Tu dois toujours vérifier les dépendances et les conflits possibles entre elles.
 
 Ce fichier CLAUDE.md doit être la référence ABSOLUE pour tous vos projets Python. Relisez-le systématiquement au début de chaque génération de code.

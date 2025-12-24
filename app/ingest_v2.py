@@ -30,6 +30,14 @@ from unstructured.partition.auto import partition
 from unstructured.chunking.title import chunk_by_title
 from unstructured.staging.base import elements_to_json
 
+# OCR with Tesseract (replacement for unstructured-inference)
+import pytesseract
+from PIL import Image
+from pdf2image import convert_from_path
+
+# Import centralized ChromaDB client from deps
+from app.core.deps import get_chroma_client
+
 # LangChain for semantic chunking
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
@@ -75,13 +83,13 @@ class DocumentParser:
         try:
             logger.info(f"Parsing {file_path} with strategy '{strategy}'")
 
-            # Parse with Unstructured
+            # Parse with Unstructured (optimized - no ML inference)
             elements = partition(
                 filename=file_path,
                 strategy=strategy,
                 include_metadata=True,
-                extract_images_in_pdf=True,  # Extract images from PDFs
-                infer_table_structure=True,  # Preserve table structure
+                # extract_images_in_pdf removed (requires unstructured-inference)
+                # infer_table_structure removed (requires unstructured-inference + detectron2)
             )
 
             # Convert to JSON-serializable format
@@ -111,6 +119,103 @@ class DocumentParser:
                     "metadata": elem["metadata"]
                 })
         return tables
+
+
+class OCRProcessor:
+    """
+    OCR using Tesseract (lightweight replacement for unstructured-inference)
+
+    Provides OCR capabilities for images and scanned PDFs without heavy ML dependencies.
+    """
+
+    @staticmethod
+    def ocr_image(image_path: str, lang: str = "fra+eng") -> str:
+        """
+        Extract text from image using Tesseract OCR
+
+        Args:
+            image_path: Path to image file (PNG, JPG, etc.)
+            lang: Tesseract language code (fra+eng for French+English)
+
+        Returns:
+            Extracted text
+        """
+        try:
+            logger.info(f"Running OCR on image: {image_path}")
+            image = Image.open(image_path)
+            text = pytesseract.image_to_string(image, lang=lang)
+            logger.info(f"OCR extracted {len(text)} characters from {image_path}")
+            return text.strip()
+        except Exception as e:
+            logger.error(f"OCR error for {image_path}: {e}")
+            return ""
+
+    @staticmethod
+    def ocr_pdf(pdf_path: str, lang: str = "fra+eng") -> List[str]:
+        """
+        Extract text from scanned PDF using Tesseract OCR
+
+        Converts each PDF page to image and runs OCR.
+        Use this for scanned PDFs where normal text extraction fails.
+
+        Args:
+            pdf_path: Path to PDF file
+            lang: Tesseract language code
+
+        Returns:
+            List of text per page
+        """
+        try:
+            logger.info(f"Running OCR on PDF: {pdf_path}")
+
+            # Convert PDF pages to images
+            images = convert_from_path(pdf_path)
+            logger.info(f"PDF has {len(images)} pages")
+
+            texts = []
+            for i, image in enumerate(images):
+                logger.info(f"OCR page {i+1}/{len(images)} of {pdf_path}")
+                text = pytesseract.image_to_string(image, lang=lang)
+                texts.append(text.strip())
+
+            total_chars = sum(len(t) for t in texts)
+            logger.info(f"OCR extracted {total_chars} characters from {len(images)} pages")
+            return texts
+
+        except Exception as e:
+            logger.error(f"OCR error for PDF {pdf_path}: {e}")
+            return []
+
+    @staticmethod
+    def is_scanned_pdf(pdf_path: str, threshold: int = 100) -> bool:
+        """
+        Detect if a PDF is scanned (image-based) or text-based
+
+        Args:
+            pdf_path: Path to PDF file
+            threshold: Minimum characters to consider PDF as text-based
+
+        Returns:
+            True if PDF appears to be scanned (low text content)
+        """
+        try:
+            import pymupdf
+            doc = pymupdf.open(pdf_path)
+
+            # Check first few pages
+            total_text = ""
+            for page_num in range(min(3, len(doc))):
+                page = doc[page_num]
+                total_text += page.get_text()
+
+            doc.close()
+
+            # If very little text found, likely scanned
+            return len(total_text.strip()) < threshold
+
+        except Exception as e:
+            logger.warning(f"Could not detect PDF type for {pdf_path}: {e}")
+            return False
 
 
 class SemanticChunker:
@@ -544,11 +649,12 @@ async def main():
     """Main ingestion script"""
     logger.info("🚀 Starting Advanced Ingestion Pipeline v2.0")
 
-    # Initialize ChromaDB
-    chroma_client = chromadb.PersistentClient(
-        path=CHROMA_PATH,
-        settings=Settings(anonymized_telemetry=False)
-    )
+    # Get centralized ChromaDB client (no duplication)
+    chroma_client = get_chroma_client()
+
+    if chroma_client is None:
+        logger.error("Failed to initialize ChromaDB client. Exiting.")
+        return
 
     # Create pipeline
     pipeline = AdvancedIngestionPipeline(

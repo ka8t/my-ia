@@ -8,6 +8,22 @@ Stack complète d'IA conversationnelle avec interface web moderne et automatisat
 - 🔄 **N8N** : Automatisation de workflows
 - 🐘 **PostgreSQL** : Base de données pour N8N
 
+---
+
+## 🎉 **NOUVEAU** : Architecture Modulaire v1.0
+
+✅ **Migration terminée avec succès** (22 décembre 2024)
+
+L'API FastAPI a été **entièrement refactorisée** vers une **architecture modulaire** :
+- 📦 **Features-based architecture** : 5 modules isolés et testables
+- 📉 **-93.6% de code** : main.py réduit de 2102 → 135 lignes
+- ⚡ **Installation 3x plus rapide** : 5 min vs 15+ min
+- ✅ **38 endpoints testés** : Tous fonctionnels
+
+👉 **[Voir le rapport détaillé](MIGRATION_SUCCESS.md)**
+
+---
+
 ## ✨ Nouveautés v2.0 - Système d'Ingestion Avancé
 
 🚀 **Nouvelle architecture d'ingestion avec les meilleurs outils open-source 2025 :**

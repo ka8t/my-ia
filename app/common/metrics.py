@@ -8,8 +8,8 @@ from prometheus_client import Counter, Histogram
 # Compteur de requêtes
 REQUEST_COUNT = Counter(
     'myia_requests',
-    'Total requests by endpoint and status',
-    ['endpoint', 'status']
+    'Total requests by endpoint, method and status',
+    ['endpoint', 'method', 'status']
 )
 
 # Histogramme des latences

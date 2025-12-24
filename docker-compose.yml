@@ -89,7 +89,9 @@ services:
 
   # Application FastAPI - API RAG (avec retry intégré)
   app:
-    build: ./app
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: my-ia-app
     depends_on:
       postgres:

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.db import get_async_session
 from app.models import User
-from app.users import current_active_user
+from app.features.auth.service import current_active_user
 from app.ingest_v2 import AdvancedIngestionPipeline
 
 logger = logging.getLogger(__name__)
@@ -40,11 +40,11 @@ def get_chroma_client() -> Optional[chromadb.PersistentClient]:
 
     if _chroma_client is None:
         try:
-            _chroma_client = chromadb.PersistentClient(
-                path=settings.chroma_path,
+            _chroma_client = chromadb.HttpClient(
+                host=settings.chroma_host,
                 settings=ChromaSettings(anonymized_telemetry=False)
             )
-            logger.info(f"ChromaDB client initialized at {settings.chroma_path}")
+            logger.info(f"ChromaDB client initialized at {settings.chroma_host}")
         except Exception as e:
             logger.error(f"Failed to initialize ChromaDB client: {e}")
             _chroma_client = None

@@ -3,11 +3,12 @@ Configuration pytest et fixtures globales pour tous les tests
 """
 import os
 import sys
-from typing import Generator
+from typing import Generator, AsyncGenerator
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 # Ajouter les répertoires au PYTHONPATH pour importer app
 project_root = Path(__file__).parent.parent
@@ -98,6 +99,20 @@ def client(test_api_key: str) -> Generator[TestClient, None, None]:
 
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture(scope="function")
+async def async_client(test_api_key: str) -> AsyncGenerator[AsyncClient, None]:
+    """
+    Client de test FastAPI asynchrone.
+    Configure automatiquement l'API key pour les tests.
+    Utilisé pour tester les endpoints async (auth, etc.)
+    """
+    # Override de la clé API pour les tests
+    os.environ["API_KEY"] = test_api_key
+
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
 
 
 # ============================================================================
