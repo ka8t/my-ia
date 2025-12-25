@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
 from app.core.deps import get_current_admin_user, get_db
-from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference
+from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference, Document
 from app.common.schemas import (
     RoleRead, RoleCreate, RoleUpdate,
     ConversationModeRead, ConversationModeCreate, ConversationModeUpdate,
@@ -412,6 +412,222 @@ async def get_audit_actions(
 
 
 # =============================================================================
+# RESOURCE TYPES CRUD (POST, PATCH, DELETE)
+# =============================================================================
+
+@router.post("/resource-types", response_model=ResourceTypeRead, status_code=201)
+async def create_resource_type(
+    type_data: ResourceTypeCreate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crée un nouveau type de ressource - Requires: Admin role"""
+    try:
+        new_type = await AdminService.create_resource_type(db, type_data.model_dump())
+
+        await AuditService.log_action(
+            db=db,
+            action_name='resource_type_created',
+            user_id=admin_user.id,
+            resource_type_name='resource_type',
+            resource_id=None,
+            details={'type_name': new_type.name, 'type_id': new_type.id},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="POST", status="201").inc()
+        return new_type
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="POST", status="500").inc()
+        logger.error(f"Error creating resource type: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/resource-types/{type_id}", response_model=ResourceTypeRead)
+async def update_resource_type(
+    type_id: int,
+    type_data: ResourceTypeUpdate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Met à jour un type de ressource - Requires: Admin role"""
+    try:
+        updated_type = await AdminService.update_resource_type(
+            db, type_id, type_data.model_dump(exclude_unset=True)
+        )
+
+        await AuditService.log_action(
+            db=db,
+            action_name='resource_type_updated',
+            user_id=admin_user.id,
+            resource_type_name='resource_type',
+            resource_id=None,
+            details={'type_id': type_id, 'updates': type_data.model_dump(exclude_unset=True)},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="PATCH", status="200").inc()
+        return updated_type
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="PATCH", status="500").inc()
+        logger.error(f"Error updating resource type: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/resource-types/{type_id}", status_code=204)
+async def delete_resource_type(
+    type_id: int,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Supprime un type de ressource - Requires: Admin role"""
+    try:
+        resource_type = await AdminRepository.get_by_id(db, ResourceType, type_id)
+        if not resource_type:
+            raise HTTPException(status_code=404, detail="Resource type not found")
+
+        type_name = resource_type.name
+        await AdminService.delete_resource_type(db, type_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='resource_type_deleted',
+            user_id=admin_user.id,
+            resource_type_name='resource_type',
+            resource_id=None,
+            details={'type_id': type_id, 'type_name': type_name},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/resource-types", method="DELETE", status="500").inc()
+        logger.error(f"Error deleting resource type: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# AUDIT ACTIONS CRUD (POST, PATCH, DELETE)
+# =============================================================================
+
+@router.post("/audit-actions", response_model=AuditActionRead, status_code=201)
+async def create_audit_action(
+    action_data: AuditActionCreate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Crée une nouvelle action d'audit - Requires: Admin role"""
+    try:
+        new_action = await AdminService.create_audit_action(db, action_data.model_dump())
+
+        await AuditService.log_action(
+            db=db,
+            action_name='audit_action_created',
+            user_id=admin_user.id,
+            resource_type_name='audit_action',
+            resource_id=None,
+            details={'action_name': new_action.name, 'action_id': new_action.id},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="POST", status="201").inc()
+        return new_action
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="POST", status="500").inc()
+        logger.error(f"Error creating audit action: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/audit-actions/{action_id}", response_model=AuditActionRead)
+async def update_audit_action(
+    action_id: int,
+    action_data: AuditActionUpdate,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Met à jour une action d'audit - Requires: Admin role"""
+    try:
+        updated_action = await AdminService.update_audit_action(
+            db, action_id, action_data.model_dump(exclude_unset=True)
+        )
+
+        await AuditService.log_action(
+            db=db,
+            action_name='audit_action_updated',
+            user_id=admin_user.id,
+            resource_type_name='audit_action',
+            resource_id=None,
+            details={'action_id': action_id, 'updates': action_data.model_dump(exclude_unset=True)},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="PATCH", status="200").inc()
+        return updated_action
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="PATCH", status="500").inc()
+        logger.error(f"Error updating audit action: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/audit-actions/{action_id}", status_code=204)
+async def delete_audit_action(
+    action_id: int,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Supprime une action d'audit - Requires: Admin role"""
+    try:
+        audit_action = await AdminRepository.get_by_id(db, AuditAction, action_id)
+        if not audit_action:
+            raise HTTPException(status_code=404, detail="Audit action not found")
+
+        action_name = audit_action.name
+        await AdminService.delete_audit_action(db, action_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='audit_action_deleted',
+            user_id=admin_user.id,
+            resource_type_name='audit_action',
+            resource_id=None,
+            details={'action_id': action_id, 'action_name': action_name},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/audit-actions", method="DELETE", status="500").inc()
+        logger.error(f"Error deleting audit action: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
 # USER PREFERENCES
 # =============================================================================
 
@@ -598,3 +814,22 @@ async def revoke_all_user_sessions(
         await db.rollback()
         REQUEST_COUNT.labels(endpoint="/admin/sessions", method="DELETE", status="500").inc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# INCLUSION DES SUB-ROUTERS
+# =============================================================================
+
+from app.features.admin.users.router import router as users_router
+from app.features.admin.dashboard.router import router as dashboard_router
+from app.features.admin.bulk.router import router as bulk_router
+from app.features.admin.export.router import router as export_router
+from app.features.admin.conversations.router import router as conversations_admin_router
+from app.features.admin.config.router import router as config_router
+
+router.include_router(users_router, prefix="/users", tags=["Admin - Users"])
+router.include_router(dashboard_router, prefix="/dashboard", tags=["Admin - Dashboard"])
+router.include_router(bulk_router, prefix="/bulk", tags=["Admin - Bulk"])
+router.include_router(export_router, prefix="/export", tags=["Admin - Export"])
+router.include_router(conversations_admin_router, prefix="/conversations-admin", tags=["Admin - Conversations"])
+router.include_router(config_router, prefix="/config", tags=["Admin - Config"])

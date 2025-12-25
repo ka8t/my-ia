@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     rate_limit_chat: str
     rate_limit_upload: str
     rate_limit_stream: str
+    rate_limit_admin: str = "30/minute"
 
     # Timeouts
     ollama_timeout: float

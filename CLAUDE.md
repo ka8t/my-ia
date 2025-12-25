@@ -88,6 +88,176 @@ Les documents Markdown (sauf README) doivent être stockés dans le dossier /doc
 Les tests doivent être stockés dans le dossier /tests
 à la racine et organisés de manière à pouvoir les exécuter individuellement ou tout l'ensemble.
 
+## Contraintes Tests Unitaires
+
+### Execution obligatoire dans Docker
+```bash
+# CORRECT - dans le container
+docker-compose exec app python -m pytest tests/[module]/ -v
+
+# INCORRECT - en local (incompatibilité UUID PostgreSQL/SQLite)
+python -m pytest tests/
+```
+
+### Structure des tests
+```
+tests/
+├── conftest.py              # Fixtures globales (si necessaire)
+└── [feature]/
+    ├── __init__.py
+    ├── conftest.py          # Fixtures specifiques au module
+    ├── test_[module]_xxx.py # Tests unitaires (Service direct)
+    └── test_integration_[module].py  # Tests HTTP endpoints
+```
+
+### Fixtures OBLIGATOIRES dans conftest.py
+
+```python
+import asyncio
+import pytest
+import pytest_asyncio
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.pool import NullPool
+
+# Event loop unique pour eviter conflits asyncpg
+@pytest.fixture(scope="session")
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+# Session DB pour tests unitaires (Services)
+@pytest_asyncio.fixture(scope="function")
+async def db_session():
+    from app.core.config import settings
+    engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        try:
+            yield session
+        finally:
+            await session.rollback()
+    await engine.dispose()
+
+# App avec NullPool pour tests HTTP (OBLIGATOIRE pour eviter conflits asyncpg)
+@pytest_asyncio.fixture(scope="function")
+async def app():
+    from app.core.config import settings
+    from app.main import app as fastapi_app
+    import app.db as db_module
+
+    original_engine = db_module.engine
+    original_session_maker = db_module.async_session_maker
+
+    # NullPool = pas de pool = pas de conflit entre tests
+    test_engine = create_async_engine(settings.database_url, poolclass=NullPool)
+    test_session_maker = async_sessionmaker(test_engine, expire_on_commit=False)
+
+    db_module.engine = test_engine
+    db_module.async_session_maker = test_session_maker
+
+    yield fastapi_app
+
+    await test_engine.dispose()
+    db_module.engine = original_engine
+    db_module.async_session_maker = original_session_maker
+
+# Token JWT genere DIRECTEMENT (pas via HTTP - evite conflit DB)
+@pytest_asyncio.fixture(scope="module")
+async def admin_token():
+    import jwt
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import select
+    from app.core.config import settings
+    from app.models import User
+    from app.features.auth.config import SECRET
+
+    engine = create_async_engine(settings.database_url, pool_size=1, max_overflow=0)
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async with async_session() as session:
+        result = await session.execute(
+            select(User).where(User.role_id == 1, User.is_active == True).limit(1)
+        )
+        admin = result.scalar_one_or_none()
+        if not admin:
+            await engine.dispose()
+            pytest.skip("Aucun admin actif dans la DB")
+        admin_id = str(admin.id)
+
+    await engine.dispose()
+
+    payload = {
+        "sub": admin_id,
+        "aud": ["fastapi-users:auth"],
+        "exp": datetime.now(timezone.utc) + timedelta(hours=1)
+    }
+    return jwt.encode(payload, SECRET, algorithm="HS256")
+```
+
+### Erreurs a eviter
+
+| Erreur | Cause | Solution |
+|--------|-------|----------|
+| `UUID not supported` | SQLite en local | Executer dans Docker avec PostgreSQL |
+| `another operation in progress` | Pool de connexions partage | Utiliser `NullPool` dans fixture `app` |
+| `sentinel values mismatch` | Batch insert UUID | Commit un par un, pas en batch |
+| `fixture not found` | Mauvais nom | Utiliser `db_session` (pas `test_db_session`) |
+| Token HTTP echoue | Conflit DB lors du login | Generer JWT directement avec `jwt.encode()` |
+| 404 sur endpoint | Mauvais chemin | Verifier le routeur avant d'ecrire le test |
+
+### Template test unitaire (Service)
+
+```python
+"""
+Tests pour [Module] Service
+Execution: docker-compose exec app python -m pytest tests/[module]/ -v
+"""
+import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.[module].service import MonService
+
+class TestMonService:
+    @pytest.mark.asyncio
+    async def test_ma_fonction(self, db_session: AsyncSession):
+        """Description du test"""
+        result = await MonService.ma_methode(db_session, param=valeur)
+        assert result is not None
+```
+
+### Template test integration (HTTP)
+
+```python
+"""
+Tests HTTP pour [Module]
+Execution: docker-compose exec app python -m pytest tests/[module]/ -v
+"""
+import pytest
+from httpx import AsyncClient
+
+pytestmark = pytest.mark.asyncio
+
+class TestMonEndpoint:
+    async def test_endpoint_requires_auth(self, async_client: AsyncClient):
+        """Endpoint sans auth retourne 401"""
+        response = await async_client.get("/api/endpoint")
+        assert response.status_code == 401
+
+    async def test_endpoint_with_auth(self, async_client: AsyncClient, admin_headers: dict):
+        """Endpoint avec auth retourne 200"""
+        response = await async_client.get("/api/endpoint", headers=admin_headers)
+        assert response.status_code == 200
+```
+
+### AVANT d'ecrire des tests
+1. **Lire le router.py** pour connaitre les vrais endpoints (chemins exacts)
+2. **Lire le service.py** pour connaitre les vraies signatures des methodes
+3. **Lire les schemas.py** pour connaitre les vrais noms des champs Pydantic
+4. **Verifier que les fixtures existent** dans conftest.py
+5. **Ne JAMAIS utiliser SQLite** pour les tests (UUID PostgreSQL incompatible)
+6. **Toujours utiliser NullPool** pour les tests d'integration HTTP
+
 
 Vérification Finale
 À CHAQUE réponse de code, confirmer :
@@ -133,5 +303,8 @@ Tu dois toujours vérifier les dépendances et les conflits possibles entre elle
 
 Tu dois à chaque création ou modification de fichier que les lines-ending ne sont pas au format Windows.
 
+Tu ne dois jamais les champs d'une table avec le nom d'un type existaant (ex: Date)
+
+Tu dois toujours utiliser les contraintes techniques actuelles (os, docker, bdd ... ) pour créer et modifier les tests unitaires.
 
 Ce fichier CLAUDE.md doit être la référence ABSOLUE pour tous vos projets Python. Relisez-le systématiquement au début de chaque génération de code.

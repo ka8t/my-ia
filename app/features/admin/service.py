@@ -183,6 +183,154 @@ class AdminService:
         return True
 
     # ========================================================================
+    # CRUD Resource Types
+    # ========================================================================
+
+    @staticmethod
+    async def create_resource_type(db: AsyncSession, type_data: dict) -> ResourceType:
+        """Crée un type de ressource"""
+        existing = await db.execute(
+            select(ResourceType).where(ResourceType.name == type_data['name'])
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Resource type with name '{type_data['name']}' already exists"
+            )
+
+        new_type = ResourceType(**type_data)
+        db.add(new_type)
+        await db.commit()
+        await db.refresh(new_type)
+
+        return new_type
+
+    @staticmethod
+    async def update_resource_type(
+        db: AsyncSession,
+        type_id: int,
+        type_data: dict
+    ) -> ResourceType:
+        """Met à jour un type de ressource"""
+        resource_type = await AdminRepository.get_by_id(db, ResourceType, type_id)
+        if not resource_type:
+            raise HTTPException(status_code=404, detail="Resource type not found")
+
+        if 'name' in type_data and type_data['name'] != resource_type.name:
+            existing = await db.execute(
+                select(ResourceType).where(ResourceType.name == type_data['name'])
+            )
+            if existing.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Resource type with name '{type_data['name']}' already exists"
+                )
+
+        for key, value in type_data.items():
+            setattr(resource_type, key, value)
+
+        await db.commit()
+        await db.refresh(resource_type)
+
+        return resource_type
+
+    @staticmethod
+    async def delete_resource_type(db: AsyncSession, type_id: int) -> bool:
+        """Supprime un type de ressource"""
+        resource_type = await AdminRepository.get_by_id(db, ResourceType, type_id)
+        if not resource_type:
+            raise HTTPException(status_code=404, detail="Resource type not found")
+
+        # Vérifier si le type est utilisé dans les audit logs
+        usage_count = await db.execute(
+            select(func.count(AuditLog.id)).where(AuditLog.resource_type_id == type_id)
+        )
+        if usage_count.scalar() > 0:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete resource type: it is used in {usage_count.scalar()} audit log(s)"
+            )
+
+        await db.delete(resource_type)
+        await db.commit()
+
+        return True
+
+    # ========================================================================
+    # CRUD Audit Actions
+    # ========================================================================
+
+    @staticmethod
+    async def create_audit_action(db: AsyncSession, action_data: dict) -> AuditAction:
+        """Crée une action d'audit"""
+        existing = await db.execute(
+            select(AuditAction).where(AuditAction.name == action_data['name'])
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Audit action with name '{action_data['name']}' already exists"
+            )
+
+        new_action = AuditAction(**action_data)
+        db.add(new_action)
+        await db.commit()
+        await db.refresh(new_action)
+
+        return new_action
+
+    @staticmethod
+    async def update_audit_action(
+        db: AsyncSession,
+        action_id: int,
+        action_data: dict
+    ) -> AuditAction:
+        """Met à jour une action d'audit"""
+        audit_action = await AdminRepository.get_by_id(db, AuditAction, action_id)
+        if not audit_action:
+            raise HTTPException(status_code=404, detail="Audit action not found")
+
+        if 'name' in action_data and action_data['name'] != audit_action.name:
+            existing = await db.execute(
+                select(AuditAction).where(AuditAction.name == action_data['name'])
+            )
+            if existing.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Audit action with name '{action_data['name']}' already exists"
+                )
+
+        for key, value in action_data.items():
+            setattr(audit_action, key, value)
+
+        await db.commit()
+        await db.refresh(audit_action)
+
+        return audit_action
+
+    @staticmethod
+    async def delete_audit_action(db: AsyncSession, action_id: int) -> bool:
+        """Supprime une action d'audit"""
+        audit_action = await AdminRepository.get_by_id(db, AuditAction, action_id)
+        if not audit_action:
+            raise HTTPException(status_code=404, detail="Audit action not found")
+
+        # Vérifier si l'action est utilisée dans les audit logs
+        usage_count = await db.execute(
+            select(func.count(AuditLog.id)).where(AuditLog.action_id == action_id)
+        )
+        if usage_count.scalar() > 0:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete audit action: it is used in {usage_count.scalar()} audit log(s)"
+            )
+
+        await db.delete(audit_action)
+        await db.commit()
+
+        return True
+
+    # ========================================================================
     # Documents - Suppression avec ChromaDB
     # ========================================================================
 
