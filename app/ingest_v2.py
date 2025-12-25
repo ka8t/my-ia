@@ -35,9 +35,6 @@ import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
 
-# Import centralized ChromaDB client from deps
-from app.core.deps import get_chroma_client
-
 # LangChain for semantic chunking
 from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
@@ -45,21 +42,12 @@ from langchain_text_splitters import (
 )
 from langchain_core.documents import Document as LangchainDocument
 
-# Configuration
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-CHROMA_HOST = os.getenv("CHROMA_HOST", "http://localhost:8000")
-CHROMA_PATH = "/chroma/chroma"
-EMBED_MODEL = os.getenv("EMBED_MODEL", "nomic-embed-text")
-COLLECTION_NAME = "knowledge_base"
-
-# Chunking configuration
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
-CHUNKING_STRATEGY = os.getenv("CHUNKING_STRATEGY", "semantic")  # 'semantic', 'recursive', 'by_title'
+# Configuration centralisée
+from app.core.config import settings
 
 # Logging
 logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
+    level=settings.log_level,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
@@ -221,14 +209,14 @@ class OCRProcessor:
 class SemanticChunker:
     """Semantic chunking using LangChain"""
 
-    def __init__(self, chunk_size: int = CHUNK_SIZE, chunk_overlap: int = CHUNK_OVERLAP):
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
+    def __init__(self, chunk_size: Optional[int] = None, chunk_overlap: Optional[int] = None):
+        self.chunk_size = chunk_size or settings.chunk_size
+        self.chunk_overlap = chunk_overlap or settings.chunk_overlap
 
         # Initialize text splitters
         self.recursive_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap,
             length_function=len,
             separators=["\n\n", "\n", ". ", " ", ""],  # Semantic separators
         )
@@ -381,9 +369,9 @@ class MetadataExtractor:
 class EmbeddingGenerator:
     """Generate embeddings using Ollama"""
 
-    def __init__(self, ollama_host: str = OLLAMA_HOST, model: str = EMBED_MODEL):
-        self.ollama_host = ollama_host
-        self.model = model
+    def __init__(self, ollama_url: Optional[str] = None, model: Optional[str] = None):
+        self.ollama_url = ollama_url or settings.ollama_url
+        self.model = model or settings.embed_model
 
     async def generate_embeddings(
         self,
@@ -401,7 +389,7 @@ class EmbeddingGenerator:
 
                 try:
                     response = await client.post(
-                        f"{self.ollama_host}/api/embed",
+                        f"{self.ollama_url}/api/embed",
                         json={"model": self.model, "input": batch}
                     )
                     response.raise_for_status()
@@ -426,12 +414,12 @@ class AdvancedIngestionPipeline:
     def __init__(
         self,
         chroma_client: chromadb.Client,
-        collection_name: str = COLLECTION_NAME,
-        chunking_strategy: str = CHUNKING_STRATEGY
+        collection_name: Optional[str] = None,
+        chunking_strategy: Optional[str] = None
     ):
         self.chroma_client = chroma_client
-        self.collection_name = collection_name
-        self.chunking_strategy = chunking_strategy
+        self.collection_name = collection_name or settings.collection_name
+        self.chunking_strategy = chunking_strategy or settings.chunking_strategy
 
         # Initialize components
         self.parser = DocumentParser()
@@ -441,7 +429,7 @@ class AdvancedIngestionPipeline:
         self.embedder = EmbeddingGenerator()
 
         # Get or create collection
-        self.collection = chroma_client.get_or_create_collection(name=collection_name)
+        self.collection = chroma_client.get_or_create_collection(name=self.collection_name)
 
     async def ingest_file(
         self,
@@ -649,24 +637,19 @@ async def main():
     """Main ingestion script"""
     logger.info("🚀 Starting Advanced Ingestion Pipeline v2.0")
 
-    # Get centralized ChromaDB client (no duplication)
-    chroma_client = get_chroma_client()
-
-    if chroma_client is None:
-        logger.error("Failed to initialize ChromaDB client. Exiting.")
-        return
-
-    # Create pipeline
-    pipeline = AdvancedIngestionPipeline(
-        chroma_client=chroma_client,
-        chunking_strategy=CHUNKING_STRATEGY
+    # Initialize ChromaDB (HTTP client to connect to dedicated service)
+    chroma_client = chromadb.HttpClient(
+        host=settings.chroma_host,
+        port=settings.chroma_port,
+        settings=Settings(anonymized_telemetry=False)
     )
 
-    # Ingest from datasets directory
-    datasets_dir = os.getenv("DATASETS_DIR", "/app/datasets")
+    # Create pipeline
+    pipeline = AdvancedIngestionPipeline(chroma_client=chroma_client)
 
+    # Ingest from datasets directory
     results = await pipeline.ingest_directory(
-        directory=datasets_dir,
+        directory=settings.datasets_dir,
         recursive=True
     )
 
@@ -682,7 +665,7 @@ async def main():
     logger.info("=" * 60)
 
     # Get collection count
-    collection = chroma_client.get_collection(name=COLLECTION_NAME)
+    collection = chroma_client.get_collection(name=settings.collection_name)
     total_count = collection.count()
     logger.info(f"📚 Total documents in database: {total_count}")
 

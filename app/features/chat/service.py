@@ -149,7 +149,7 @@ class ChatService:
         # Retourne la réponse Ollama pour streaming
         async with httpx.AsyncClient(timeout=settings.ollama_timeout) as client:
             response = await client.post(
-                f"{settings.ollama_host}/api/generate",
+                f"{settings.ollama_url}/api/generate",
                 json={
                     "model": settings.model_name,
                     "prompt": full_prompt,

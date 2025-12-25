@@ -24,7 +24,7 @@ class HealthService:
         """
         try:
             async with httpx.AsyncClient(timeout=settings.health_check_timeout) as client:
-                response = await client.get(f"{settings.ollama_host}/api/tags")
+                response = await client.get(f"{settings.ollama_url}/api/tags")
                 return response.status_code == 200
         except Exception as e:
             logger.warning(f"Ollama health check failed: {e}")
@@ -40,7 +40,7 @@ class HealthService:
         """
         try:
             async with httpx.AsyncClient(timeout=settings.health_check_timeout) as client:
-                response = await client.get(f"{settings.chroma_host}/api/v2/heartbeat")
+                response = await client.get(f"{settings.chroma_url}/api/v2/heartbeat")
                 return response.status_code == 200
         except Exception as e:
             logger.warning(f"ChromaDB health check failed: {e}")

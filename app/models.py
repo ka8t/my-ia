@@ -140,7 +140,6 @@ class Session(Base):
     # Relations
     user: Mapped["User"] = relationship(back_populates="sessions")
 
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"

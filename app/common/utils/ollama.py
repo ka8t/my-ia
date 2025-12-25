@@ -30,7 +30,7 @@ async def get_embeddings(text: str) -> List[float]:
     try:
         async with httpx.AsyncClient(timeout=settings.http_timeout) as client:
             response = await client.post(
-                f"{settings.ollama_host}/api/embeddings",
+                f"{settings.ollama_url}/api/embeddings",
                 json={"model": settings.embed_model, "prompt": text}
             )
             response.raise_for_status()
@@ -78,7 +78,7 @@ async def generate_response(
         # Appel à Ollama
         async with httpx.AsyncClient(timeout=settings.ollama_timeout) as client:
             response = await client.post(
-                f"{settings.ollama_host}/api/generate",
+                f"{settings.ollama_url}/api/generate",
                 json={
                     "model": settings.model_name,
                     "prompt": full_prompt,

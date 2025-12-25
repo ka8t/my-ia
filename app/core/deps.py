@@ -25,11 +25,11 @@ logger = logging.getLogger(__name__)
 # ChromaDB Client (Singleton Pattern)
 # ============================================================================
 
-_chroma_client: Optional[chromadb.PersistentClient] = None
+_chroma_client: Optional[chromadb.HttpClient] = None
 _ingestion_pipeline: Optional[AdvancedIngestionPipeline] = None
 
 
-def get_chroma_client() -> Optional[chromadb.PersistentClient]:
+def get_chroma_client() -> Optional[chromadb.HttpClient]:
     """
     Retourne le client ChromaDB (singleton)
 
@@ -42,9 +42,10 @@ def get_chroma_client() -> Optional[chromadb.PersistentClient]:
         try:
             _chroma_client = chromadb.HttpClient(
                 host=settings.chroma_host,
+                port=settings.chroma_port,
                 settings=ChromaSettings(anonymized_telemetry=False)
             )
-            logger.info(f"ChromaDB client initialized at {settings.chroma_host}")
+            logger.info(f"ChromaDB client initialized at {settings.chroma_url}")
         except Exception as e:
             logger.error(f"Failed to initialize ChromaDB client: {e}")
             _chroma_client = None

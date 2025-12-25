@@ -1,7 +1,9 @@
 // Configuration et état global
+// Priorité : localStorage > ENV_CONFIG (Docker) > valeurs par défaut
+const ENV = window.ENV_CONFIG || {};
 const CONFIG = {
-    apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:8080',
-    apiKey: localStorage.getItem('apiKey') || 'change-me-in-production',
+    apiUrl: localStorage.getItem('apiUrl') || ENV.apiUrl || 'http://localhost:8080',
+    apiKey: localStorage.getItem('apiKey') || ENV.apiKey || 'change-me-in-production',
     topK: parseInt(localStorage.getItem('topK')) || 4,
     showSources: localStorage.getItem('showSources') === 'true',
     theme: localStorage.getItem('theme') || 'light',

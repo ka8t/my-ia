@@ -16,7 +16,7 @@ Application de Chatbot RAG avec gestion administrative poussée, authentificatio
 ## Stack Technique
 - **Framework :** FastAPI (Python 3.10+)
 - **Database (Relationnelle) :** PostgreSQL (via SQLAlchemy 2.0 + AsyncPG)
-- **Database (Vectorielle) :** ChromaDB (Client persistant)
+- **Database (Vectorielle) :** ChromaDB (HttpClient)
 - **LLM / Embeddings :** Ollama (Mistral, Nomic-embed-text)
 - **Auth :** FastAPI Users (JWT Strategy)
 - **Ingestion :** Pipeline personnalisé (Unstructured.io + LangChain semantic chunking)
@@ -30,7 +30,7 @@ Chaque feature est découpée comme suit
 exemple dans le dossier `/app`
 ```
 app/
-├── main.py                        # 135 lignes (vs 2102) - Point d'entrée minimal
+├── main.py                        # Point d'entrée minimal
 ├── core/                          # Configuration centralisée
 │   ├── config.py                  # pydantic-settings
 │   └── deps.py                    # Injection de dépendances
@@ -74,25 +74,25 @@ features/[nom]/
 └── schemas.py      # Pydantic DTOs (optionnel)
 ```
 
-Les documents Mardown(sauf readme) doivent être stockés dans le dossier /docs
-à la racine et organisés par type de documentation 
+Les documents Markdown (sauf README) doivent être stockés dans le dossier /docs
+à la racine et organisés par type de documentation
 - Générale
     - cahier des charges
-    - evolutions
-    - todos ... 
+    - évolutions
+    - todos ...
 - technique
     - installation
-    - cdeploiement
+    - déploiement
     - maintenance ...
 
-Les documents Mardown (sauf readme) doivent être stockés dans le dossier /tests
-à la racine et organisés de manière à pouvoir les excuter individuellement ou tout l'ensemble;
+Les tests doivent être stockés dans le dossier /tests
+à la racine et organisés de manière à pouvoir les exécuter individuellement ou tout l'ensemble.
 
 
 Vérification Finale
 À CHAQUE réponse de code, confirmer :
 ✅ Structure features/ respectée
-✅ main.py minimal (<50 lignes)
+✅ main.py minimal 
 ✅ Type hints partout
 ✅ Tests unitaires écrits
 ✅ Docstrings présentes
@@ -110,12 +110,13 @@ La route /upload fait : await ingestion_pipeline.ingest_file(...). Problème : S
 Les routes Admin (get_roles, create_role, update_role, etc.) répètent la même logique CRUD 10 fois. Solution : Crée une classe générique.
 
 ## Directives de Code
-0. **DRY** Pas de duplication de code qui viole le principe DRY (Don't Repeat Yourself).
-1. **Asynchronisme :** Tout doit être `async/await`, surtout les appels DB et HTTP (Ollama).
-2. **Typage :** Utiliser `typing` (List, Optional, Dict) et Pydantic strictement.
-3. **Erreurs :** Toujours wrapper les appels externes dans des `try/except` avec logging approprié.
-4. **Dépendances :** Utiliser l'injection de dépendance de FastAPI (`Depends()`) plutôt que des imports globaux.
-5. **Admin :** Les routes admin doivent toujours vérifier le rôle `superuser` ou `admin`.
+1. **DRY** Pas de duplication de code qui viole le principe DRY (Don't Repeat Yourself).
+2. **Asynchronisme :** Tout doit être `async/await`, surtout les appels DB et HTTP (Ollama).
+3. **Typage :** Utiliser `typing` (List, Optional, Dict) et Pydantic strictement.
+4. **Erreurs :** Toujours wrapper les appels externes dans des `try/except` avec logging approprié.
+5. **Dépendances :** Utiliser l'injection de dépendance de FastAPI (`Depends()`) plutôt que des imports globaux.
+6. **Admin :** Les routes admin doivent toujours vérifier le rôle `superuser` ou `admin`.
+7. **Commit :** Indiquer KL comme auteur. Ne JAMAIS ajouter de références à Claude, Claude Code, ou Co-Authored-By dans les messages de commit.
 
 ## Conventions de Nommage
 - Variables/Fonctions : `snake_case`
@@ -124,7 +125,7 @@ Les routes Admin (get_roles, create_role, update_role, etc.) répètent la même
 
 Pour les containers docker, on ne doit pas redémarrer ou les reconstruire si il y a un changement de code mais uniquement si cela est nécessaire, ajout/modification de libs systèmes, dépendances ....
 
-Ne prends jamais d'initiatives d'optimisatations sans me présenter le pour et le contre. Sachant que le plus important est la maintenabilité, la clarté, la scabilité.
+Ne prends jamais d'initiatives d'optimisatations sans me présenter le pour et le contre. Sachant que le plus important est la maintenabilité, la clarté, la scalabilité.
 
 Tu dois toujoujours suggérer les meilleurs pratiques de codage.
 

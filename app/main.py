@@ -109,4 +109,4 @@ logger.info(f"{settings.app_name} initialized successfully")
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=settings.host, port=settings.port)
+    uvicorn.run(app, host=settings.app_host, port=settings.app_port)

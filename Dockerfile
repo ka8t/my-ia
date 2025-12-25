@@ -27,13 +27,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copier les requirements d'abord (pour cache Docker)
 COPY requirements.txt ./
 
-# Installer les dépendances Python + cleanup
+# Installer les dépendances Python (sans cleanup qui masque les erreurs)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
-    # Supprimer les build tools (plus nécessaires après compilation)
-    apt-get purge -y --auto-remove gcc g++ && \
-    # Nettoyer les caches Python
-    rm -rf /root/.cache/pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Nettoyer les caches Python séparément (pour ne pas masquer les erreurs d'installation)
+RUN rm -rf /root/.cache/pip && \
     find /usr/local/lib/python3.12 -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
 
 # Copier tout le code de l'application
