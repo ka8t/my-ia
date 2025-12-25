@@ -25,6 +25,11 @@ from app.features.admin.router import router as admin_router
 from app.features.auth.router import router as auth_router
 from app.features.user.router import router as user_router
 
+# Import des modules utilisateur
+from app.features.conversations.router import router as conversations_router
+from app.features.documents.router import router as documents_router
+from app.features.preferences.router import router as preferences_router
+
 # Configuration du logging
 logging.basicConfig(
     level=settings.log_level,
@@ -92,6 +97,11 @@ app.include_router(health_router)
 # Authentication & Users
 app.include_router(auth_router)
 app.include_router(user_router)
+
+# User Features (conversations, documents, preferences)
+app.include_router(conversations_router)
+app.include_router(documents_router)
+app.include_router(preferences_router)
 
 # Chat
 app.include_router(chat_router)

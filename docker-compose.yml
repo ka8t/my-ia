@@ -116,6 +116,7 @@ services:
       - ./datasets:/code/datasets
       - chroma-data:/chroma/chroma
       - ./app:/code/app  # Hot reload : changements visibles sans rebuild
+      - ./tests:/code/tests  # Tests : changements visibles sans rebuild
     ports:
       - "${APP_PORT}:${APP_PORT}"
     restart: unless-stopped
