@@ -131,4 +131,7 @@ Tu dois toujoujours suggérer les meilleurs pratiques de codage.
 
 Tu dois toujours vérifier les dépendances et les conflits possibles entre elles.
 
+Tu dois à chaque création ou modification de fichier que les lines-ending ne sont pas au format Windows.
+
+
 Ce fichier CLAUDE.md doit être la référence ABSOLUE pour tous vos projets Python. Relisez-le systématiquement au début de chaque génération de code.

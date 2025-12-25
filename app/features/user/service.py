@@ -5,7 +5,7 @@ Contient le UserManager avec les hooks pour l'audit des actions utilisateurs.
 """
 import uuid
 from typing import Optional
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi_users import BaseUserManager, UUIDIDMixin
 
 from app.models import User
@@ -41,7 +41,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             print(f"Error logging user registration: {e}")
 
     async def on_after_login(
-        self, user: User, request: Optional[Request] = None
+        self, user: User, request: Optional[Request] = None, response: Optional[Response] = None
     ):
         """Hook appelé après connexion réussie"""
         print(f"User {user.id} has logged in.")
