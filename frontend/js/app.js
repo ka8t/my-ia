@@ -286,4 +286,7 @@ function initializeEventListeners() {
 
     // Documents
     initDocumentsEvents();
+
+    // Profile
+    initProfileEvents();
 }

@@ -167,7 +167,8 @@ class TestAdminUserCreate:
             email=sample_user_data["email"],
             username=sample_user_data["username"],
             password=sample_user_data["password"],
-            full_name=sample_user_data["full_name"],
+            first_name=sample_user_data["first_name"],
+            last_name=sample_user_data["last_name"],
             role_id=sample_user_data["role_id"]
         )
 
@@ -502,3 +503,147 @@ class TestAdminUserEdgeCases:
             is_verified = user.get("is_verified") if isinstance(user, dict) else user.is_verified
             assert is_active is True
             assert is_verified is True
+
+
+# =============================================================================
+# TESTS UPDATE USER PROFILE FIELDS (phone, address, city, country)
+# =============================================================================
+
+class TestAdminUserUpdateProfile:
+    """Tests mise a jour profil utilisateur par admin"""
+
+    @pytest.mark.asyncio
+    async def test_update_user_phone(
+        self,
+        db_session: AsyncSession,
+        test_user: User
+    ):
+        """Test mise a jour telephone par admin"""
+        new_phone = "+33612345678"
+
+        updated_user = await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone=new_phone
+        )
+
+        assert updated_user.phone == new_phone
+
+        # Cleanup - remettre a None
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_update_user_address(
+        self,
+        db_session: AsyncSession,
+        test_user: User
+    ):
+        """Test mise a jour adresse par admin"""
+        updated_user = await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            address_line1="123 Rue de Test",
+            address_line2="Appartement 4B"
+        )
+
+        assert updated_user.address_line1 == "123 Rue de Test"
+        assert updated_user.address_line2 == "Appartement 4B"
+
+        # Cleanup
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            address_line1=None,
+            address_line2=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_update_user_country_code(
+        self,
+        db_session: AsyncSession,
+        test_user: User
+    ):
+        """Test mise a jour code pays par admin"""
+        updated_user = await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            country_code="fr"  # minuscule pour tester normalisation
+        )
+
+        assert updated_user.country_code == "FR"  # Doit etre normalise en majuscules
+
+        # Cleanup
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            country_code=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_update_user_multiple_profile_fields(
+        self,
+        db_session: AsyncSession,
+        test_user: User
+    ):
+        """Test mise a jour multiple champs profil par admin"""
+        updated_user = await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone="+33698765432",
+            address_line1="456 Avenue Test",
+            country_code="BE"
+        )
+
+        assert updated_user.phone == "+33698765432"
+        assert updated_user.address_line1 == "456 Avenue Test"
+        assert updated_user.country_code == "BE"
+
+        # Cleanup
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone=None,
+            address_line1=None,
+            country_code=None
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_user_details_includes_profile_fields(
+        self,
+        db_session: AsyncSession,
+        test_user: User
+    ):
+        """Test que get_user_details inclut les champs profil"""
+        # Mettre a jour le profil
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone="+33611223344",
+            address_line1="Test Address"
+        )
+
+        details = await AdminUserService.get_user_details(
+            db=db_session,
+            user_id=test_user.id
+        )
+
+        # Verifier que les champs profil sont presents
+        assert "phone" in details
+        assert "address_line1" in details
+        assert "address_line2" in details
+        assert "city_id" in details
+        assert "city_name" in details
+        assert "country_code" in details
+        assert "country_name" in details
+
+        # Cleanup
+        await AdminUserService.update_user(
+            db=db_session,
+            user_id=test_user.id,
+            phone=None,
+            address_line1=None
+        )

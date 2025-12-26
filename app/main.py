@@ -30,6 +30,9 @@ from app.features.conversations.router import router as conversations_router
 from app.features.documents.router import router as documents_router
 from app.features.preferences.router import router as preferences_router
 
+# Import du module geo (public)
+from app.features.geo.router import router as geo_router
+
 # Import des modules admin documents
 from app.features.admin.documents.router import router as admin_documents_router
 from app.features.admin.documents.router import quota_router as admin_quota_router
@@ -114,6 +117,9 @@ app.include_router(test_router)
 
 # Ingestion
 app.include_router(ingestion_router)
+
+# Geo (public)
+app.include_router(geo_router, prefix="/geo", tags=["Geo"])
 
 # Admin
 app.include_router(admin_router)

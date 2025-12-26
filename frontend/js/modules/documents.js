@@ -594,6 +594,16 @@ function initDocumentsEvents() {
         });
     }
 
+    // Fermer avec Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            var documentsModal = document.getElementById('documentsModal');
+            if (documentsModal && documentsModal.style.display !== 'none') {
+                closeDocumentsModal();
+            }
+        }
+    });
+
     // Recherche avec debounce
     var searchInput = document.getElementById('documentsSearch');
     if (searchInput) {

@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import joinedload
 
-from app.models import User, Role, Conversation, Document
+from app.models import User, Role, Conversation, Document, City, Country
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,9 @@ class AdminUserRepository:
                 "id": user.id,
                 "email": user.email,
                 "username": user.username,
-                "full_name": user.full_name,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "phone": user.phone,
                 "role_id": user.role_id,
                 "role_name": user.role.name if user.role else "unknown",
                 "is_active": user.is_active,
@@ -150,11 +152,42 @@ class AdminUserRepository:
         )
         documents_count = doc_count_result.scalar() or 0
 
+        # Récupérer les données géographiques
+        city_name = None
+        city_postal_code = None
+        country_name = None
+
+        if user.city_id:
+            city_result = await db.execute(
+                select(City).where(City.id == user.city_id)
+            )
+            city = city_result.scalar_one_or_none()
+            if city:
+                city_name = city.name
+                city_postal_code = city.postal_code
+
+        if user.country_code:
+            country_result = await db.execute(
+                select(Country).where(Country.code == user.country_code)
+            )
+            country = country_result.scalar_one_or_none()
+            if country:
+                country_name = country.name
+
         return {
             "id": user.id,
             "email": user.email,
             "username": user.username,
-            "full_name": user.full_name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": user.phone,
+            "address_line1": user.address_line1,
+            "address_line2": user.address_line2,
+            "city_id": user.city_id,
+            "city_name": city_name,
+            "city_postal_code": city_postal_code,
+            "country_code": user.country_code,
+            "country_name": country_name,
             "role_id": user.role_id,
             "role_name": user.role.name if user.role else "unknown",
             "is_active": user.is_active,

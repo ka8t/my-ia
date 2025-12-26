@@ -3,13 +3,14 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum, UniqueConstraint
+from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum, UniqueConstraint, Numeric
 import enum
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db import Base
+from app.common.crypto.types import EncryptedString
 
 
 # --- Enums ---
@@ -65,18 +66,41 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
 
     username: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    full_name: Mapped[Optional[str]] = mapped_column(String(255))
     role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
+    # --- Champs de profil chiffres (PII) ---
+    # Prenom (chiffre, recherche par trigrammes)
+    first_name: Mapped[Optional[str]] = mapped_column(EncryptedString(), nullable=True)
+    first_name_search: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Index trigrammes
+
+    # Nom (chiffre, recherche par trigrammes)
+    last_name: Mapped[Optional[str]] = mapped_column(EncryptedString(), nullable=True)
+    last_name_search: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Index trigrammes
+
+    # Telephone (chiffre, recherche exacte par blind index)
+    phone: Mapped[Optional[str]] = mapped_column(EncryptedString(), nullable=True)
+    phone_blind_index: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
+
+    # Adresse (chiffre, pas de recherche)
+    address_line1: Mapped[Optional[str]] = mapped_column(EncryptedString(), nullable=True)
+    address_line2: Mapped[Optional[str]] = mapped_column(EncryptedString(), nullable=True)
+
+    # Localisation (references vers tables geo, pas chiffre)
+    city_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("cities.id"), nullable=True)
+    country_code: Mapped[Optional[str]] = mapped_column(String(2), ForeignKey("countries.code"), nullable=True, default="FR")
+
     # Relations
     role: Mapped["Role"] = relationship()
+    city: Mapped[Optional["City"]] = relationship()
+    country: Mapped[Optional["Country"]] = relationship()
     preferences: Mapped["UserPreference"] = relationship(back_populates="user", uselist=False, cascade="all, delete-orphan")
     conversations: Mapped[List["Conversation"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     documents: Mapped[List["Document"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     sessions: Mapped[List["Session"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    password_history: Mapped[List["PasswordHistory"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 class UserPreference(Base):
     __tablename__ = "user_preferences"
@@ -247,3 +271,85 @@ class UserQuota(Base):
 
     # Relations
     user: Mapped["User"] = relationship(foreign_keys=[user_id])
+
+
+# --- Tables Geographiques ---
+
+class Country(Base):
+    """Table des pays avec drapeaux."""
+    __tablename__ = "countries"
+
+    code: Mapped[str] = mapped_column(String(2), primary_key=True)  # ISO 3166-1 alpha-2 (FR, US, DE...)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    flag: Mapped[str] = mapped_column(String(10), nullable=False)  # Emoji drapeau
+    phone_prefix: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)  # +33, +1, etc.
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)  # Visible dans la liste
+    display_order: Mapped[int] = mapped_column(Integer, default=999)  # Ordre d'affichage (FR en premier)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class City(Base):
+    """Table des villes avec codes postaux."""
+    __tablename__ = "cities"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    postal_code: Mapped[str] = mapped_column(String(10), nullable=False)
+    country_code: Mapped[str] = mapped_column(String(2), ForeignKey("countries.code"), nullable=False)
+    department_code: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)  # Code departement (France)
+    department_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    region_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    latitude: Mapped[Optional[float]] = mapped_column(Numeric(10, 8), nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Numeric(11, 8), nullable=True)
+    population: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Pour tri par pertinence
+    search_name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)  # Nom normalise sans accents
+
+    # Index composite pour recherche rapide
+    __table_args__ = (
+        # Index pour recherche par nom + pays
+        # Index pour recherche par code postal + pays
+    )
+
+    # Relations
+    country: Mapped["Country"] = relationship()
+
+
+# --- Tables Politique Mot de Passe ---
+
+class PasswordPolicy(Base):
+    """Politique de mot de passe configurable."""
+    __tablename__ = "password_policies"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)  # 'default', 'admin', 'strict'
+    min_length: Mapped[int] = mapped_column(Integer, default=8)
+    max_length: Mapped[int] = mapped_column(Integer, default=128)
+    require_uppercase: Mapped[bool] = mapped_column(Boolean, default=True)
+    require_lowercase: Mapped[bool] = mapped_column(Boolean, default=True)
+    require_digit: Mapped[bool] = mapped_column(Boolean, default=True)
+    require_special: Mapped[bool] = mapped_column(Boolean, default=True)
+    special_characters: Mapped[str] = mapped_column(String(50), default="!@#$%^&*()_+-=[]{}|;:,.<>?")
+    expire_days: Mapped[int] = mapped_column(Integer, default=0)  # 0 = jamais
+    history_count: Mapped[int] = mapped_column(Integer, default=0)  # Nombre d'anciens mdp interdits
+    max_failed_attempts: Mapped[int] = mapped_column(Integer, default=5)
+    lockout_duration_minutes: Mapped[int] = mapped_column(Integer, default=30)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class PasswordHistory(Base):
+    """Historique des mots de passe pour eviter la reutilisation."""
+    __tablename__ = "password_history"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(1024), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    # Relations
+    user: Mapped["User"] = relationship(back_populates="password_history")
+
+    __table_args__ = (
+        # Index pour recherche rapide par user
+    )

@@ -109,9 +109,9 @@ function displayUserInfo() {
             nameEl.textContent = displayName;
         }
 
-        // Email en tooltip
+        // Tooltip "Mon profil" pour acceder au profil
         if (infoEl) {
-            infoEl.setAttribute('data-tooltip', user.email);
+            infoEl.setAttribute('data-tooltip', 'Mon profil');
         }
     }
 }

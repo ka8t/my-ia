@@ -91,7 +91,8 @@ class AdminUserService:
         email: str,
         username: str,
         password: str,
-        full_name: Optional[str] = None,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
         role_id: int = 2,
         is_active: bool = True,
         is_verified: bool = False
@@ -104,7 +105,8 @@ class AdminUserService:
             email: Adresse email
             username: Nom d'utilisateur
             password: Mot de passe en clair
-            full_name: Nom complet (optionnel)
+            first_name: Prénom (optionnel)
+            last_name: Nom de famille (optionnel)
             role_id: ID du rôle (défaut: 2 = user)
             is_active: Compte actif (défaut: True)
             is_verified: Email vérifié (défaut: False)
@@ -148,7 +150,8 @@ class AdminUserService:
             email=email,
             username=username,
             hashed_password=hashed_password,
-            full_name=full_name,
+            first_name=first_name,
+            last_name=last_name,
             role_id=role_id,
             is_active=is_active,
             is_verified=is_verified,
@@ -177,7 +180,13 @@ class AdminUserService:
         user_id: uuid.UUID,
         email: Optional[str] = None,
         username: Optional[str] = None,
-        full_name: Optional[str] = None,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        phone: Optional[str] = None,
+        address_line1: Optional[str] = None,
+        address_line2: Optional[str] = None,
+        city_id: Optional[int] = None,
+        country_code: Optional[str] = None,
         is_verified: Optional[bool] = None
     ) -> User:
         """
@@ -188,7 +197,13 @@ class AdminUserService:
             user_id: UUID de l'utilisateur
             email: Nouvelle adresse email (optionnel)
             username: Nouveau nom d'utilisateur (optionnel)
-            full_name: Nouveau nom complet (optionnel)
+            first_name: Nouveau prénom (optionnel)
+            last_name: Nouveau nom de famille (optionnel)
+            phone: Numéro de téléphone (optionnel)
+            address_line1: Adresse ligne 1 (optionnel)
+            address_line2: Adresse ligne 2 (optionnel)
+            city_id: ID de la ville (optionnel)
+            country_code: Code pays ISO (optionnel)
             is_verified: Nouveau statut de vérification (optionnel)
 
         Returns:
@@ -222,11 +237,25 @@ class AdminUserService:
                 )
             user.username = username
 
-        # Mettre à jour les autres champs
-        if full_name is not None:
-            user.full_name = full_name
+        # Mettre à jour les champs identité
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
         if is_verified is not None:
             user.is_verified = is_verified
+
+        # Mettre à jour les champs profil
+        if phone is not None:
+            user.phone = phone
+        if address_line1 is not None:
+            user.address_line1 = address_line1
+        if address_line2 is not None:
+            user.address_line2 = address_line2
+        if city_id is not None:
+            user.city_id = city_id
+        if country_code is not None:
+            user.country_code = country_code.upper() if country_code else None
 
         await db.commit()
         await db.refresh(user)

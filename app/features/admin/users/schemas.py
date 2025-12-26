@@ -19,7 +19,8 @@ class AdminUserCreate(BaseModel):
     email: EmailStr = Field(..., description="Adresse email de l'utilisateur")
     username: str = Field(..., min_length=3, max_length=100, description="Nom d'utilisateur")
     password: str = Field(..., min_length=8, description="Mot de passe (min 8 caractères)")
-    full_name: Optional[str] = Field(None, max_length=255, description="Nom complet")
+    first_name: Optional[str] = Field(None, max_length=100, description="Prénom")
+    last_name: Optional[str] = Field(None, max_length=100, description="Nom de famille")
     role_id: int = Field(default=2, ge=1, description="ID du rôle (1=admin, 2=user par défaut)")
     is_active: bool = Field(default=True, description="Compte actif")
     is_verified: bool = Field(default=False, description="Email vérifié")
@@ -33,7 +34,13 @@ class AdminUserUpdate(BaseModel):
     """Mise à jour d'un utilisateur par un admin"""
     email: Optional[EmailStr] = Field(None, description="Nouvelle adresse email")
     username: Optional[str] = Field(None, min_length=3, max_length=100, description="Nouveau nom d'utilisateur")
-    full_name: Optional[str] = Field(None, max_length=255, description="Nouveau nom complet")
+    first_name: Optional[str] = Field(None, max_length=100, description="Nouveau prénom")
+    last_name: Optional[str] = Field(None, max_length=100, description="Nouveau nom de famille")
+    phone: Optional[str] = Field(None, max_length=20, description="Numéro de téléphone")
+    address_line1: Optional[str] = Field(None, max_length=255, description="Adresse ligne 1")
+    address_line2: Optional[str] = Field(None, max_length=255, description="Adresse ligne 2")
+    city_id: Optional[int] = Field(None, description="ID de la ville")
+    country_code: Optional[str] = Field(None, min_length=2, max_length=2, description="Code pays ISO")
     is_verified: Optional[bool] = Field(None, description="Statut de vérification email")
 
 
@@ -64,7 +71,16 @@ class AdminUserRead(BaseModel):
     id: uuid.UUID
     email: str
     username: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city_id: Optional[int] = None
+    city_name: Optional[str] = None
+    city_postal_code: Optional[str] = None
+    country_code: Optional[str] = None
+    country_name: Optional[str] = None
     role_id: int
     role_name: str = Field(..., description="Nom du rôle")
     is_active: bool
@@ -85,7 +101,8 @@ class AdminUserListItem(BaseModel):
     id: uuid.UUID
     email: str
     username: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     role_id: int
     role_name: str
     is_active: bool

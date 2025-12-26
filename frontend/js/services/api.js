@@ -446,6 +446,97 @@ const ApiService = {
         });
         if (!response.ok) throw new Error('Erreur lors de la mise a jour des preferences');
         return response.json();
+    },
+
+    // =========================================================================
+    // PROFILE
+    // =========================================================================
+
+    /**
+     * Recupere le profil complet de l'utilisateur
+     * @returns {Promise<object>}
+     */
+    async getProfile() {
+        const response = await this.request('/users/me/profile');
+        if (!response.ok) throw new Error('Erreur lors du chargement du profil');
+        return response.json();
+    },
+
+    /**
+     * Met a jour le profil utilisateur
+     * @param {object} data - {first_name, last_name, phone, address_line1, address_line2, city_id, country_code}
+     * @returns {Promise<object>}
+     */
+    async updateProfile(data) {
+        const response = await this.request('/users/me/profile', {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Erreur lors de la mise a jour du profil');
+        }
+        return response.json();
+    },
+
+    /**
+     * Change le mot de passe de l'utilisateur
+     * @param {string} currentPassword
+     * @param {string} newPassword
+     * @param {string} confirmPassword
+     * @returns {Promise<object>}
+     */
+    async changePassword(currentPassword, newPassword, confirmPassword) {
+        const response = await this.request('/users/me/change-password', {
+            method: 'POST',
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword
+            })
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            // Gerer les erreurs de validation de politique
+            if (typeof error.detail === 'object' && error.detail.errors) {
+                throw new Error(error.detail.errors.join(', '));
+            }
+            throw new Error(error.detail || 'Erreur lors du changement de mot de passe');
+        }
+        return response.json();
+    },
+
+    // =========================================================================
+    // GEO - Pays et Villes
+    // =========================================================================
+
+    /**
+     * Recupere la liste des pays actifs
+     * @returns {Promise<Array>}
+     */
+    async getCountries() {
+        const response = await this.request('/geo/countries');
+        if (!response.ok) throw new Error('Erreur lors du chargement des pays');
+        return response.json();
+    },
+
+    /**
+     * Recherche des villes par terme
+     * @param {string} query - Terme de recherche (min 2 chars)
+     * @param {string} countryCode - Code pays optionnel
+     * @param {number} limit - Nombre max de resultats
+     * @returns {Promise<Array>}
+     */
+    async searchCities(query, countryCode = 'FR', limit = 20) {
+        const params = new URLSearchParams({
+            q: query,
+            country: countryCode,
+            limit: limit.toString()
+        });
+
+        const response = await this.request(`/geo/cities?${params.toString()}`);
+        if (!response.ok) throw new Error('Erreur lors de la recherche de villes');
+        return response.json();
     }
 };
 

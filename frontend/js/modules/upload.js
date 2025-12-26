@@ -43,6 +43,23 @@ function initializeUpload() {
     document.getElementById('closeUploadModal').addEventListener('click', closeUploadModal);
     document.getElementById('cancelUpload').addEventListener('click', closeUploadModal);
 
+    // Fermer avec Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const uploadModal = document.getElementById('uploadModal');
+            if (uploadModal && uploadModal.style.display !== 'none') {
+                closeUploadModal();
+            }
+        }
+    });
+
+    // Fermer en cliquant en dehors
+    document.getElementById('uploadModal').addEventListener('click', (e) => {
+        if (e.target.id === 'uploadModal') {
+            closeUploadModal();
+        }
+    });
+
     // Zone de drop
     document.getElementById('uploadZone').addEventListener('click', () => {
         document.getElementById('fileInput').click();

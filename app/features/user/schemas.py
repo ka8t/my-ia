@@ -11,8 +11,11 @@ from fastapi_users import schemas
 class UserRead(schemas.BaseUser[uuid.UUID]):
     """Schéma pour la lecture d'un utilisateur"""
     username: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
     role_id: int
+    country_code: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -21,10 +24,12 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
 class UserCreate(schemas.BaseUserCreate):
     """Schéma pour la création d'un utilisateur"""
     username: str
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class UserUpdate(schemas.BaseUserUpdate):
     """Schéma pour la mise à jour d'un utilisateur"""
     username: Optional[str] = None
-    full_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None

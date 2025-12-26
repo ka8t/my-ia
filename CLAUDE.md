@@ -315,6 +315,7 @@ Quand tu dois tester unitairement, demande moi toujours si je veux que je teste 
 
 A chaque fonctionnalité pour un utilisateur, l'admin doit aussi pouvoir y accéder.
 
+Quand on ajoute un bouton dans l'ui front ou back, il faut comprendre quu'il mettre une icone et le texte du bouton est le "tooltip" css. Celui ci doit respecter la strucure predefinie pour une maintenance facile.
 
 
 Ce fichier CLAUDE.md doit être la référence ABSOLUE pour tous vos projets Python. Relisez-le systématiquement au début de chaque génération de code.

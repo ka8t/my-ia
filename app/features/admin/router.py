@@ -1095,6 +1095,8 @@ from app.features.admin.bulk.router import router as bulk_router
 from app.features.admin.export.router import router as export_router
 from app.features.admin.conversations.router import router as conversations_admin_router
 from app.features.admin.config.router import router as config_router
+from app.features.admin.password_policy.router import router as password_policy_router
+from app.features.admin.geo.router import router as geo_admin_router
 
 router.include_router(users_router, prefix="/users", tags=["Admin - Users"])
 router.include_router(dashboard_router, prefix="/dashboard", tags=["Admin - Dashboard"])
@@ -1102,3 +1104,5 @@ router.include_router(bulk_router, prefix="/bulk", tags=["Admin - Bulk"])
 router.include_router(export_router, prefix="/export", tags=["Admin - Export"])
 router.include_router(conversations_admin_router, prefix="/conversations-admin", tags=["Admin - Conversations"])
 router.include_router(config_router, prefix="/config", tags=["Admin - Config"])
+router.include_router(password_policy_router, prefix="/password-policies", tags=["Admin - Password Policies"])
+router.include_router(geo_admin_router, prefix="/geo", tags=["Admin - Geo"])

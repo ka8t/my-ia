@@ -232,6 +232,52 @@
     visibility: visible;
 }
 
+/* Tooltip pour user-info (apparait en haut) */
+.user-info {
+    position: relative;
+}
+
+.user-info::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 11px;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    pointer-events: none;
+    margin-bottom: 8px;
+    z-index: 100;
+}
+
+.user-info::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text-primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    margin-bottom: -2px;
+    z-index: 100;
+}
+
+.user-info:hover::after,
+.user-info:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Tooltip d'aide pour les modes */
 .mode-help-tooltip {
     position: absolute;

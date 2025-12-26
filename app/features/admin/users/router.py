@@ -148,7 +148,8 @@ async def create_user(
     - email: Adresse email (unique)
     - username: Nom d'utilisateur (unique)
     - password: Mot de passe (min 8 caractères)
-    - full_name: Nom complet (optionnel)
+    - first_name: Prénom (optionnel)
+    - last_name: Nom de famille (optionnel)
     - role_id: ID du rôle (défaut: 2 = user)
     - is_active: Compte actif (défaut: true)
     - is_verified: Email vérifié (défaut: false)
@@ -161,7 +162,8 @@ async def create_user(
             email=user_data.email,
             username=user_data.username,
             password=user_data.password,
-            full_name=user_data.full_name,
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
             role_id=user_data.role_id,
             is_active=user_data.is_active,
             is_verified=user_data.is_verified
@@ -221,7 +223,8 @@ async def update_user(
     Body:
     - email: Nouvelle adresse email (optionnel)
     - username: Nouveau nom d'utilisateur (optionnel)
-    - full_name: Nouveau nom complet (optionnel)
+    - first_name: Nouveau prénom (optionnel)
+    - last_name: Nouveau nom de famille (optionnel)
     - is_verified: Nouveau statut de vérification (optionnel)
 
     Requires: Admin role

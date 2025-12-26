@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     api_key: str
     secret_key: str
 
+    # Encryption (PII)
+    # Clé de chiffrement AES-256 (64 caractères hex = 32 bytes)
+    # Générer avec: openssl rand -hex 32
+    encryption_key: Optional[str] = None
+
     # JWT Configuration
     jwt_secret_key: str
     jwt_algorithm: str
