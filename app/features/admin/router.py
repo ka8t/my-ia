@@ -896,6 +896,139 @@ async def delete_document(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/documents/{document_id}/deindex", response_model=DocumentRead)
+async def deindex_document(
+    document_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Désindexe un document du RAG
+
+    Le document reste dans la base mais n'apparaîtra plus dans les recherches RAG.
+    Requires: Admin role
+    """
+    try:
+        document = await AdminService.deindex_document(db, document_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='document_deindexed',
+            user_id=admin_user.id,
+            resource_type_name='document',
+            resource_id=document_id,
+            details={
+                'filename': document.filename,
+                'file_hash': document.file_hash
+            },
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/documents/deindex", method="POST", status="200").inc()
+        return document
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/documents/deindex", method="POST", status="500").inc()
+        logger.error(f"Error deindexing document: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/documents/{document_id}/reindex", response_model=DocumentRead)
+async def reindex_document(
+    document_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Réindexe un document dans le RAG
+
+    Le document sera à nouveau visible dans les recherches RAG.
+    Requires: Admin role
+    """
+    try:
+        document = await AdminService.reindex_document(db, document_id)
+
+        await AuditService.log_action(
+            db=db,
+            action_name='document_reindexed',
+            user_id=admin_user.id,
+            resource_type_name='document',
+            resource_id=document_id,
+            details={
+                'filename': document.filename,
+                'file_hash': document.file_hash
+            },
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/documents/reindex", method="POST", status="200").inc()
+        return document
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/documents/reindex", method="POST", status="500").inc()
+        logger.error(f"Error reindexing document: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/documents/{document_id}/visibility")
+async def update_document_visibility_admin(
+    document_id: uuid.UUID,
+    visibility: str,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Met à jour la visibilité d'un document (admin)
+
+    Args:
+        visibility: 'public' ou 'private'
+
+    Requires: Admin role
+    """
+    try:
+        document = await AdminService.update_document_visibility(
+            db=db,
+            document_id=document_id,
+            visibility=visibility,
+            user_id=admin_user.id,
+            is_admin=True
+        )
+
+        await AuditService.log_action(
+            db=db,
+            action_name='document_visibility_updated',
+            user_id=admin_user.id,
+            resource_type_name='document',
+            resource_id=document_id,
+            details={
+                'filename': document.filename,
+                'new_visibility': visibility
+            },
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/documents/visibility", method="PATCH", status="200").inc()
+        return {
+            "success": True,
+            "document_id": str(document_id),
+            "visibility": visibility
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/documents/visibility", method="PATCH", status="500").inc()
+        logger.error(f"Error updating document visibility: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/sessions", response_model=list[SessionRead])
 async def get_sessions(
     user_id: Optional[uuid.UUID] = None,

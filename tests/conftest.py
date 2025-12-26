@@ -7,6 +7,9 @@ from typing import Generator, AsyncGenerator
 from pathlib import Path
 
 import pytest
+
+# Plugin pytest_asyncio (doit être au niveau racine)
+pytest_plugins = ('pytest_asyncio',)
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 

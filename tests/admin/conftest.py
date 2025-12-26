@@ -17,9 +17,6 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-# Configuration pytest-asyncio
-pytest_plugins = ('pytest_asyncio',)
-
 
 # =============================================================================
 # CONFIGURATION ASYNCIO - Event Loop pour toutes les fixtures

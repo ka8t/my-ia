@@ -4,13 +4,17 @@ Router Ingestion
 Endpoints pour l'ingestion de documents.
 """
 import logging
+from typing import Optional
 
-from fastapi import APIRouter, Request, UploadFile, File, Depends
+from fastapi import APIRouter, Request, UploadFile, File, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.deps import verify_api_key
+from app.core.deps import verify_api_key, get_db
 from app.features.ingestion.schemas import UploadResponse
 from app.features.ingestion.service import IngestionService
+from app.features.auth.router import current_active_user
 from app.common.metrics import REQUEST_COUNT
+from app.models import User, DocumentVisibility
 
 logger = logging.getLogger(__name__)
 
@@ -58,4 +62,53 @@ async def upload_file(
     except Exception as e:
         REQUEST_COUNT.labels(endpoint="/upload", method="POST", status="500").inc()
         logger.error(f"Error in upload endpoint: {e}")
+        raise
+
+
+@router.post("/v2", response_model=UploadResponse)
+async def upload_file_v2(
+    request: Request,
+    file: UploadFile = File(...),
+    parsing_strategy: str = "auto",
+    skip_duplicates: bool = True,
+    visibility: str = Query(default="public", regex="^(public|private)$"),
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(current_active_user)
+):
+    """
+    Upload et ingestion de documents avec authentification JWT
+
+    Nouvelle version avec:
+    - Liaison au user connecte
+    - Choix de visibilite (public/private)
+    - Sauvegarde en BDD avec ownership
+
+    Args:
+        file: Fichier à uploader
+        parsing_strategy: 'auto', 'fast', 'hi_res', ou 'ocr_only'
+        skip_duplicates: Ignorer si le hash du document existe déjà
+        visibility: 'public' (defaut) ou 'private'
+        db: Session database
+        user: Utilisateur connecte
+
+    Returns:
+        Résultat de l'ingestion
+    """
+    try:
+        result = await IngestionService.ingest_document(
+            file=file,
+            parsing_strategy=parsing_strategy,
+            skip_duplicates=skip_duplicates,
+            user_id=str(user.id),
+            visibility=visibility,
+            db=db
+        )
+
+        REQUEST_COUNT.labels(endpoint="/upload/v2", method="POST", status="200").inc()
+
+        return UploadResponse(**result)
+
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/upload/v2", method="POST", status="500").inc()
+        logger.error(f"Error in upload/v2 endpoint: {e}")
         raise

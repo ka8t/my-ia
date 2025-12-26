@@ -8,12 +8,15 @@ from typing import Optional
 
 from fastapi import APIRouter, Request, Header, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.deps import verify_api_key, verify_jwt_or_api_key
+from app.core.deps import verify_api_key, verify_jwt_or_api_key, get_db
 from app.features.chat.schemas import ChatRequest, ChatResponse
 from app.features.chat.service import ChatService
+from app.features.auth.router import current_active_user, optional_current_user
 from app.common.metrics import REQUEST_COUNT, REQUEST_LATENCY
+from app.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -24,23 +27,29 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 async def chat(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_jwt_or_api_key)
+    db: AsyncSession = Depends(get_db),
+    user: Optional[User] = Depends(optional_current_user)
 ):
     """
     Endpoint ChatBot conversationnel avec RAG
 
     Args:
         chat_request: Requête de chat avec query et session_id optionnel
-        _: Vérification de la clé API
+        db: Session database
+        user: Utilisateur connecte (optionnel)
 
     Returns:
-        Réponse du chatbot avec sources
+        Réponse du chatbot avec sources filtrees par visibilite
     """
     with REQUEST_LATENCY.labels(endpoint="/chat").time():
         try:
+            user_id = str(user.id) if user else None
+
             result = await ChatService.chat_with_rag(
                 chat_request.query,
-                chat_request.session_id
+                chat_request.session_id,
+                user_id=user_id,
+                db=db
             )
 
             REQUEST_COUNT.labels(endpoint="/chat", method="POST", status="200").inc()
@@ -57,23 +66,26 @@ async def chat(
 async def chat_stream(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_jwt_or_api_key)
+    db: AsyncSession = Depends(get_db),
+    user: Optional[User] = Depends(optional_current_user)
 ):
     """
     Endpoint ChatBot avec streaming
 
     Args:
         chat_request: Requête de chat
-        _: Vérification de la clé API
+        db: Session database
+        user: Utilisateur connecte (optionnel)
 
     Returns:
-        Streaming response
+        Streaming response avec sources filtrees
     """
     try:
         REQUEST_COUNT.labels(endpoint="/chat/stream", method="POST", status="200").inc()
+        user_id = str(user.id) if user else None
 
         return StreamingResponse(
-            ChatService.chat_stream(chat_request.query),
+            ChatService.chat_stream(chat_request.query, user_id=user_id, db=db),
             media_type="application/x-ndjson"
         )
 
@@ -92,23 +104,29 @@ test_router = APIRouter(prefix="/test", tags=["test"])
 async def assistant(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_jwt_or_api_key)
+    db: AsyncSession = Depends(get_db),
+    user: Optional[User] = Depends(optional_current_user)
 ):
     """
     Endpoint Assistant orienté tâches avec RAG
 
     Args:
         chat_request: Requête de chat
-        _: Vérification de la clé API
+        db: Session database
+        user: Utilisateur connecte (optionnel)
 
     Returns:
-        Réponse de l'assistant avec sources
+        Réponse de l'assistant avec sources filtrees
     """
     with REQUEST_LATENCY.labels(endpoint="/assistant").time():
         try:
+            user_id = str(user.id) if user else None
+
             result = await ChatService.assistant_with_rag(
                 chat_request.query,
-                chat_request.session_id
+                chat_request.session_id,
+                user_id=user_id,
+                db=db
             )
 
             REQUEST_COUNT.labels(endpoint="/assistant", method="POST", status="200").inc()

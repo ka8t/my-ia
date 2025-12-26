@@ -303,8 +303,16 @@ Tu dois toujours vérifier les dépendances et les conflits possibles entre elle
 
 Tu dois à chaque création ou modification de fichier que les lines-ending ne sont pas au format Windows.
 
-Tu ne dois jamais les champs d'une table avec le nom d'un type existaant (ex: Date)
+Tu ne dois jamais nommer les champs d'une table avec le nom d'un type existant (ex: Date)
 
 Tu dois toujours utiliser les contraintes techniques actuelles (os, docker, bdd ... ) pour créer et modifier les tests unitaires.
+
+A chaque modification de code ou fonctionnalité frontend ou backend,  tu dois mettre à jour les tests unitaires et leurs dépendances si le backend est modifié et ensuite les tester.
+
+Quand tu dois tester unitairement, demande moi toujours si je veux que je teste l'ensemble ou ce qui vient d'^tre créé ou modifié.
+
+A chaque fonctionnalité pour un utilisateur, l'admin doit aussi pouvoir y accéder.
+
+
 
 Ce fichier CLAUDE.md doit être la référence ABSOLUE pour tous vos projets Python. Relisez-le systématiquement au début de chaque génération de code.

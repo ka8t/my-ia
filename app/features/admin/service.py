@@ -356,3 +356,110 @@ class AdminService:
         await db.commit()
 
         return True
+
+    @staticmethod
+    async def deindex_document(db: AsyncSession, document_id: uuid.UUID) -> Document:
+        """
+        Désindexe un document du RAG (is_indexed=False)
+
+        Le document reste dans ChromaDB mais ne sera plus retourné dans les recherches.
+        """
+        document = await AdminRepository.get_by_id(db, Document, document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        if not document.is_indexed:
+            raise HTTPException(status_code=400, detail="Document is already deindexed")
+
+        document.is_indexed = False
+        await db.commit()
+        await db.refresh(document)
+
+        logger.info(f"Document deindexed: {document_id} ({document.filename})")
+        return document
+
+    @staticmethod
+    async def reindex_document(db: AsyncSession, document_id: uuid.UUID) -> Document:
+        """
+        Réindexe un document dans le RAG (is_indexed=True)
+        """
+        document = await AdminRepository.get_by_id(db, Document, document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        if document.is_indexed:
+            raise HTTPException(status_code=400, detail="Document is already indexed")
+
+        document.is_indexed = True
+        await db.commit()
+        await db.refresh(document)
+
+        logger.info(f"Document reindexed: {document_id} ({document.filename})")
+        return document
+
+    @staticmethod
+    async def update_document_visibility(
+        db: AsyncSession,
+        document_id: uuid.UUID,
+        visibility: str,
+        user_id: uuid.UUID,
+        is_admin: bool = False
+    ) -> Document:
+        """
+        Met à jour la visibilité d'un document
+
+        Args:
+            db: Session DB
+            document_id: ID du document
+            visibility: 'public' ou 'private'
+            user_id: ID de l'utilisateur qui fait la demande
+            is_admin: True si l'utilisateur est admin (peut modifier tous les docs)
+        """
+        from app.models import DocumentVisibility
+
+        document = await AdminRepository.get_by_id(db, Document, document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        # Vérifier les permissions (sauf admin)
+        if not is_admin and document.user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only modify your own documents"
+            )
+
+        # Valider la visibilité
+        try:
+            new_visibility = DocumentVisibility(visibility)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid visibility. Must be 'public' or 'private'"
+            )
+
+        if document.visibility == new_visibility:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Document visibility is already '{visibility}'"
+            )
+
+        document.visibility = new_visibility
+        await db.commit()
+        await db.refresh(document)
+
+        # Mettre à jour aussi dans ChromaDB
+        try:
+            chroma_client = get_chroma_client()
+            if chroma_client:
+                collection = chroma_client.get_collection(name=settings.collection_name)
+                # On ne peut pas mettre à jour les metadata directement dans ChromaDB
+                # Il faudrait supprimer et réinsérer les chunks
+                logger.warning(
+                    f"Document visibility updated in DB but not in ChromaDB. "
+                    f"Re-upload document to sync: {document.filename}"
+                )
+        except Exception as e:
+            logger.warning(f"Could not check ChromaDB: {e}")
+
+        logger.info(f"Document visibility updated: {document_id} -> {visibility}")
+        return document

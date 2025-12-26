@@ -6,7 +6,7 @@ Expose tous les endpoints d'authentification (login, register, reset-password, v
 import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
-from app.features.auth.service import auth_backend, fastapi_users, current_active_user
+from app.features.auth.service import auth_backend, fastapi_users, current_active_user, optional_current_user
 from app.features.auth.config import SECRET, TOKEN_LIFETIME_SECONDS
 from app.features.user.schemas import UserRead, UserCreate
 from app.models import User

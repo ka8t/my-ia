@@ -12,7 +12,7 @@ from app.db import get_async_session
 from app.models import User
 from app.features.auth.service import current_active_user
 from app.features.documents.service import DocumentService
-from app.features.documents.schemas import DocumentRead, DocumentListResponse
+from app.features.documents.schemas import DocumentRead, DocumentListResponse, VisibilityUpdate
 
 router = APIRouter(
     prefix="/documents",
@@ -98,3 +98,30 @@ async def delete_document(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Document non trouvé"
         )
+
+
+@router.patch(
+    "/{document_id}/visibility",
+    response_model=DocumentRead,
+    summary="Modifier la visibilité d'un document",
+    description="Change la visibilité d'un document (public ou private)."
+)
+async def update_document_visibility(
+    document_id: uuid.UUID,
+    visibility_data: VisibilityUpdate,
+    current_user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session)
+) -> DocumentRead:
+    """
+    Met à jour la visibilité d'un document.
+
+    - **visibility**: 'public' (visible par tous) ou 'private' (visible uniquement par le propriétaire)
+
+    Seul le propriétaire du document peut modifier sa visibilité.
+    """
+    return await DocumentService.update_visibility(
+        db,
+        document_id,
+        current_user.id,
+        visibility_data.visibility
+    )

@@ -16,8 +16,6 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 
-pytest_plugins = ('pytest_asyncio',)
-
 
 # =============================================================================
 # EVENT LOOP

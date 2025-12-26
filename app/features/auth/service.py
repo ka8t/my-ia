@@ -33,6 +33,9 @@ fastapi_users = FastAPIUsers[User, uuid.UUID](
 # Dependency pour récupérer l'utilisateur actif
 current_active_user = fastapi_users.current_user(active=True)
 
+# Dependency optionnelle - retourne None si pas de user
+optional_current_user = fastapi_users.current_user(active=True, optional=True)
+
 
 async def verify_jwt_token(token: str) -> Optional[dict]:
     """

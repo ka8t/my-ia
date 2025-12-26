@@ -6,11 +6,14 @@ Logique métier pour l'ingestion de documents avec le pipeline v2.
 import os
 import logging
 import tempfile
-from typing import Dict, Any
+import uuid
+from typing import Dict, Any, Optional
 
 from fastapi import UploadFile, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_ingestion_pipeline
+from app.models import Document, DocumentVisibility
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,10 @@ class IngestionService:
     async def ingest_document(
         file: UploadFile,
         parsing_strategy: str = "auto",
-        skip_duplicates: bool = True
+        skip_duplicates: bool = True,
+        user_id: Optional[str] = None,
+        visibility: str = "public",
+        db: Optional[AsyncSession] = None
     ) -> Dict[str, Any]:
         """
         Ingère un document avec le pipeline avancé v2
@@ -39,6 +45,9 @@ class IngestionService:
             file: Fichier uploadé
             parsing_strategy: Stratégie de parsing ('auto', 'fast', 'hi_res', 'ocr_only')
             skip_duplicates: Ignorer les doublons
+            user_id: UUID de l'utilisateur proprietaire
+            visibility: Visibilite du document ('public' ou 'private')
+            db: Session database pour sauvegarder le Document
 
         Returns:
             Dictionnaire avec le résultat de l'ingestion
@@ -71,11 +80,13 @@ class IngestionService:
 
             logger.info(f"File uploaded: {file.filename} ({len(content)} bytes)")
 
-            # Ingestion avec le pipeline avancé
+            # Ingestion avec le pipeline avancé (avec user_id et visibility)
             result = await ingestion_pipeline.ingest_file(
                 file_path=tmp_file_path,
                 parsing_strategy=parsing_strategy,
-                skip_duplicates=skip_duplicates
+                skip_duplicates=skip_duplicates,
+                user_id=user_id,
+                visibility=visibility
             )
 
             # Nettoyer le fichier temporaire
@@ -95,6 +106,29 @@ class IngestionService:
                     detail=f"Échec de l'ingestion: {result.get('reason', 'unknown error')}"
                 )
             else:  # success
+                # Sauvegarder le Document en PostgreSQL si db fournie
+                if db and user_id:
+                    try:
+                        doc_visibility = DocumentVisibility(visibility)
+                        new_doc = Document(
+                            filename=file.filename,
+                            file_hash=result.get("document_hash", ""),
+                            file_size=len(content),
+                            mime_type=file.content_type or "application/octet-stream",
+                            chunk_count=result["chunks_indexed"],
+                            user_id=uuid.UUID(user_id),
+                            visibility=doc_visibility,
+                            is_indexed=True
+                        )
+                        db.add(new_doc)
+                        await db.commit()
+                        await db.refresh(new_doc)
+                        logger.info(f"Document saved to DB: {new_doc.id} (user={user_id}, visibility={visibility})")
+                    except Exception as e:
+                        logger.error(f"Error saving document to DB: {e}")
+                        # On ne fait pas échouer l'ingestion si la sauvegarde DB échoue
+                        # Le document est déjà dans ChromaDB
+
                 message = f"Fichier '{file.filename}' indexé avec succès ({result['chunks_indexed']} chunks"
                 if result.get('tables_found', 0) > 0:
                     message += f", {result['tables_found']} tables détectées"

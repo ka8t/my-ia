@@ -3,12 +3,23 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON
+from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum
+import enum
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db import Base
+
+
+# --- Enums ---
+
+class DocumentVisibility(str, enum.Enum):
+    """Visibilite d'un document pour le RAG"""
+    PUBLIC = "public"      # Accessible a tous les utilisateurs
+    PRIVATE = "private"    # Accessible uniquement au proprietaire
+    # SHARED = "shared"    # Future: partage avec users/groupes specifiques
+
 
 # --- Tables de Référence ---
 
@@ -124,7 +135,19 @@ class Document(Base):
     file_size: Mapped[int] = mapped_column(Integer, nullable=False)
     file_type: Mapped[str] = mapped_column(String(50), nullable=False)
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    visibility: Mapped[DocumentVisibility] = mapped_column(
+        SQLEnum(
+            DocumentVisibility,
+            name="document_visibility",
+            create_constraint=True,
+            values_callable=lambda e: [x.value for x in e]  # Utilise 'public'/'private' au lieu de 'PUBLIC'/'PRIVATE'
+        ),
+        default=DocumentVisibility.PUBLIC,
+        nullable=False
+    )
+    is_indexed: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)  # Admin peut desindexer
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relations
     user: Mapped["User"] = relationship(back_populates="documents")

@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 import httpx
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.common.utils.chroma import search_context
 from app.common.utils.ollama import generate_response
@@ -36,19 +38,26 @@ class ChatService:
     """Service de chat conversationnel avec RAG"""
 
     @staticmethod
-    async def chat_with_rag(query: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+    async def chat_with_rag(
+        query: str,
+        session_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        db: Optional[AsyncSession] = None
+    ) -> Dict[str, Any]:
         """
         Chat conversationnel avec RAG
 
         Args:
             query: Question de l'utilisateur
             session_id: ID de session (optionnel)
+            user_id: UUID utilisateur pour filtrage visibilite
+            db: Session DB pour verifier is_indexed
 
         Returns:
             Dictionnaire contenant la réponse et les sources
         """
-        # Recherche de contexte
-        context = await search_context(query)
+        # Recherche de contexte avec filtrage visibilite
+        context = await search_context(query, user_id=user_id, db_session=db)
 
         # Génération de réponse
         response_text = await generate_response(
@@ -65,19 +74,26 @@ class ChatService:
         }
 
     @staticmethod
-    async def assistant_with_rag(query: str, session_id: Optional[str] = None) -> Dict[str, Any]:
+    async def assistant_with_rag(
+        query: str,
+        session_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        db: Optional[AsyncSession] = None
+    ) -> Dict[str, Any]:
         """
         Assistant orienté tâches avec RAG
 
         Args:
             query: Question de l'utilisateur
             session_id: ID de session (optionnel)
+            user_id: UUID utilisateur pour filtrage visibilite
+            db: Session DB pour verifier is_indexed
 
         Returns:
             Dictionnaire contenant la réponse et les sources
         """
-        # Recherche de contexte
-        context = await search_context(query)
+        # Recherche de contexte avec filtrage visibilite
+        context = await search_context(query, user_id=user_id, db_session=db)
 
         # Génération de réponse
         response_text = await generate_response(
@@ -122,18 +138,24 @@ class ChatService:
         }
 
     @staticmethod
-    async def chat_stream(query: str):
+    async def chat_stream(
+        query: str,
+        user_id: Optional[str] = None,
+        db: Optional[AsyncSession] = None
+    ):
         """
         Chat avec streaming - retourne un générateur asynchrone
 
         Args:
             query: Question de l'utilisateur
+            user_id: UUID utilisateur pour filtrage visibilite
+            db: Session DB pour verifier is_indexed
 
         Yields:
             Lignes JSON de la réponse Ollama
         """
-        # Recherche de contexte
-        context = await search_context(query)
+        # Recherche de contexte avec filtrage visibilite
+        context = await search_context(query, user_id=user_id, db_session=db)
 
         # Construire le prompt avec contexte
         full_prompt = CHATBOT_SYSTEM_PROMPT + "\n\n"

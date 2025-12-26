@@ -351,10 +351,12 @@ class MetadataExtractor:
         document_hash: str,
         chunk_index: int,
         total_chunks: int,
-        chunk_type: Optional[str] = None
+        chunk_type: Optional[str] = None,
+        user_id: Optional[str] = None,
+        visibility: str = "public"
     ) -> Dict[str, Any]:
-        """Combine and enrich metadata"""
-        return {
+        """Combine and enrich metadata with user ownership and visibility"""
+        metadata = {
             **file_metadata,
             **base_metadata,
             "document_hash": document_hash,
@@ -363,7 +365,12 @@ class MetadataExtractor:
             "chunk_type": chunk_type or "text",
             "indexed_at": datetime.now().isoformat(),
             "ingestion_version": "2.0",
+            "visibility": visibility,  # public, private, (future: shared)
         }
+        # user_id peut etre None pour documents legacy ou admin uploads
+        if user_id:
+            metadata["user_id"] = user_id
+        return metadata
 
 
 class EmbeddingGenerator:
@@ -435,7 +442,9 @@ class AdvancedIngestionPipeline:
         self,
         file_path: str,
         parsing_strategy: str = "auto",
-        skip_duplicates: bool = True
+        skip_duplicates: bool = True,
+        user_id: Optional[str] = None,
+        visibility: str = "public"
     ) -> Dict[str, Any]:
         """
         Ingest a single file with full pipeline
@@ -444,6 +453,8 @@ class AdvancedIngestionPipeline:
             file_path: Path to file
             parsing_strategy: Unstructured parsing strategy
             skip_duplicates: Skip if document already indexed
+            user_id: UUID de l'utilisateur proprietaire (None = legacy/admin)
+            visibility: Visibilite du document (public, private)
 
         Returns:
             Ingestion result with statistics
@@ -494,14 +505,16 @@ class AdvancedIngestionPipeline:
             chunk_id = f"{document_hash}-{idx}"
             ids.append(chunk_id)
 
-            # Enrich metadata
+            # Enrich metadata with user ownership and visibility
             metadata = self.metadata_extractor.enrich_metadata(
                 base_metadata=chunk.get("metadata", {}),
                 file_metadata=file_metadata,
                 document_hash=document_hash,
                 chunk_index=idx,
                 total_chunks=len(chunks),
-                chunk_type=chunk.get("type", "text")
+                chunk_type=chunk.get("type", "text"),
+                user_id=user_id,
+                visibility=visibility
             )
             metadatas.append(metadata)
             documents.append(chunk["text"])
