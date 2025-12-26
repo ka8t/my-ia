@@ -25,6 +25,7 @@ class MessageCreate(BaseModel):
     sender_type: str = Field(..., pattern="^(user|assistant)$", description="Type d'expéditeur")
     content: str = Field(..., min_length=1, description="Contenu du message")
     sources: Optional[Dict[str, Any]] = Field(None, description="Sources RAG utilisées")
+    response_time: Optional[float] = Field(None, description="Temps de réponse en secondes")
 
 
 # =============================================================================
@@ -37,6 +38,7 @@ class MessageRead(BaseModel):
     sender_type: str
     content: str
     sources: Optional[Dict[str, Any]] = None
+    response_time: Optional[float] = None
     created_at: datetime
 
     class Config:
@@ -52,6 +54,7 @@ class ConversationRead(BaseModel):
     messages_count: int = 0
     created_at: datetime
     updated_at: datetime
+    archived_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -107,3 +110,13 @@ class ChatResponse(BaseModel):
     sources: Optional[List[Dict[str, Any]]] = Field(None, description="Sources RAG")
     user_message: MessageRead = Field(..., description="Message utilisateur sauvegardé")
     assistant_message: MessageRead = Field(..., description="Message assistant sauvegardé")
+
+
+class MessageDeleteRequest(BaseModel):
+    """Requête pour supprimer des messages"""
+    message_ids: List[uuid.UUID] = Field(..., min_length=1, description="IDs des messages à supprimer")
+
+
+class MessageDeleteResponse(BaseModel):
+    """Réponse de suppression de messages"""
+    deleted_count: int = Field(..., description="Nombre de messages supprimés")

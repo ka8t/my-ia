@@ -122,15 +122,15 @@ class ChatService:
         }
 
     @staticmethod
-    async def chat_stream(query: str) -> httpx.Response:
+    async def chat_stream(query: str):
         """
-        Chat avec streaming
+        Chat avec streaming - retourne un générateur asynchrone
 
         Args:
             query: Question de l'utilisateur
 
-        Returns:
-            Response HTTP en streaming
+        Yields:
+            Lignes JSON de la réponse Ollama
         """
         # Recherche de contexte
         context = await search_context(query)
@@ -146,14 +146,17 @@ class ChatService:
 
         full_prompt += f"**Question de l'utilisateur :**\n{query}\n\n**Réponse :**"
 
-        # Retourne la réponse Ollama pour streaming
+        # Streaming avec client qui reste ouvert
         async with httpx.AsyncClient(timeout=settings.ollama_timeout) as client:
-            response = await client.post(
+            async with client.stream(
+                "POST",
                 f"{settings.ollama_url}/api/generate",
                 json={
                     "model": settings.model_name,
                     "prompt": full_prompt,
                     "stream": True
                 }
-            )
-            return response
+            ) as response:
+                async for line in response.aiter_lines():
+                    if line.strip():
+                        yield line + "\n"

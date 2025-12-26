@@ -1,0 +1,63 @@
+/**
+ * Variables CSS - Theme et configuration globale
+ *
+ * Ce fichier contient toutes les variables CSS utilisees dans l'application.
+ * Modifier ces valeurs pour personnaliser le theme.
+ */
+
+:root {
+    /* Couleurs de fond */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7f7f8;
+    --bg-tertiary: #ececf1;
+
+    /* Couleurs de texte */
+    --text-primary: #000000;
+    --text-secondary: #6e6e80;
+
+    /* Couleurs d'interface */
+    --border-color: #e5e5e5;
+    --accent-color: #10a37f;
+    --accent-hover: #0d8c6d;
+    --danger-color: #ef4444;
+    --warning-color: #f59e0b;
+    --info-color: #3b82f6;
+
+    /* Couleurs specifiques */
+    --user-bg: #f7f7f8;
+    --assistant-bg: #ffffff;
+    --code-bg: #f5f5f5;
+    --code-text: #1f2937;
+
+    /* Dimensions */
+    --sidebar-width: 280px;
+
+    /* Rayons de bordure */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* Transitions */
+    --transition-fast: 0.2s;
+    --transition-normal: 0.3s;
+
+    /* Ombres */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Theme sombre */
+[data-theme="dark"] {
+    --bg-primary: #212121;
+    --bg-secondary: #2f2f2f;
+    --bg-tertiary: #3f3f3f;
+    --text-primary: #ececf1;
+    --text-secondary: #9b9ba5;
+    --border-color: #4d4d4d;
+    --user-bg: #2f2f2f;
+    --assistant-bg: #212121;
+    --code-bg: #282c34;
+    --code-text: #abb2bf;
+}

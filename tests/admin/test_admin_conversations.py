@@ -131,3 +131,100 @@ class TestAdminConversationEdgeCases:
 
         assert total == 0
         assert conversations == []
+
+
+# =============================================================================
+# TESTS ARCHIVE/UNARCHIVE
+# =============================================================================
+
+class TestAdminConversationArchive:
+    """Tests archivage de conversation par admin"""
+
+    @pytest.mark.asyncio
+    async def test_archive_nonexistent_conversation(self, db_session: AsyncSession):
+        """Test archivage conversation inexistante"""
+        fake_id = uuid.uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await ConversationAdminService.archive_conversation(
+                db=db_session,
+                conversation_id=fake_id
+            )
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_unarchive_nonexistent_conversation(self, db_session: AsyncSession):
+        """Test desarchivage conversation inexistante"""
+        fake_id = uuid.uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await ConversationAdminService.unarchive_conversation(
+                db=db_session,
+                conversation_id=fake_id
+            )
+
+        assert exc_info.value.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_archive_conversation_success(
+        self, db_session: AsyncSession, admin_user_id: uuid.UUID
+    ):
+        """Test archivage d'une conversation avec succes"""
+        from app.features.conversations.service import ConversationService
+        from app.features.conversations.schemas import ConversationCreate
+
+        # Creer une conversation
+        data = ConversationCreate(title="Admin Archive Test", mode_id=1)
+        conversation = await ConversationService.create_conversation(
+            db_session, admin_user_id, data
+        )
+        assert conversation.archived_at is None
+
+        # Archiver via admin service
+        result = await ConversationAdminService.archive_conversation(
+            db_session, conversation.id
+        )
+
+        assert result is not None
+        assert result["id"] == conversation.id
+        assert result["archived_at"] is not None
+
+    @pytest.mark.asyncio
+    async def test_unarchive_conversation_success(
+        self, db_session: AsyncSession, admin_user_id: uuid.UUID
+    ):
+        """Test desarchivage d'une conversation avec succes"""
+        from app.features.conversations.service import ConversationService
+        from app.features.conversations.schemas import ConversationCreate
+
+        # Creer et archiver une conversation
+        data = ConversationCreate(title="Admin Unarchive Test", mode_id=1)
+        conversation = await ConversationService.create_conversation(
+            db_session, admin_user_id, data
+        )
+        await ConversationAdminService.archive_conversation(
+            db_session, conversation.id
+        )
+
+        # Desarchiver via admin service
+        result = await ConversationAdminService.unarchive_conversation(
+            db_session, conversation.id
+        )
+
+        assert result is not None
+        assert result["id"] == conversation.id
+        assert result["archived_at"] is None
+
+    @pytest.mark.asyncio
+    async def test_list_includes_archived_at(self, db_session: AsyncSession):
+        """Test que la liste inclut archived_at"""
+        conversations, _ = await ConversationAdminService.get_conversations(
+            db=db_session,
+            limit=1,
+            offset=0
+        )
+
+        if conversations:
+            # Verifier que archived_at est present dans le dict
+            assert "archived_at" in conversations[0]

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Request, Header, Depends
 from fastapi.responses import StreamingResponse
 
 from app.core.config import settings
-from app.core.deps import verify_api_key
+from app.core.deps import verify_api_key, verify_jwt_or_api_key
 from app.features.chat.schemas import ChatRequest, ChatResponse
 from app.features.chat.service import ChatService
 from app.common.metrics import REQUEST_COUNT, REQUEST_LATENCY
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 async def chat(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_api_key)
+    _: bool = Depends(verify_jwt_or_api_key)
 ):
     """
     Endpoint ChatBot conversationnel avec RAG
@@ -57,7 +57,7 @@ async def chat(
 async def chat_stream(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_api_key)
+    _: bool = Depends(verify_jwt_or_api_key)
 ):
     """
     Endpoint ChatBot avec streaming
@@ -70,18 +70,12 @@ async def chat_stream(
         Streaming response
     """
     try:
-        # Streaming depuis Ollama
-        async def generate_stream():
-            response = await ChatService.chat_stream(chat_request.query)
-            async with response as r:
-                async for line in r.aiter_lines():
-                    if line.strip():
-                        # Ollama renvoie déjà du JSON par ligne, on le transmet tel quel
-                        yield line + "\n"
-
         REQUEST_COUNT.labels(endpoint="/chat/stream", method="POST", status="200").inc()
 
-        return StreamingResponse(generate_stream(), media_type="application/x-ndjson")
+        return StreamingResponse(
+            ChatService.chat_stream(chat_request.query),
+            media_type="application/x-ndjson"
+        )
 
     except Exception as e:
         REQUEST_COUNT.labels(endpoint="/chat/stream", method="POST", status="500").inc()
@@ -98,7 +92,7 @@ test_router = APIRouter(prefix="/test", tags=["test"])
 async def assistant(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_api_key)
+    _: bool = Depends(verify_jwt_or_api_key)
 ):
     """
     Endpoint Assistant orienté tâches avec RAG
@@ -131,7 +125,7 @@ async def assistant(
 async def test_ollama(
     request: Request,
     chat_request: ChatRequest,
-    _: bool = Depends(verify_api_key)
+    _: bool = Depends(verify_jwt_or_api_key)
 ):
     """
     Endpoint de test sans RAG - juste Ollama

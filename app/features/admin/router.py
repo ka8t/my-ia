@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
 from app.core.deps import get_current_admin_user, get_db
-from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference, Document
+from app.models import User, Role, ConversationMode, ResourceType, AuditAction, UserPreference, Document, Message
 from app.common.schemas import (
     RoleRead, RoleCreate, RoleUpdate,
     ConversationModeRead, ConversationModeCreate, ConversationModeUpdate,
@@ -681,20 +681,156 @@ async def get_conversations(
 async def get_messages(
     conversation_id: Optional[uuid.UUID] = None,
     sender_type: Optional[str] = None,
+    include_deleted: bool = False,
     limit: int = 50,
     offset: int = 0,
     admin_user: User = Depends(get_current_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Récupère tous les messages avec filtres"""
+    """
+    Récupère tous les messages avec filtres.
+
+    Query Parameters:
+    - conversation_id: Filtrer par conversation
+    - sender_type: Filtrer par type (user/assistant)
+    - include_deleted: Inclure les messages supprimés (soft delete)
+    - limit: Nombre de résultats (max 200)
+    - offset: Pagination
+    """
     try:
         limit = min(limit, 200)
-        messages = await AdminRepository.get_messages(db, conversation_id, sender_type, limit, offset)
+        messages = await AdminRepository.get_messages(
+            db, conversation_id, sender_type,
+            include_deleted=include_deleted,
+            limit=limit, offset=offset
+        )
 
         REQUEST_COUNT.labels(endpoint="/admin/messages", method="GET", status="200").inc()
         return messages
     except Exception as e:
         REQUEST_COUNT.labels(endpoint="/admin/messages", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/messages/deleted", response_model=list[MessageRead])
+async def get_deleted_messages(
+    conversation_id: Optional[uuid.UUID] = None,
+    limit: int = 50,
+    offset: int = 0,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Récupère uniquement les messages supprimés (soft delete).
+
+    Query Parameters:
+    - conversation_id: Filtrer par conversation
+    - limit: Nombre de résultats (max 200)
+    - offset: Pagination
+    """
+    try:
+        limit = min(limit, 200)
+        messages = await AdminRepository.get_messages(
+            db, conversation_id, sender_type=None,
+            deleted_only=True,
+            limit=limit, offset=offset
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/messages/deleted", method="GET", status="200").inc()
+        return messages
+    except Exception as e:
+        REQUEST_COUNT.labels(endpoint="/admin/messages/deleted", method="GET", status="500").inc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/messages/{message_id}", status_code=204)
+async def hard_delete_message(
+    message_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Supprime physiquement un message (hard delete).
+
+    Cette action est irréversible. Seuls les admins peuvent effectuer cette opération.
+    """
+    try:
+        message = await AdminRepository.get_by_id(db, Message, message_id)
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+
+        message_info = {
+            'conversation_id': str(message.conversation_id),
+            'sender_type': message.sender_type,
+            'content_preview': message.content[:100] if message.content else None,
+            'was_soft_deleted': message.deleted_at is not None
+        }
+
+        deleted = await AdminRepository.hard_delete_message(db, message_id)
+        if not deleted:
+            raise HTTPException(status_code=500, detail="Failed to delete message")
+
+        await AuditService.log_action(
+            db=db,
+            action_name='message_hard_deleted',
+            user_id=admin_user.id,
+            resource_type_name='message',
+            resource_id=message_id,
+            details=message_info,
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/messages", method="DELETE", status="204").inc()
+        return Response(status_code=204)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/messages", method="DELETE", status="500").inc()
+        logger.error(f"Error hard deleting message: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/messages/{message_id}/restore", response_model=MessageRead)
+async def restore_message(
+    message_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Restaure un message supprimé (soft delete).
+
+    Annule le soft delete d'un message.
+    """
+    try:
+        message = await AdminRepository.restore_message(db, message_id)
+
+        if not message:
+            raise HTTPException(
+                status_code=404,
+                detail="Message not found or not deleted"
+            )
+
+        await AuditService.log_action(
+            db=db,
+            action_name='message_restored',
+            user_id=admin_user.id,
+            resource_type_name='message',
+            resource_id=message_id,
+            details={'conversation_id': str(message.conversation_id)},
+            request=request
+        )
+
+        REQUEST_COUNT.labels(endpoint="/admin/messages/restore", method="POST", status="200").inc()
+        return message
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(endpoint="/admin/messages/restore", method="POST", status="500").inc()
+        logger.error(f"Error restoring message: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 

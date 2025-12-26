@@ -22,7 +22,9 @@ from app.features.conversations.schemas import (
     MessageCreate,
     MessageRead,
     ChatRequest,
-    ChatResponse
+    ChatResponse,
+    MessageDeleteRequest,
+    MessageDeleteResponse
 )
 
 router = APIRouter(
@@ -250,3 +252,96 @@ async def chat_in_conversation(
         )
 
     return result
+
+
+@router.delete(
+    "/{conversation_id}/messages",
+    response_model=MessageDeleteResponse,
+    summary="Supprimer des messages",
+    description="Marque des messages comme supprimés (soft delete). Les messages restent accessibles à l'admin."
+)
+async def delete_messages(
+    conversation_id: uuid.UUID,
+    data: MessageDeleteRequest,
+    current_user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session)
+) -> MessageDeleteResponse:
+    """
+    Supprime des messages d'une conversation (soft delete).
+
+    - Les messages sont marqués comme supprimés avec la date
+    - Ils ne sont plus visibles pour l'utilisateur
+    - L'admin peut toujours les voir et les supprimer physiquement
+    """
+    count = await ConversationService.soft_delete_messages(
+        db, conversation_id, current_user.id, data.message_ids
+    )
+
+    if count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation non trouvée ou aucun message supprimé"
+        )
+
+    return MessageDeleteResponse(deleted_count=count)
+
+
+@router.post(
+    "/{conversation_id}/archive",
+    response_model=ConversationRead,
+    summary="Archiver une conversation",
+    description="Archive une conversation. Elle reste accessible mais n'apparait plus dans la liste principale."
+)
+async def archive_conversation(
+    conversation_id: uuid.UUID,
+    current_user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session)
+) -> ConversationRead:
+    """
+    Archive une conversation.
+
+    - La conversation est marquée comme archivée
+    - Elle reste accessible via son ID
+    - Elle n'apparait plus dans la liste principale
+    """
+    conversation = await ConversationService.archive_conversation(
+        db, conversation_id, current_user.id
+    )
+
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation non trouvée"
+        )
+
+    return conversation
+
+
+@router.post(
+    "/{conversation_id}/unarchive",
+    response_model=ConversationRead,
+    summary="Désarchiver une conversation",
+    description="Désarchive une conversation pour la remettre dans la liste principale."
+)
+async def unarchive_conversation(
+    conversation_id: uuid.UUID,
+    current_user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session)
+) -> ConversationRead:
+    """
+    Désarchive une conversation.
+
+    - La conversation est remise dans la liste principale
+    - archived_at est remis à None
+    """
+    conversation = await ConversationService.unarchive_conversation(
+        db, conversation_id, current_user.id
+    )
+
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation non trouvée"
+        )
+
+    return conversation

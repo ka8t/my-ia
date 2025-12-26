@@ -291,3 +291,109 @@ async def export_conversation(
         ).inc()
         logger.error(f"Error exporting conversation {conversation_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# ARCHIVAGE
+# =============================================================================
+
+@router.post("/{conversation_id}/archive")
+async def archive_conversation(
+    conversation_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Archive une conversation (admin peut archiver n'importe quelle conversation).
+
+    Path Parameters:
+    - conversation_id: UUID de la conversation
+
+    Requires: Admin role
+    """
+    try:
+        result = await ConversationAdminService.archive_conversation(
+            db, conversation_id
+        )
+
+        # Audit log
+        await AuditService.log_action(
+            db=db,
+            action_name='conversation_archived',
+            user_id=admin_user.id,
+            resource_type_name='conversation',
+            resource_id=conversation_id,
+            details={
+                'conversation_id': str(conversation_id),
+                'owner_user_id': str(result['user_id'])
+            },
+            request=request
+        )
+
+        REQUEST_COUNT.labels(
+            endpoint="/admin/conversations/{id}/archive", method="POST", status="200"
+        ).inc()
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(
+            endpoint="/admin/conversations/{id}/archive", method="POST", status="500"
+        ).inc()
+        logger.error(f"Error archiving conversation {conversation_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/{conversation_id}/unarchive")
+async def unarchive_conversation(
+    conversation_id: uuid.UUID,
+    request: Request,
+    admin_user: User = Depends(get_current_admin_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Désarchive une conversation (admin peut désarchiver n'importe quelle conversation).
+
+    Path Parameters:
+    - conversation_id: UUID de la conversation
+
+    Requires: Admin role
+    """
+    try:
+        result = await ConversationAdminService.unarchive_conversation(
+            db, conversation_id
+        )
+
+        # Audit log
+        await AuditService.log_action(
+            db=db,
+            action_name='conversation_unarchived',
+            user_id=admin_user.id,
+            resource_type_name='conversation',
+            resource_id=conversation_id,
+            details={
+                'conversation_id': str(conversation_id),
+                'owner_user_id': str(result['user_id'])
+            },
+            request=request
+        )
+
+        REQUEST_COUNT.labels(
+            endpoint="/admin/conversations/{id}/unarchive", method="POST", status="200"
+        ).inc()
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        REQUEST_COUNT.labels(
+            endpoint="/admin/conversations/{id}/unarchive", method="POST", status="500"
+        ).inc()
+        logger.error(f"Error unarchiving conversation {conversation_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

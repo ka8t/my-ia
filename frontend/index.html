@@ -4,21 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MY-IA - Interface de Chat</title>
+    <!-- CSS principal (modules disponibles dans css/ pour maintenance) -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Loading Screen - Masque le FOUC -->
+    <div id="app-loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Chargement...</div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>MY-IA</h1>
+                <p>Connectez-vous pour acceder a votre assistant IA</p>
+            </div>
+
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="votre@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" placeholder="Votre mot de passe" required>
+                </div>
+                <div class="login-error" id="loginError" style="display: none;"></div>
+                <button type="submit" class="btn-login" id="loginBtn">Se connecter</button>
+            </form>
+
+            <div class="login-separator">
+                <span>ou</span>
+            </div>
+
+            <button class="btn-register-toggle" id="showRegisterBtn">Creer un compte</button>
+
+            <!-- Register Form (hidden by default) -->
+            <form id="registerForm" class="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="votre@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerUsername">Nom d'utilisateur</label>
+                    <input type="text" id="registerUsername" placeholder="Votre pseudo" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Mot de passe</label>
+                    <input type="password" id="registerPassword" placeholder="Minimum 8 caracteres" required minlength="8">
+                </div>
+                <div class="login-error" id="registerError" style="display: none;"></div>
+                <button type="submit" class="btn-login">S'inscrire</button>
+                <button type="button" class="btn-back-login" id="backToLoginBtn">Retour a la connexion</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container (hidden when not logged in) -->
+    <div class="app-container" id="appContainer" style="display: none;">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>MY-IA</h1>
-                <button class="btn-new-chat" id="newChatBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"/>
-                    </svg>
-                    Nouvelle conversation
-                </button>
+                <div class="sidebar-header-top">
+                    <h1>MY-IA</h1>
+                    <div class="sidebar-header-actions">
+                        <button class="btn-header-icon" id="newChatBtn" data-tooltip="Nouvelle conversation">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="conversations-list" id="conversationsList">
@@ -26,19 +87,30 @@
             </div>
 
             <div class="sidebar-footer">
-                <button class="btn-settings" id="settingsBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v6m0 6v6M3 12h6m6 0h6"/>
-                    </svg>
-                    Paramètres
-                </button>
-                <button class="btn-theme" id="themeToggle">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"/>
-                        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </button>
+                <div class="user-info" id="userInfo">
+                    <span class="user-email" id="userEmail"></span>
+                </div>
+                <div class="sidebar-footer-buttons">
+                    <button class="btn-settings" id="settingsBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v6M3 12h6m6 0h6"/>
+                        </svg>
+                    </button>
+                    <button class="btn-theme" id="themeToggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"/>
+                            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                    </button>
+                    <button class="btn-logout" id="logoutBtn" title="Deconnexion">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </aside>
 
@@ -54,13 +126,12 @@
                     <h2 id="chatTitle">Nouvelle conversation</h2>
                     <span class="chat-mode" id="chatMode">ChatBot</span>
                 </div>
-                <button class="btn-upload" id="uploadBtn" title="Ajouter des documents">
+                <button class="btn-header-icon" id="uploadBtn" data-tooltip="Ajouter des documents">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="17 8 12 3 7 8"/>
                         <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
-                    Ajouter documents
                 </button>
             </div>
 
@@ -131,32 +202,28 @@
             </div>
         </main>
 
-        <!-- Settings Panel -->
+        <!-- Settings Panel - Preferences utilisateur uniquement -->
         <div class="settings-panel" id="settingsPanel" style="display: none;">
             <div class="settings-content">
                 <div class="settings-header">
-                    <h2>Paramètres</h2>
+                    <h2>Preferences</h2>
                     <button class="btn-close" id="closeSettings">×</button>
                 </div>
                 <div class="settings-body">
                     <div class="setting-group">
-                        <label for="apiUrl">URL de l'API</label>
-                        <input type="text" id="apiUrl" placeholder="URL de l'API">
-                    </div>
-                    <div class="setting-group">
-                        <label for="apiKey">Clé API (optionnelle)</label>
-                        <input type="password" id="apiKey" placeholder="change-me-in-production">
-                    </div>
-                    <div class="setting-group">
-                        <label for="topK">Nombre de sources (TOP_K)</label>
-                        <input type="number" id="topK" value="4" min="1" max="10">
-                        <small>Nombre de documents à récupérer pour le contexte</small>
-                    </div>
-                    <div class="setting-group">
                         <label>
                             <input type="checkbox" id="showSources">
-                            Afficher les sources utilisées
+                            Afficher les sources utilisees
                         </label>
+                        <small>Affiche les documents utilises pour generer la reponse</small>
+                    </div>
+                    <div class="setting-group">
+                        <label for="defaultMode">Mode par defaut</label>
+                        <select id="defaultMode">
+                            <option value="1">ChatBot</option>
+                            <option value="2">Assistant</option>
+                        </select>
+                        <small>Mode utilise pour les nouvelles conversations</small>
                     </div>
                     <div class="setting-group">
                         <button class="btn-primary" id="saveSettings">Enregistrer</button>
@@ -199,9 +266,45 @@
         </div>
     </div>
 
+    <!-- Libs externes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Services -->
     <script src="js/config.js"></script>
-    <script src="js/app.js?v=9"></script>
+    <script src="js/services/auth.js"></script>
+    <script src="js/services/api.js"></script>
+
+    <!-- Utils -->
+    <script src="js/utils/dom.js"></script>
+    <script src="js/utils/format.js"></script>
+
+    <!-- Components -->
+    <script src="js/components/toast.js"></script>
+    <script src="js/components/confirm.js"></script>
+    <script src="js/components/markdown.js"></script>
+
+    <!-- Modules -->
+    <script src="js/modules/settings.js"></script>
+    <script src="js/modules/conversations.js"></script>
+    <script src="js/modules/messages.js"></script>
+    <script src="js/modules/streaming.js"></script>
+    <script src="js/modules/upload.js"></script>
+
+    <!-- App (point d'entree) -->
+    <script src="js/app.js?v=13"></script>
+
+    <!-- Masquer le loader une fois tout charge -->
+    <script>
+        window.addEventListener('load', function() {
+            var loader = document.getElementById('app-loader');
+            if (loader) {
+                loader.classList.add('loaded');
+                setTimeout(function() {
+                    loader.remove();
+                }, 300);
+            }
+        });
+    </script>
 </body>
 </html>

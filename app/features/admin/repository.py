@@ -134,10 +134,26 @@ class AdminRepository:
         db: AsyncSession,
         conversation_id: Optional[uuid.UUID] = None,
         sender_type: Optional[str] = None,
+        include_deleted: bool = False,
+        deleted_only: bool = False,
         limit: int = 50,
         offset: int = 0
     ) -> List[Message]:
-        """Récupère les messages avec filtres"""
+        """
+        Récupère les messages avec filtres.
+
+        Args:
+            db: Session de base de données
+            conversation_id: Filtrer par conversation
+            sender_type: Filtrer par type d'expéditeur
+            include_deleted: Inclure les messages supprimés
+            deleted_only: Ne montrer que les messages supprimés
+            limit: Limite de résultats
+            offset: Décalage pour pagination
+
+        Returns:
+            Liste des messages
+        """
         query = select(Message).order_by(Message.created_at.desc())
 
         if conversation_id:
@@ -145,9 +161,64 @@ class AdminRepository:
         if sender_type:
             query = query.where(Message.sender_type == sender_type)
 
+        # Gestion des messages supprimés
+        if deleted_only:
+            query = query.where(Message.deleted_at.isnot(None))
+        elif not include_deleted:
+            query = query.where(Message.deleted_at.is_(None))
+
         query = query.limit(limit).offset(offset)
         result = await db.execute(query)
         return result.scalars().all()
+
+    @staticmethod
+    async def hard_delete_message(
+        db: AsyncSession,
+        message_id: uuid.UUID
+    ) -> bool:
+        """
+        Supprime physiquement un message (admin uniquement).
+
+        Args:
+            db: Session de base de données
+            message_id: ID du message
+
+        Returns:
+            True si supprimé, False sinon
+        """
+        result = await db.execute(
+            delete(Message).where(Message.id == message_id)
+        )
+        await db.commit()
+        return result.rowcount > 0
+
+    @staticmethod
+    async def restore_message(
+        db: AsyncSession,
+        message_id: uuid.UUID
+    ) -> Optional[Message]:
+        """
+        Restaure un message supprimé (soft delete).
+
+        Args:
+            db: Session de base de données
+            message_id: ID du message
+
+        Returns:
+            Message restauré ou None
+        """
+        result = await db.execute(
+            select(Message).where(Message.id == message_id)
+        )
+        message = result.scalar_one_or_none()
+
+        if message and message.deleted_at is not None:
+            message.deleted_at = None
+            await db.commit()
+            await db.refresh(message)
+            return message
+
+        return None
 
     # ========================================================================
     # Documents

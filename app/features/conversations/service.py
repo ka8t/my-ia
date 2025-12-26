@@ -63,7 +63,8 @@ class ConversationService:
                 mode_name=conv.mode.name if conv.mode else None,
                 messages_count=messages_count,
                 created_at=conv.created_at,
-                updated_at=conv.updated_at
+                updated_at=conv.updated_at,
+                archived_at=conv.archived_at
             ))
 
         return items, total
@@ -98,9 +99,11 @@ class ConversationService:
                 sender_type=msg.sender_type,
                 content=msg.content,
                 sources=msg.sources,
+                response_time=msg.response_time,
                 created_at=msg.created_at
             )
             for msg in conversation.messages
+            if msg.deleted_at is None  # Filtrer les messages supprimés
         ]
 
         return ConversationDetail(
@@ -249,7 +252,8 @@ class ConversationService:
             conversation_id=conversation_id,
             sender_type=data.sender_type,
             content=data.content,
-            sources=data.sources
+            sources=data.sources,
+            response_time=data.response_time
         )
 
         return MessageRead(
@@ -257,6 +261,7 @@ class ConversationService:
             sender_type=message.sender_type,
             content=message.content,
             sources=message.sources,
+            response_time=message.response_time,
             created_at=message.created_at
         )
 
@@ -294,6 +299,116 @@ class ConversationService:
         # Créer une nouvelle conversation
         return await ConversationRepository.create(
             db, user_id=user_id, title=title, mode_id=mode_id
+        )
+
+    @staticmethod
+    async def soft_delete_messages(
+        db: AsyncSession,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID,
+        message_ids: List[uuid.UUID]
+    ) -> int:
+        """
+        Marque des messages comme supprimés (soft delete).
+
+        Args:
+            db: Session de base de données
+            conversation_id: ID de la conversation
+            user_id: ID de l'utilisateur propriétaire
+            message_ids: Liste des IDs de messages à supprimer
+
+        Returns:
+            Nombre de messages supprimés ou 0 si conversation non trouvée
+        """
+        # Vérifier que la conversation appartient à l'utilisateur
+        conversation = await ConversationRepository.get_by_id(
+            db, conversation_id, user_id
+        )
+
+        if not conversation:
+            return 0
+
+        # Soft delete des messages
+        count = await MessageRepository.soft_delete_pair(db, message_ids)
+        logger.info(f"Soft deleted {count} message(s) in conversation {conversation_id}")
+        return count
+
+    @staticmethod
+    async def archive_conversation(
+        db: AsyncSession,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID
+    ) -> Optional[ConversationRead]:
+        """
+        Archive une conversation.
+
+        Args:
+            db: Session de base de données
+            conversation_id: ID de la conversation
+            user_id: ID de l'utilisateur propriétaire
+
+        Returns:
+            Conversation archivée ou None si non trouvée
+        """
+        conversation = await ConversationRepository.archive(
+            db, conversation_id, user_id
+        )
+
+        if not conversation:
+            return None
+
+        messages_count = await ConversationRepository.count_messages(db, conversation.id)
+
+        logger.info(f"Conversation archived: {conversation_id}")
+
+        return ConversationRead(
+            id=conversation.id,
+            title=conversation.title,
+            mode_id=conversation.mode_id,
+            mode_name=conversation.mode.name if conversation.mode else None,
+            messages_count=messages_count,
+            created_at=conversation.created_at,
+            updated_at=conversation.updated_at,
+            archived_at=conversation.archived_at
+        )
+
+    @staticmethod
+    async def unarchive_conversation(
+        db: AsyncSession,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID
+    ) -> Optional[ConversationRead]:
+        """
+        Désarchive une conversation.
+
+        Args:
+            db: Session de base de données
+            conversation_id: ID de la conversation
+            user_id: ID de l'utilisateur propriétaire
+
+        Returns:
+            Conversation désarchivée ou None si non trouvée
+        """
+        conversation = await ConversationRepository.unarchive(
+            db, conversation_id, user_id
+        )
+
+        if not conversation:
+            return None
+
+        messages_count = await ConversationRepository.count_messages(db, conversation.id)
+
+        logger.info(f"Conversation unarchived: {conversation_id}")
+
+        return ConversationRead(
+            id=conversation.id,
+            title=conversation.title,
+            mode_id=conversation.mode_id,
+            mode_name=conversation.mode.name if conversation.mode else None,
+            messages_count=messages_count,
+            created_at=conversation.created_at,
+            updated_at=conversation.updated_at,
+            archived_at=conversation.archived_at
         )
 
     @staticmethod

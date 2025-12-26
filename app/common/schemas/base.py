@@ -193,6 +193,7 @@ class ConversationRead(BaseModel):
     mode_id: int
     created_at: datetime
     updated_at: datetime
+    archived_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -210,6 +211,7 @@ class MessageRead(BaseModel):
     content: str
     sources: Optional[Dict[str, Any]] = None
     created_at: datetime
+    deleted_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

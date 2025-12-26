@@ -97,6 +97,41 @@ async def verify_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
     return True
 
 
+async def verify_jwt_or_api_key(
+    x_api_key: Optional[str] = Header(None),
+    authorization: Optional[str] = Header(None)
+) -> bool:
+    """
+    Vérifie l'authentification JWT (par défaut) ou API key (fallback)
+
+    Permet l'accès via:
+    - Header Authorization: Bearer <token> (pour le frontend - défaut)
+    - Header X-API-Key (pour les clients API externes)
+
+    Returns:
+        True si l'un des deux est valide
+
+    Raises:
+        HTTPException: Si aucune authentification valide
+    """
+    # Essayer d'abord le JWT (méthode par défaut)
+    if authorization and authorization.startswith("Bearer "):
+        try:
+            from app.features.auth.service import verify_jwt_token
+            token = authorization.split(" ")[1]
+            payload = await verify_jwt_token(token)
+            if payload:
+                return True
+        except Exception as e:
+            logger.debug(f"JWT verification failed: {e}")
+
+    # Fallback sur la clé API (pour clients externes)
+    if x_api_key and x_api_key == settings.api_key:
+        return True
+
+    raise HTTPException(status_code=401, detail="Invalid authentication")
+
+
 async def get_current_admin_user(user: User = Depends(current_active_user)) -> User:
     """
     Vérifie que l'utilisateur actuel est un administrateur

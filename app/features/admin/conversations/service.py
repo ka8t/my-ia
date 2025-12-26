@@ -6,7 +6,7 @@ Logique métier pour la gestion avancée des conversations.
 import uuid
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Tuple, Dict, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -97,7 +97,8 @@ class ConversationAdminService:
                 "mode_name": conv.mode.name if conv.mode else "",
                 "messages_count": messages_count,
                 "created_at": conv.created_at,
-                "updated_at": conv.updated_at
+                "updated_at": conv.updated_at,
+                "archived_at": conv.archived_at
             })
 
         return conversations_data, total
@@ -155,6 +156,7 @@ class ConversationAdminService:
             "messages_count": len(messages),
             "created_at": conversation.created_at,
             "updated_at": conversation.updated_at,
+            "archived_at": conversation.archived_at,
             "messages": messages
         }
 
@@ -278,8 +280,106 @@ class ConversationAdminService:
                 }
                 for msg in detail["messages"]
             ],
-            "exported_at": datetime.utcnow().isoformat(),
+            "exported_at": datetime.now(timezone.utc).isoformat(),
             "messages_count": detail["messages_count"]
         }
 
         return json.dumps(export_data, indent=2, ensure_ascii=False)
+
+    # ========================================================================
+    # ARCHIVAGE
+    # ========================================================================
+
+    @staticmethod
+    async def archive_conversation(
+        db: AsyncSession,
+        conversation_id: uuid.UUID
+    ) -> Dict[str, Any]:
+        """
+        Archive une conversation (admin peut archiver n'importe quelle conversation).
+
+        Args:
+            db: Session de base de données
+            conversation_id: UUID de la conversation
+
+        Returns:
+            Dictionnaire avec la conversation mise à jour
+
+        Raises:
+            HTTPException 404 si la conversation n'existe pas
+        """
+        result = await db.execute(
+            select(Conversation).options(
+                joinedload(Conversation.user),
+                joinedload(Conversation.mode)
+            ).where(Conversation.id == conversation_id)
+        )
+        conversation = result.scalar_one_or_none()
+
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        conversation.archived_at = datetime.now(timezone.utc)
+        await db.commit()
+        await db.refresh(conversation)
+
+        logger.info(f"Conversation archived by admin: {conversation_id}")
+
+        return {
+            "id": conversation.id,
+            "user_id": conversation.user_id,
+            "user_email": conversation.user.email if conversation.user else "",
+            "title": conversation.title,
+            "mode_id": conversation.mode_id,
+            "mode_name": conversation.mode.name if conversation.mode else "",
+            "archived_at": conversation.archived_at,
+            "created_at": conversation.created_at,
+            "updated_at": conversation.updated_at
+        }
+
+    @staticmethod
+    async def unarchive_conversation(
+        db: AsyncSession,
+        conversation_id: uuid.UUID
+    ) -> Dict[str, Any]:
+        """
+        Désarchive une conversation (admin peut désarchiver n'importe quelle conversation).
+
+        Args:
+            db: Session de base de données
+            conversation_id: UUID de la conversation
+
+        Returns:
+            Dictionnaire avec la conversation mise à jour
+
+        Raises:
+            HTTPException 404 si la conversation n'existe pas
+        """
+        result = await db.execute(
+            select(Conversation).options(
+                joinedload(Conversation.user),
+                joinedload(Conversation.mode)
+            ).where(Conversation.id == conversation_id)
+        )
+        conversation = result.scalar_one_or_none()
+
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        conversation.archived_at = None
+        await db.commit()
+        await db.refresh(conversation)
+
+        logger.info(f"Conversation unarchived by admin: {conversation_id}")
+
+        return {
+            "id": conversation.id,
+            "user_id": conversation.user_id,
+            "user_email": conversation.user.email if conversation.user else "",
+            "title": conversation.title,
+            "mode_id": conversation.mode_id,
+            "mode_name": conversation.mode.name if conversation.mode else "",
+            "archived_at": conversation.archived_at,
+            "created_at": conversation.created_at,
+            "updated_at": conversation.updated_at
+        }

@@ -25,6 +25,7 @@ class ConversationDetailRead(BaseModel):
     messages_count: int
     created_at: datetime
     updated_at: datetime
+    archived_at: Optional[datetime] = None
     messages: List["MessageRead"] = Field(default_factory=list)
 
     class Config:
@@ -54,6 +55,7 @@ class ConversationListItem(BaseModel):
     messages_count: int
     created_at: datetime
     updated_at: datetime
+    archived_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

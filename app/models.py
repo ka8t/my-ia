@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import String, Boolean, Integer, ForeignKey, DateTime, Text, JSON
+from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -92,6 +92,7 @@ class Conversation(Base):
     mode_id: Mapped[int] = mapped_column(Integer, ForeignKey("conversation_modes.id"), default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    archived_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Archivage
 
     # Relations
     user: Mapped["User"] = relationship(back_populates="conversations")
@@ -106,7 +107,9 @@ class Message(Base):
     sender_type: Mapped[str] = mapped_column(String(20), nullable=False) # 'user' or 'assistant'
     content: Mapped[str] = mapped_column(Text, nullable=False)
     sources: Mapped[Optional[dict]] = mapped_column(JSON)
+    response_time: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # Temps de reponse en secondes
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Soft delete
 
     # Relations
     conversation: Mapped["Conversation"] = relationship(back_populates="messages")

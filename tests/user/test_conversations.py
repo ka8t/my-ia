@@ -170,6 +170,79 @@ class TestConversationsEndpoints:
         data = response.json()
         assert data["sender_type"] == "user"
         assert data["content"] == message_data["content"]
+        assert "response_time" in data
+        assert data["response_time"] is None  # Pas de response_time fourni
+
+    async def test_add_message_with_response_time(
+        self,
+        async_client: AsyncClient,
+        user_headers: dict,
+        sample_conversation_data: dict
+    ):
+        """Ajout d'un message avec temps de réponse"""
+        # Créer conversation
+        create_response = await async_client.post(
+            "/conversations",
+            json=sample_conversation_data,
+            headers=user_headers
+        )
+        conversation_id = create_response.json()["id"]
+
+        # Ajouter message avec response_time
+        message_data = {
+            "sender_type": "assistant",
+            "content": "Réponse de l'assistant",
+            "response_time": 2.5
+        }
+        response = await async_client.post(
+            f"/conversations/{conversation_id}/messages",
+            json=message_data,
+            headers=user_headers
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["sender_type"] == "assistant"
+        assert data["response_time"] == 2.5
+
+    async def test_get_conversation_with_response_times(
+        self,
+        async_client: AsyncClient,
+        user_headers: dict,
+        sample_conversation_data: dict
+    ):
+        """Récupération d'une conversation avec response_time dans les messages"""
+        # Créer conversation
+        create_response = await async_client.post(
+            "/conversations",
+            json=sample_conversation_data,
+            headers=user_headers
+        )
+        conversation_id = create_response.json()["id"]
+
+        # Ajouter message user
+        await async_client.post(
+            f"/conversations/{conversation_id}/messages",
+            json={"sender_type": "user", "content": "Question", "response_time": 0.0},
+            headers=user_headers
+        )
+
+        # Ajouter message assistant avec response_time
+        await async_client.post(
+            f"/conversations/{conversation_id}/messages",
+            json={"sender_type": "assistant", "content": "Réponse", "response_time": 3.2},
+            headers=user_headers
+        )
+
+        # Récupérer la conversation
+        response = await async_client.get(
+            f"/conversations/{conversation_id}",
+            headers=user_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["messages"]) == 2
+        assert data["messages"][0]["response_time"] == 0.0
+        assert data["messages"][1]["response_time"] == 3.2
 
     async def test_pagination(
         self,
@@ -247,3 +320,87 @@ class TestConversationsService:
         assert result is not None
         assert result.id == created.id
         assert result.title == "Get Test"
+
+    async def test_add_message_service(
+        self, db_session: AsyncSession, user_id: uuid.UUID
+    ):
+        """Test ajout message via service"""
+        from app.features.conversations.service import ConversationService
+        from app.features.conversations.schemas import ConversationCreate, MessageCreate
+
+        # Créer conversation
+        conv_data = ConversationCreate(title="Message Test", mode_id=1)
+        conversation = await ConversationService.create_conversation(
+            db_session, user_id, conv_data
+        )
+
+        # Ajouter message sans response_time
+        msg_data = MessageCreate(sender_type="user", content="Hello")
+        result = await ConversationService.add_message(
+            db_session, conversation.id, user_id, msg_data
+        )
+
+        assert result is not None
+        assert result.sender_type == "user"
+        assert result.content == "Hello"
+        assert result.response_time is None
+
+    async def test_add_message_with_response_time_service(
+        self, db_session: AsyncSession, user_id: uuid.UUID
+    ):
+        """Test ajout message avec response_time via service"""
+        from app.features.conversations.service import ConversationService
+        from app.features.conversations.schemas import ConversationCreate, MessageCreate
+
+        # Créer conversation
+        conv_data = ConversationCreate(title="Response Time Test", mode_id=1)
+        conversation = await ConversationService.create_conversation(
+            db_session, user_id, conv_data
+        )
+
+        # Ajouter message avec response_time
+        msg_data = MessageCreate(
+            sender_type="assistant",
+            content="Response with time",
+            response_time=4.25
+        )
+        result = await ConversationService.add_message(
+            db_session, conversation.id, user_id, msg_data
+        )
+
+        assert result is not None
+        assert result.sender_type == "assistant"
+        assert result.response_time == 4.25
+
+    async def test_get_conversation_includes_response_time_service(
+        self, db_session: AsyncSession, user_id: uuid.UUID
+    ):
+        """Test que get_conversation retourne les response_time"""
+        from app.features.conversations.service import ConversationService
+        from app.features.conversations.schemas import ConversationCreate, MessageCreate
+
+        # Créer conversation avec messages
+        conv_data = ConversationCreate(title="Full Test", mode_id=1)
+        conversation = await ConversationService.create_conversation(
+            db_session, user_id, conv_data
+        )
+
+        # Ajouter messages
+        await ConversationService.add_message(
+            db_session, conversation.id, user_id,
+            MessageCreate(sender_type="user", content="Q1", response_time=0.0)
+        )
+        await ConversationService.add_message(
+            db_session, conversation.id, user_id,
+            MessageCreate(sender_type="assistant", content="A1", response_time=2.8)
+        )
+
+        # Récupérer et vérifier
+        result = await ConversationService.get_conversation(
+            db_session, conversation.id, user_id
+        )
+
+        assert result is not None
+        assert len(result.messages) == 2
+        assert result.messages[0].response_time == 0.0
+        assert result.messages[1].response_time == 2.8

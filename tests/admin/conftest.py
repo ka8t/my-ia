@@ -211,6 +211,25 @@ async def admin_user(db_session: AsyncSession):
 
 
 @pytest_asyncio.fixture
+async def admin_user_id(db_session: AsyncSession) -> uuid.UUID:
+    """
+    Recupere l'ID d'un utilisateur admin pour les tests.
+    """
+    from sqlalchemy import select
+    from app.models import User
+
+    result = await db_session.execute(
+        select(User).where(User.role_id == 1).limit(1)
+    )
+    admin = result.scalar_one_or_none()
+
+    if admin:
+        return admin.id
+
+    pytest.skip("Aucun utilisateur admin dans la DB")
+
+
+@pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession) -> AsyncGenerator:
     """
     Cree un utilisateur de test temporaire.

@@ -4,9 +4,10 @@ Repository Conversations
 Opérations de base de données pour les conversations utilisateur.
 """
 import uuid
+from datetime import datetime, timezone
 from typing import Optional, List, Tuple
 
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -188,6 +189,76 @@ class ConversationRepository:
         )
         return result.scalar() or 0
 
+    @staticmethod
+    async def archive(
+        db: AsyncSession,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID
+    ) -> Optional[Conversation]:
+        """
+        Archive une conversation (soft archive).
+
+        Args:
+            db: Session de base de données
+            conversation_id: ID de la conversation
+            user_id: ID de l'utilisateur propriétaire
+
+        Returns:
+            Conversation archivée ou None si non trouvée
+        """
+        result = await db.execute(
+            select(Conversation)
+            .options(selectinload(Conversation.mode))
+            .where(
+                Conversation.id == conversation_id,
+                Conversation.user_id == user_id
+            )
+        )
+        conversation = result.scalar_one_or_none()
+
+        if not conversation:
+            return None
+
+        conversation.archived_at = datetime.now(timezone.utc)
+        await db.commit()
+        await db.refresh(conversation)
+        return conversation
+
+    @staticmethod
+    async def unarchive(
+        db: AsyncSession,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID
+    ) -> Optional[Conversation]:
+        """
+        Désarchive une conversation.
+
+        Args:
+            db: Session de base de données
+            conversation_id: ID de la conversation
+            user_id: ID de l'utilisateur propriétaire
+
+        Returns:
+            Conversation désarchivée ou None si non trouvée
+        """
+        result = await db.execute(
+            select(Conversation)
+            .options(selectinload(Conversation.mode))
+            .where(
+                Conversation.id == conversation_id,
+                Conversation.user_id == user_id
+            )
+        )
+        conversation = result.scalar_one_or_none()
+
+        if not conversation:
+            return None
+
+        conversation.archived_at = None
+        await db.commit()
+        await db.refresh(conversation)
+        return conversation
+
 
 class MessageRepository:
     """Repository pour les opérations sur les messages"""
@@ -198,7 +269,8 @@ class MessageRepository:
         conversation_id: uuid.UUID,
         sender_type: str,
         content: str,
-        sources: Optional[dict] = None
+        sources: Optional[dict] = None,
+        response_time: Optional[float] = None
     ) -> Message:
         """
         Crée un nouveau message.
@@ -209,6 +281,7 @@ class MessageRepository:
             sender_type: 'user' ou 'assistant'
             content: Contenu du message
             sources: Sources RAG (optionnel)
+            response_time: Temps de réponse en secondes (optionnel)
 
         Returns:
             Message créé
@@ -217,7 +290,8 @@ class MessageRepository:
             conversation_id=conversation_id,
             sender_type=sender_type,
             content=content,
-            sources=sources
+            sources=sources,
+            response_time=response_time
         )
         db.add(message)
         await db.commit()
@@ -227,7 +301,8 @@ class MessageRepository:
     @staticmethod
     async def list_by_conversation(
         db: AsyncSession,
-        conversation_id: uuid.UUID
+        conversation_id: uuid.UUID,
+        include_deleted: bool = False
     ) -> List[Message]:
         """
         Liste les messages d'une conversation.
@@ -235,13 +310,103 @@ class MessageRepository:
         Args:
             db: Session de base de données
             conversation_id: ID de la conversation
+            include_deleted: Inclure les messages supprimés (pour admin)
 
         Returns:
             Liste des messages ordonnés par date
         """
-        result = await db.execute(
-            select(Message)
-            .where(Message.conversation_id == conversation_id)
-            .order_by(Message.created_at)
-        )
+        query = select(Message).where(Message.conversation_id == conversation_id)
+
+        if not include_deleted:
+            query = query.where(Message.deleted_at.is_(None))
+
+        query = query.order_by(Message.created_at)
+        result = await db.execute(query)
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_by_id(
+        db: AsyncSession,
+        message_id: uuid.UUID
+    ) -> Optional[Message]:
+        """
+        Récupère un message par son ID.
+
+        Args:
+            db: Session de base de données
+            message_id: ID du message
+
+        Returns:
+            Message ou None
+        """
+        result = await db.execute(
+            select(Message).where(Message.id == message_id)
+        )
+        return result.scalar_one_or_none()
+
+    @staticmethod
+    async def soft_delete(
+        db: AsyncSession,
+        message_id: uuid.UUID
+    ) -> bool:
+        """
+        Marque un message comme supprimé (soft delete).
+
+        Args:
+            db: Session de base de données
+            message_id: ID du message
+
+        Returns:
+            True si le message a été marqué comme supprimé
+        """
+        result = await db.execute(
+            update(Message)
+            .where(Message.id == message_id)
+            .values(deleted_at=datetime.now(timezone.utc))
+        )
+        await db.commit()
+        return result.rowcount > 0
+
+    @staticmethod
+    async def soft_delete_pair(
+        db: AsyncSession,
+        message_ids: List[uuid.UUID]
+    ) -> int:
+        """
+        Marque plusieurs messages comme supprimés (soft delete).
+
+        Args:
+            db: Session de base de données
+            message_ids: Liste des IDs de messages
+
+        Returns:
+            Nombre de messages marqués comme supprimés
+        """
+        result = await db.execute(
+            update(Message)
+            .where(Message.id.in_(message_ids))
+            .values(deleted_at=datetime.now(timezone.utc))
+        )
+        await db.commit()
+        return result.rowcount
+
+    @staticmethod
+    async def hard_delete(
+        db: AsyncSession,
+        message_id: uuid.UUID
+    ) -> bool:
+        """
+        Supprime physiquement un message (admin uniquement).
+
+        Args:
+            db: Session de base de données
+            message_id: ID du message
+
+        Returns:
+            True si le message a été supprimé
+        """
+        result = await db.execute(
+            delete(Message).where(Message.id == message_id)
+        )
+        await db.commit()
+        return result.rowcount > 0
