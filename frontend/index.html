@@ -91,13 +91,22 @@
                     <span class="user-email" id="userEmail"></span>
                 </div>
                 <div class="sidebar-footer-buttons">
-                    <button class="btn-settings" id="settingsBtn">
+                    <button class="btn-documents" id="documentsBtn" title="Mes documents">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                    </button>
+                    <button class="btn-settings" id="settingsBtn" title="Preferences">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"/>
                             <path d="M12 1v6m0 6v6M3 12h6m6 0h6"/>
                         </svg>
                     </button>
-                    <button class="btn-theme" id="themeToggle">
+                    <button class="btn-theme" id="themeToggle" title="Changer le theme">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"/>
                             <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
@@ -154,12 +163,12 @@
                         placeholder="Écrivez votre message... (Shift + Entrée pour nouvelle ligne)"
                         rows="1"
                     ></textarea>
-                    <button type="submit" class="btn-send" id="sendBtn">
+                    <button type="submit" class="btn-send" id="sendBtn" title="Envoyer le message">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                         </svg>
                     </button>
-                    <button type="button" class="btn-stop" id="stopBtn" style="display: none;">
+                    <button type="button" class="btn-stop" id="stopBtn" style="display: none;" title="Arreter la generation">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <rect x="6" y="6" width="12" height="12" rx="2"/>
                         </svg>
@@ -264,6 +273,75 @@
                 </div>
             </div>
         </div>
+
+        <!-- Documents Modal -->
+        <div class="documents-modal" id="documentsModal" style="display: none;">
+            <div class="documents-modal-content">
+                <div class="documents-modal-header">
+                    <h2>📄 Mes documents</h2>
+                    <button class="btn-close" id="closeDocumentsModal">×</button>
+                </div>
+
+                <!-- Storage Stats -->
+                <div class="documents-storage-bar" id="documentsStorageBar">
+                    <div class="storage-info">
+                        <span id="storageUsed">0 Mo</span> / <span id="storageQuota">100 Mo</span>
+                    </div>
+                    <div class="storage-progress">
+                        <div class="storage-fill" id="storageFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Toolbar -->
+                <div class="documents-toolbar">
+                    <div class="documents-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input type="text" id="documentsSearch" placeholder="Rechercher...">
+                    </div>
+                    <div class="documents-filters">
+                        <select id="documentsVisibilityFilter">
+                            <option value="">Tous</option>
+                            <option value="public">Publics</option>
+                            <option value="private">Prives</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary btn-sm" id="documentsUploadBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Ajouter
+                    </button>
+                </div>
+
+                <!-- Documents List -->
+                <div class="documents-list" id="documentsList">
+                    <div class="documents-loading">Chargement...</div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="documents-pagination" id="documentsPagination" style="display: none;">
+                    <button class="btn-pagination" id="docsPrevPage" disabled>Precedent</button>
+                    <span class="pagination-info" id="docsPaginationInfo">Page 1/1</span>
+                    <button class="btn-pagination" id="docsNextPage" disabled>Suivant</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Details Modal -->
+        <div class="document-details-modal" id="documentDetailsModal" style="display: none;">
+            <div class="document-details-content">
+                <div class="document-details-header">
+                    <h2 id="documentDetailsTitle">Details du document</h2>
+                    <button class="btn-close" id="closeDocumentDetails">×</button>
+                </div>
+                <div class="document-details-body" id="documentDetailsBody">
+                    <!-- Content loaded dynamically -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Libs externes -->
@@ -290,9 +368,10 @@
     <script src="js/modules/messages.js"></script>
     <script src="js/modules/streaming.js"></script>
     <script src="js/modules/upload.js"></script>
+    <script src="js/modules/documents.js"></script>
 
     <!-- App (point d'entree) -->
-    <script src="js/app.js?v=13"></script>
+    <script src="js/app.js?v=14"></script>
 
     <!-- Masquer le loader une fois tout charge -->
     <script>

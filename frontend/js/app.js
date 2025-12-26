@@ -283,4 +283,7 @@ function initializeEventListeners() {
 
     // Upload
     initializeUpload();
+
+    // Documents
+    initDocumentsEvents();
 }

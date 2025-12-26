@@ -30,6 +30,10 @@ from app.features.conversations.router import router as conversations_router
 from app.features.documents.router import router as documents_router
 from app.features.preferences.router import router as preferences_router
 
+# Import des modules admin documents
+from app.features.admin.documents.router import router as admin_documents_router
+from app.features.admin.documents.router import quota_router as admin_quota_router
+
 # Configuration du logging
 logging.basicConfig(
     level=settings.log_level,
@@ -113,6 +117,8 @@ app.include_router(ingestion_router)
 
 # Admin
 app.include_router(admin_router)
+app.include_router(admin_documents_router)
+app.include_router(admin_quota_router)
 
 logger.info(f"{settings.app_name} initialized successfully")
 

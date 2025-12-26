@@ -81,6 +81,41 @@ class Settings(BaseSettings):
     http_timeout: float
     health_check_timeout: float
 
+    # === Storage ===
+    storage_backend: str = "local"  # "local" | "minio" | "s3"
+    storage_local_path: str = "/data/uploads"
+
+    # Quotas
+    storage_default_quota_mb: int = 100  # Quota par défaut par utilisateur (MB)
+    storage_max_file_size_mb: int = 50  # Taille max par fichier (MB)
+    storage_allowed_mime_types: str = (
+        "application/pdf,"
+        "text/plain,"
+        "text/csv,"
+        "text/markdown,"
+        "application/json,"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document,"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,"
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation,"
+        "application/msword,"
+        "application/vnd.ms-excel,"
+        "application/vnd.ms-powerpoint"
+    )
+    storage_blocked_extensions: str = ".exe,.bat,.sh,.cmd,.ps1,.dll,.so,.bin"
+
+    # MinIO (futur)
+    storage_minio_endpoint: Optional[str] = None
+    storage_minio_access_key: Optional[str] = None
+    storage_minio_secret_key: Optional[str] = None
+    storage_minio_bucket: str = "documents"
+    storage_minio_secure: bool = False
+
+    # S3 (futur)
+    storage_s3_bucket: Optional[str] = None
+    storage_s3_region: Optional[str] = None
+    storage_s3_access_key: Optional[str] = None
+    storage_s3_secret_key: Optional[str] = None
+
     @property
     def ollama_url(self) -> str:
         """URL complète pour Ollama (http://host:port)"""

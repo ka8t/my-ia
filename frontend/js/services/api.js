@@ -251,35 +251,156 @@ const ApiService = {
     },
 
     // =========================================================================
-    // DOCUMENTS
+    // DOCUMENTS - User Documents Management
     // =========================================================================
 
     /**
-     * Liste les documents de l'utilisateur
-     * @param {number} limit
-     * @param {number} offset
-     * @returns {Promise<{items: Array, total: number}>}
+     * Liste les documents de l'utilisateur avec pagination
+     * @param {object} options - {page, page_size, visibility, file_type}
+     * @returns {Promise<{documents: Array, total: number, page: number, page_size: number, total_pages: number}>}
      */
-    async listDocuments(limit = 50, offset = 0) {
-        const response = await this.request(`/documents/?limit=${limit}&offset=${offset}`);
+    async listUserDocuments(options = {}) {
+        const params = new URLSearchParams();
+        if (options.page) params.append('page', options.page);
+        if (options.page_size) params.append('page_size', options.page_size);
+        if (options.visibility) params.append('visibility', options.visibility);
+        if (options.file_type) params.append('file_type', options.file_type);
+
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await this.request(`/api/user/documents${query}`);
         if (!response.ok) throw new Error('Erreur lors du chargement des documents');
         return response.json();
     },
 
     /**
-     * Supprime un document
-     * @param {string} documentId
-     * @returns {Promise<void>}
+     * Recherche dans les documents de l'utilisateur
+     * @param {string} query - Terme de recherche (min 2 chars)
+     * @param {string} visibility - Filtre optionnel
+     * @returns {Promise<{results: Array, total: number, query: string}>}
      */
-    async deleteDocument(documentId) {
-        const response = await this.request(`/documents/${documentId}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Erreur lors de la suppression du document');
+    async searchUserDocuments(query, visibility = null) {
+        const params = new URLSearchParams({ q: query });
+        if (visibility) params.append('visibility', visibility);
+
+        const response = await this.request(`/api/user/documents/search?${params.toString()}`);
+        if (!response.ok) throw new Error('Erreur lors de la recherche');
+        return response.json();
     },
 
     /**
-     * Upload un fichier
+     * Recupere les statistiques de stockage de l'utilisateur
+     * @returns {Promise<{used_bytes: number, file_count: number, quota_bytes: number, quota_used_percent: number, remaining_bytes: number}>}
+     */
+    async getUserStorageStats() {
+        const response = await this.request('/api/user/documents/stats');
+        if (!response.ok) throw new Error('Erreur lors du chargement des statistiques');
+        return response.json();
+    },
+
+    /**
+     * Recupere les details d'un document avec ses versions
+     * @param {string} documentId
+     * @returns {Promise<object>}
+     */
+    async getUserDocument(documentId) {
+        const response = await this.request(`/api/user/documents/${documentId}`);
+        if (!response.ok) throw new Error('Document non trouve');
+        return response.json();
+    },
+
+    /**
+     * Upload un nouveau document
+     * @param {File} file
+     * @param {string} visibility - 'public' ou 'private'
+     * @returns {Promise<object>}
+     */
+    async uploadUserDocument(file, visibility = 'public') {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('visibility', visibility);
+
+        const response = await this.request('/api/user/documents', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Erreur lors de l\'upload');
+        }
+        return response.json();
+    },
+
+    /**
+     * Remplace un document par une nouvelle version
+     * @param {string} documentId
+     * @param {File} file
+     * @param {string} comment - Note optionnelle
+     * @returns {Promise<object>}
+     */
+    async replaceUserDocument(documentId, file, comment = null) {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (comment) formData.append('comment', comment);
+
+        const response = await this.request(`/api/user/documents/${documentId}`, {
+            method: 'PUT',
+            body: formData
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Erreur lors du remplacement');
+        }
+        return response.json();
+    },
+
+    /**
+     * Met a jour les metadonnees d'un document
+     * @param {string} documentId
+     * @param {object} data - {visibility, filename}
+     * @returns {Promise<object>}
+     */
+    async updateUserDocument(documentId, data) {
+        const response = await this.request(`/api/user/documents/${documentId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Erreur lors de la mise a jour');
+        return response.json();
+    },
+
+    /**
+     * Supprime un document et toutes ses versions
+     * @param {string} documentId
+     * @returns {Promise<void>}
+     */
+    async deleteUserDocument(documentId) {
+        const response = await this.request(`/api/user/documents/${documentId}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error('Erreur lors de la suppression');
+    },
+
+    /**
+     * Telecharge un document
+     * @param {string} documentId
+     * @param {number} version - Version specifique (optionnel)
+     * @returns {Promise<Blob>}
+     */
+    async downloadUserDocument(documentId, version = null) {
+        const params = version ? `?version=${version}` : '';
+        const response = await this.request(`/api/user/documents/${documentId}/download${params}`);
+        if (!response.ok) throw new Error('Erreur lors du telechargement');
+        return response.blob();
+    },
+
+    // =========================================================================
+    // DOCUMENTS - Legacy Upload (pour compatibilite)
+    // =========================================================================
+
+    /**
+     * Upload un fichier (legacy - utilise /upload/v2)
      * @param {File} file
      * @returns {Promise<object>}
      */

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum
+from sqlalchemy import String, Boolean, Integer, Float, ForeignKey, DateTime, Text, JSON, Enum as SQLEnum, UniqueConstraint
 import enum
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,7 +18,7 @@ class DocumentVisibility(str, enum.Enum):
     """Visibilite d'un document pour le RAG"""
     PUBLIC = "public"      # Accessible a tous les utilisateurs
     PRIVATE = "private"    # Accessible uniquement au proprietaire
-    # SHARED = "shared"    # Future: partage avec users/groupes specifiques
+    SHARED = "shared"      # Partage avec users specifiques (prepare pour le futur)
 
 
 # --- Tables de Référence ---
@@ -134,13 +134,15 @@ class Document(Base):
     file_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     file_size: Mapped[int] = mapped_column(Integer, nullable=False)
     file_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    file_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)  # Chemin relatif dans le storage
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    current_version: Mapped[int] = mapped_column(Integer, default=1)  # Version courante
     visibility: Mapped[DocumentVisibility] = mapped_column(
         SQLEnum(
             DocumentVisibility,
             name="document_visibility",
             create_constraint=True,
-            values_callable=lambda e: [x.value for x in e]  # Utilise 'public'/'private' au lieu de 'PUBLIC'/'PRIVATE'
+            values_callable=lambda e: [x.value for x in e]  # Utilise 'public'/'private'/'shared'
         ),
         default=DocumentVisibility.PUBLIC,
         nullable=False
@@ -151,6 +153,8 @@ class Document(Base):
 
     # Relations
     user: Mapped["User"] = relationship(back_populates="documents")
+    versions: Mapped[List["DocumentVersion"]] = relationship(back_populates="document", cascade="all, delete-orphan", order_by="DocumentVersion.version_number")
+    shares: Mapped[List["DocumentShare"]] = relationship(back_populates="document", cascade="all, delete-orphan")
 
 class Session(Base):
     __tablename__ = "sessions"
@@ -184,3 +188,62 @@ class AuditLog(Base):
     user: Mapped["User"] = relationship()
     action: Mapped["AuditAction"] = relationship()
     resource_type: Mapped["ResourceType"] = relationship()
+
+
+# --- Tables Versioning & Partage Documents ---
+
+class DocumentVersion(Base):
+    """Historique des versions d'un document."""
+    __tablename__ = "document_versions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    document_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    file_path: Mapped[str] = mapped_column(String(1000), nullable=False)  # Chemin relatif dans le storage
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    file_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0)  # Nombre de chunks de cette version
+    comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Note optionnelle
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # Relations
+    document: Mapped["Document"] = relationship(back_populates="versions")
+    creator: Mapped["User"] = relationship()
+
+
+class DocumentShare(Base):
+    """Partage d'un document avec un utilisateur specifique (prepare pour le futur)."""
+    __tablename__ = "document_shares"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    document_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
+    shared_with_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    permission: Mapped[str] = mapped_column(String(20), default="read")  # "read" | "write" (futur)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # Relations
+    document: Mapped["Document"] = relationship(back_populates="shares")
+    shared_with: Mapped["User"] = relationship(foreign_keys=[shared_with_user_id])
+    creator: Mapped["User"] = relationship(foreign_keys=[created_by])
+
+    # Contrainte unique: un document ne peut etre partage qu'une fois avec le meme utilisateur
+    __table_args__ = (
+        UniqueConstraint('document_id', 'shared_with_user_id', name='uq_document_share_user'),
+    )
+
+
+class UserQuota(Base):
+    """Quota de stockage personnalise par utilisateur (optionnel)."""
+    __tablename__ = "user_quotas"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    quota_bytes: Mapped[int] = mapped_column(Integer, nullable=False)  # Quota en bytes
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    # Relations
+    user: Mapped["User"] = relationship(foreign_keys=[user_id])

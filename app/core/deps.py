@@ -169,3 +169,90 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     async for session in get_async_session():
         yield session
+
+
+# ============================================================================
+# Storage Dependencies
+# ============================================================================
+
+_storage_backend = None
+_storage_service = None
+
+
+def get_quota_config():
+    """
+    Retourne la configuration des quotas depuis settings.
+
+    Returns:
+        QuotaConfig: Configuration des quotas
+    """
+    from app.common.storage.schemas import QuotaConfig
+
+    return QuotaConfig(
+        default_quota_bytes=settings.storage_default_quota_mb * 1024 * 1024,
+        max_file_size_bytes=settings.storage_max_file_size_mb * 1024 * 1024,
+        allowed_mime_types=[
+            t.strip()
+            for t in settings.storage_allowed_mime_types.split(",")
+            if t.strip()
+        ],
+        blocked_extensions=[
+            e.strip()
+            for e in settings.storage_blocked_extensions.split(",")
+            if e.strip()
+        ],
+    )
+
+
+def get_storage_backend():
+    """
+    Factory pour le backend de stockage (singleton).
+
+    Returns:
+        StorageBackend: Backend de stockage
+
+    Raises:
+        NotImplementedError: Si le backend n'est pas implémenté
+        ValueError: Si le backend est inconnu
+    """
+    global _storage_backend
+
+    if _storage_backend is None:
+        if settings.storage_backend == "local":
+            from app.common.storage.backends.local import LocalStorageBackend
+
+            _storage_backend = LocalStorageBackend(settings.storage_local_path)
+            logger.info(
+                f"LocalStorageBackend initialized at {settings.storage_local_path}"
+            )
+        elif settings.storage_backend == "minio":
+            # Futur: from app.common.storage.backends.minio import MinIOStorageBackend
+            raise NotImplementedError("MinIO backend not implemented yet")
+        elif settings.storage_backend == "s3":
+            # Futur: from app.common.storage.backends.s3 import S3StorageBackend
+            raise NotImplementedError("S3 backend not implemented yet")
+        else:
+            raise ValueError(f"Unknown storage backend: {settings.storage_backend}")
+
+    return _storage_backend
+
+
+def get_storage_service():
+    """
+    Retourne le service de stockage avec quotas (singleton).
+
+    Returns:
+        StorageService: Service de stockage
+    """
+    global _storage_service
+
+    if _storage_service is None:
+        from app.common.storage.service import StorageService
+
+        _storage_service = StorageService(
+            backend=get_storage_backend(),
+            quota_config=get_quota_config(),
+        )
+        logger.info("StorageService initialized")
+
+    return _storage_service

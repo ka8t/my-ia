@@ -15,8 +15,9 @@
 @import url('components/buttons.css');
 @import url('components/forms.css');
 @import url('components/messages.css');
-@import url('components/modals.css');
+@import url('components/modal.css');
 @import url('components/toast.css');
+@import url('components/documents.css');
 
 /* =============================================================================
    LOADING SCREEN - Masque le FOUC
@@ -1710,6 +1711,7 @@ body {
     gap: 8px;
 }
 
+.btn-documents,
 .btn-settings,
 .btn-theme,
 .btn-logout {
@@ -1726,6 +1728,7 @@ body {
     color: var(--text-primary);
 }
 
+.btn-documents:hover,
 .btn-settings:hover,
 .btn-theme:hover {
     background-color: var(--border-color);

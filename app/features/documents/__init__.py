@@ -1,6 +1,1 @@
-"""
-Module Documents
-
-Gestion des documents pour les utilisateurs authentifiés.
-Endpoints pour lister et supprimer ses propres documents.
-"""
+"""Feature Documents - Gestion des documents utilisateur."""
