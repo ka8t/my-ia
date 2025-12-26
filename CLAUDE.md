@@ -206,6 +206,7 @@ async def admin_token():
 | `fixture not found` | Mauvais nom | Utiliser `db_session` (pas `test_db_session`) |
 | Token HTTP echoue | Conflit DB lors du login | Generer JWT directement avec `jwt.encode()` |
 | 404 sur endpoint | Mauvais chemin | Verifier le routeur avant d'ecrire le test |
+| `GUID` warning Pydantic | `fastapi_users_db_sqlalchemy.generics.GUID` deprecie | Utiliser `sa.Uuid()` natif SQLAlchemy 2.0 |
 
 ### Template test unitaire (Service)
 
@@ -292,6 +293,7 @@ Les routes Admin (get_roles, create_role, update_role, etc.) répètent la même
 - Variables/Fonctions : `snake_case`
 - Classes : `PascalCase`
 - Constantes : `UPPER_CASE`
+- **IMPORTANT** : Ne jamais utiliser de noms de variables, champs ou attributs qui entrent en conflit avec les namespaces protégés des librairies externes (ex: `model_*` pour Pydantic, `__*__` pour Python). Préférer des préfixes explicites (ex: `llm_model` au lieu de `model_name`).
 
 Pour les containers docker, on ne doit pas redémarrer ou les reconstruire si il y a un changement de code mais uniquement si cela est nécessaire, ajout/modification de libs systèmes, dépendances ....
 

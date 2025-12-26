@@ -1,7 +1,6 @@
 """generic"""
 from alembic import op
 import sqlalchemy as sa
-import fastapi_users_db_sqlalchemy
 
 
 # revision identifiers, used by Alembic.
@@ -56,7 +55,7 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('last_login', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('email', sa.String(length=320), nullable=False),
     sa.Column('hashed_password', sa.String(length=1024), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
@@ -69,7 +68,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_table('audit_logs',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=True),
+    sa.Column('user_id', sa.Uuid(), nullable=True),
     sa.Column('action_id', sa.Integer(), nullable=False),
     sa.Column('resource_type_id', sa.Integer(), nullable=True),
     sa.Column('resource_id', sa.UUID(), nullable=True),
@@ -84,7 +83,7 @@ def upgrade() -> None:
     )
     op.create_table('conversations',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('title', sa.String(length=500), nullable=False),
     sa.Column('mode_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -95,7 +94,7 @@ def upgrade() -> None:
     )
     op.create_table('documents',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('filename', sa.String(length=500), nullable=False),
     sa.Column('file_hash', sa.String(length=64), nullable=False),
     sa.Column('file_size', sa.Integer(), nullable=False),
@@ -108,7 +107,7 @@ def upgrade() -> None:
     )
     op.create_table('sessions',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('refresh_token', sa.String(length=500), nullable=False),
     sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -120,7 +119,7 @@ def upgrade() -> None:
     )
     op.create_table('user_preferences',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
     sa.Column('top_k', sa.Integer(), nullable=False),
     sa.Column('show_sources', sa.Boolean(), nullable=False),
     sa.Column('theme', sa.String(length=20), nullable=False),

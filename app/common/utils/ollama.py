@@ -73,14 +73,14 @@ async def generate_response(
 
         full_prompt += f"**Question de l'utilisateur :**\n{query}\n\n**Réponse :**"
 
-        logger.info(f"Sending request to Ollama with model {settings.model_name}")
+        logger.info(f"Sending request to Ollama with model {settings.llm_model}")
 
         # Appel à Ollama
         async with httpx.AsyncClient(timeout=settings.ollama_timeout) as client:
             response = await client.post(
                 f"{settings.ollama_url}/api/generate",
                 json={
-                    "model": settings.model_name,
+                    "model": settings.llm_model,
                     "prompt": full_prompt,
                     "stream": stream
                 },

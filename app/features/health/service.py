@@ -63,5 +63,5 @@ class HealthService:
             "status": status,
             "ollama": ollama_healthy,
             "chroma": chroma_healthy,
-            "model": settings.model_name
+            "model": settings.llm_model
         }

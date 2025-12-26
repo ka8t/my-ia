@@ -174,7 +174,7 @@ class ChatService:
                 "POST",
                 f"{settings.ollama_url}/api/generate",
                 json={
-                    "model": settings.model_name,
+                    "model": settings.llm_model,
                     "prompt": full_prompt,
                     "stream": True
                 }

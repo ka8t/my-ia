@@ -43,7 +43,7 @@ class ConfigService:
             timeouts=ConfigService.get_timeouts_config(),
             rate_limits=ConfigService.get_rate_limits_config(),
             ollama_host=f"{settings.ollama_host}:{settings.ollama_port}",
-            ollama_model=settings.model_name,
+            ollama_model=settings.llm_model,
             chroma_host=f"{settings.chroma_host}:{settings.chroma_port}",
             collection_name=settings.collection_name
         )

@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     # Ollama
     ollama_host: str
     ollama_port: int
-    model_name: str
+    llm_model: str  # Nom du modèle LLM (ex: mistral, llama3)
     embed_model: str
 
     # ChromaDB
