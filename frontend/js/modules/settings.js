@@ -92,7 +92,27 @@ async function saveSettings() {
 function displayUserInfo() {
     const user = AuthService.getUser();
     if (user) {
-        document.getElementById('userEmail').textContent = user.email;
+        const avatarEl = document.getElementById('userAvatar');
+        const nameEl = document.getElementById('userName');
+        const infoEl = document.getElementById('userInfo');
+
+        // Afficher le nom ou le debut de l'email
+        const displayName = user.username || user.name || user.email.split('@')[0];
+
+        // Avatar avec initiale
+        if (avatarEl) {
+            avatarEl.textContent = displayName.charAt(0).toUpperCase();
+        }
+
+        // Nom affiche
+        if (nameEl) {
+            nameEl.textContent = displayName;
+        }
+
+        // Email en tooltip
+        if (infoEl) {
+            infoEl.setAttribute('data-tooltip', user.email);
+        }
     }
 }
 

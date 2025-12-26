@@ -7,15 +7,18 @@
 /* Sidebar container */
 .sidebar {
     width: var(--sidebar-width);
+    flex-shrink: 0;
     background-color: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    transition: transform var(--transition-normal) ease;
+    transition: width var(--transition-normal) ease;
+    overflow: hidden;
 }
 
 .sidebar.hidden {
-    transform: translateX(-100%);
+    width: 0;
+    border-right: none;
 }
 
 /* Header sidebar */

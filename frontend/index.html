@@ -87,11 +87,12 @@
             </div>
 
             <div class="sidebar-footer">
-                <div class="user-info" id="userInfo">
-                    <span class="user-email" id="userEmail"></span>
+                <div class="user-info" id="userInfo" data-tooltip="">
+                    <span class="user-avatar" id="userAvatar"></span>
+                    <span class="user-name" id="userName"></span>
                 </div>
                 <div class="sidebar-footer-buttons">
-                    <button class="btn-documents" id="documentsBtn" title="Mes documents">
+                    <button class="btn-documents" id="documentsBtn" data-tooltip="Mes documents">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
@@ -100,19 +101,19 @@
                             <polyline points="10 9 9 9 8 9"/>
                         </svg>
                     </button>
-                    <button class="btn-settings" id="settingsBtn" title="Preferences">
+                    <button class="btn-settings" id="settingsBtn" data-tooltip="Preferences">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"/>
                             <path d="M12 1v6m0 6v6M3 12h6m6 0h6"/>
                         </svg>
                     </button>
-                    <button class="btn-theme" id="themeToggle" title="Changer le theme">
+                    <button class="btn-theme" id="themeToggle" data-tooltip="Changer le theme">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="5"/>
                             <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                         </svg>
                     </button>
-                    <button class="btn-logout" id="logoutBtn" title="Deconnexion">
+                    <button class="btn-logout" id="logoutBtn" data-tooltip="Deconnexion">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                             <polyline points="16 17 21 12 16 7"/>
@@ -126,7 +127,7 @@
         <!-- Main Chat Area -->
         <main class="chat-container">
             <div class="chat-header">
-                <button class="btn-toggle-sidebar" id="toggleSidebar">
+                <button class="btn-toggle-sidebar" id="toggleSidebar" data-tooltip="Menu">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M3 12h18M3 6h18M3 18h18"/>
                     </svg>
@@ -163,12 +164,12 @@
                         placeholder="Écrivez votre message... (Shift + Entrée pour nouvelle ligne)"
                         rows="1"
                     ></textarea>
-                    <button type="submit" class="btn-send" id="sendBtn" title="Envoyer le message">
+                    <button type="submit" class="btn-send" id="sendBtn" data-tooltip="Envoyer">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
                         </svg>
                     </button>
-                    <button type="button" class="btn-stop" id="stopBtn" style="display: none;" title="Arreter la generation">
+                    <button type="button" class="btn-stop" id="stopBtn" style="display: none;" data-tooltip="Arreter">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <rect x="6" y="6" width="12" height="12" rx="2"/>
                         </svg>

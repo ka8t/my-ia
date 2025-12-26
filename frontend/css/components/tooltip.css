@@ -89,6 +89,149 @@
     visibility: visible;
 }
 
+/* Tooltip pour boutons sidebar footer (apparait en haut) */
+.sidebar-footer-buttons button {
+    position: relative;
+}
+
+.sidebar-footer-buttons button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 11px;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    pointer-events: none;
+    margin-bottom: 8px;
+    z-index: 1000;
+}
+
+.sidebar-footer-buttons button::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text-primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    margin-bottom: -2px;
+    z-index: 1000;
+}
+
+.sidebar-footer-buttons button:hover::after,
+.sidebar-footer-buttons button:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Tooltip pour bouton toggle sidebar (apparait en bas) */
+.btn-toggle-sidebar {
+    position: relative;
+}
+
+.btn-toggle-sidebar::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 11px;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    pointer-events: none;
+    margin-top: 8px;
+    z-index: 100;
+}
+
+.btn-toggle-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: var(--text-primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    margin-top: -2px;
+    z-index: 100;
+}
+
+.btn-toggle-sidebar:hover::after,
+.btn-toggle-sidebar:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Tooltip pour boutons send/stop (apparait en haut) */
+.btn-send,
+.btn-stop {
+    position: relative;
+}
+
+.btn-send::after,
+.btn-stop::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: 11px;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    pointer-events: none;
+    margin-bottom: 8px;
+    z-index: 100;
+}
+
+.btn-send::before,
+.btn-stop::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text-primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-fast), visibility var(--transition-fast);
+    margin-bottom: -2px;
+    z-index: 100;
+}
+
+.btn-send:hover::after,
+.btn-send:hover::before,
+.btn-stop:hover::after,
+.btn-stop:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 /* Tooltip d'aide pour les modes */
 .mode-help-tooltip {
     position: absolute;
